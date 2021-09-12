@@ -15,7 +15,7 @@ export class HomeScreen extends React.Component {
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Text>Welcome to the Home Screen</Text>
             <Button
-                title="Go to Details... again"
+                title="This is the home screen"
                 onPress={() =>
                     alert("Button Pressed!")
                 }
