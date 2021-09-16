@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Text, TextInput, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
 import { postJsonData } from '../utils/requests.js'
 
-export class CreateUserScreen extends React.Component {
+export class RegisterUserScreen extends React.Component {
 
     constructor(props) {
         super(props);
@@ -14,6 +14,8 @@ export class CreateUserScreen extends React.Component {
     }
 
     render() {
+        
+        const { navigation } = this.props;
 
         const handleRegisterPress = () => {
             postJsonData(global.noticeServiceBaseUrl + '/users', 
@@ -26,7 +28,7 @@ export class CreateUserScreen extends React.Component {
                 console.log(response);
                 alert('Successfully created user!')
                 // go back to login page
-                this.props.navigation.popToTop();
+                navigation.popToTop();
             }).catch(err => {
                 alert(err)
             });
@@ -84,7 +86,7 @@ export class CreateUserScreen extends React.Component {
                 />
                 <Button
                     title="Register"
-                    onPress={handleRegisterPress}
+                    onPress={handleRegisterPress} //TODO: change this to TouchableOpacity and fix styles
                     />
             </SafeAreaView>
         )

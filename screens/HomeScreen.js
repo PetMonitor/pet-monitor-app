@@ -1,26 +1,19 @@
 import React from 'react';
-import { Button, View, Text } from 'react-native';
+
+import { UserProfileScreen } from './UserProfileScreen';
+import { MapScreen } from './MapScreen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+const Tab = createBottomTabNavigator();
 
 export class HomeScreen extends React.Component {
 
-    static navigationOptions = ({ navigation }) => {
-        return {
-            // User cannot navigate back to login screen from here
-            headerLeft: () => null
-        }
-    }
-
     render() {
         return (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text>Welcome to the Home Screen</Text>
-            <Button
-                title="This is the home screen"
-                onPress={() =>
-                    alert("Button Pressed!")
-                }
-                />
-            </View>
+            <Tab.Navigator>
+                <Tab.Screen name="UserProfile" component={UserProfileScreen} />
+                <Tab.Screen name="OtherTab" component={MapScreen}/>
+            </Tab.Navigator>
         )
     }
 }

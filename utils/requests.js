@@ -22,3 +22,24 @@ export async function postJsonData(url = '', data = {}) {
     });
 };
 
+
+export async function getJsonData(url = '', additionalHeaders = {}) {
+    reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json'});
+    console.log(`GET ${url} with headers ${JSON.stringify(reqHeaders)}`);
+    return fetch(url, {
+        method: 'GET',
+        headers: reqHeaders
+    })
+    .then(response => {
+        if (response.ok) {
+            return response;
+        } else {
+            console.log('GET ' + url + ' returned ' + response.status);
+            throw Error('Request at GET ' + url + ' returned ' + response.status)
+        }
+    })
+    .then(response => response.json())
+    .then((response) => {
+        return response;
+    });
+};
