@@ -3,7 +3,9 @@ import React from 'react';
 import { postJsonData } from '../utils/requests.js';
 import { secureStoreSave } from '../utils/store.js';
 
-import { Image, Platform, Text, TextInput, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import { Image, Platform, Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, View } from 'react-native';
+
+import colors from '../config/colors';
 
 export class LoginScreen extends React.Component {
 
@@ -46,69 +48,76 @@ export class LoginScreen extends React.Component {
       };
   
       return (
-        <SafeAreaView style={styles.container}>
-          <View style={[styles.section, { paddingTop: 80 } ]}> 
-            <Image style={{height:120, width:120}} source={require('../assets/LOGO.jpeg')} />
-            <Text style={{position:'absolute', paddingLeft:110, paddingTop:180, fontSize:20}}>et Monitor</Text>
+        <View style={styles.container}>
+          <View style={styles.loginUpperContainer}>
+            <Image style={{height: "60%", width: "60%", resizeMode: 'contain', position: 'absolute', bottom: "15%"}} source={require('../assets/complete_logo.png')} />
           </View>
-          <View style={[styles.section, {flexDirection: 'column'}]}>
-            <TextInput 
-              placeholder = 'username'
-              onChangeText = {text => { this.setState({ username:text })}}
-              autoCapitalize = 'none'
-              autoCorrect = { false }
-              style = {styles.textInput}
-              maxLength = { 30 }
-            />
-            <TextInput 
-              placeholder = 'password'
-              onChangeText = {password => { this.setState({ password:password })}}
-              autoCapitalize = 'none'
-              autoCorrect = { false }
-              style = {styles.textInput}
-              maxLength = { 30 }
-              secureTextEntry = { true } 
-            />
-            <TouchableOpacity onPress={handleLoginPress} style={styles.button}>
-              <Text style={{fontSize:18}}>Login</Text>
+          <View>
+            <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', left: "15%", marginTop: "5%"}}>Inicia sesión para continuar</Text>
+            
+            <View style={{left: "15%", width: "70%"}}>
+              <TextInput
+                placeholder = 'Usuario'
+                onChangeText = {text => { this.setState({ username:text })}}
+                autoCapitalize = 'none'
+                autoCorrect = { false }
+                style = {{borderRadius: 8, backgroundColor: colors.inputGrey, padding: 15, borderWidth: 1, borderColor: colors.inputGrey, fontSize: 16, fontWeight: '500', marginTop: 20}}
+                maxLength = { 30 }
+              />
+              <TextInput 
+                placeholder = 'Contraseña'
+                onChangeText = {password => { this.setState({ password:password })}}
+                autoCapitalize = 'none'
+                autoCorrect = { false }
+                style = {{borderRadius: 8, backgroundColor: colors.inputGrey, padding: 15, borderWidth: 1, borderColor: colors.inputGrey, fontSize: 16, fontWeight: '500', marginTop: 25}}
+                maxLength = { 30 }
+                secureTextEntry = { true } 
+              />
+            </View>
+            <TouchableOpacity style={{backgroundColor: colors.primary, marginTop: "5%", padding: 18, borderRadius: 7, left: "15%", width: "70%", alignSelf: 'flex-start', marginTop: 40}} onPress={handleLoginPress}>
+              <Text style={{color: colors.white, fontSize: 16, fontWeight: '500', alignSelf: 'center'}}>Iniciar sesión</Text>
+            </TouchableOpacity>
+            <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', alignSelf: 'center', marginTop: 5}}>¿No sos miembro? <Text style={{textDecorationLine: 'underline'}} onPress={handleRegisterPress}>Registrate</Text></Text>
+            
+            <TouchableOpacity style={{backgroundColor: colors.facebook, marginTop: "5%", padding: 18, borderRadius: 7, left: "15%", width: "70%", alignSelf: 'flex-start', marginTop: 60}} onPress={() => console.log("Facebook login not implemented yet, do we need this?")}>
+              <Text style={{color: colors.white, fontSize: 16, fontWeight: '500', alignSelf: 'center'}}>Continuar con Facebook</Text>
             </TouchableOpacity>
           </View>
-          <View style={{flex:1, justifyContent: 'center'}}>
-            <TouchableOpacity onPress={handleRegisterPress} style={styles.button}>
-              <Text style={{fontSize:18}}>Register</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
+        </View>
       )
     }
   }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fbdc14',
-      flexDirection: 'column', // main axis: vertical
-      alignItems: 'center', // align items across secondary axis (horizontal)
-      justifyContent: 'center', // justify along main axis (vertical)
-      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
-    textInput: {
-      height: 40,
-      backgroundColor: 'white',
-      borderWidth: 1,
-      padding: 10,
-      margin: 10,
-      width: 250
-    },
-    button: {
-      padding: 10,
-      margin: 10,
-    },
-    section: {
-      flex: 1,
-      width:'100%',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }
+  button: {
+    padding: 10,
+    margin: 10,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+    flexDirection: 'column', // main axis: vertical
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  loginUpperContainer: {
+    height: "30%",
+    width: "100%",
+    backgroundColor: colors.primary,
+    alignItems: 'center', // align items across secondary axis (horizontal)
+  },
+  section: {
+    flex: 1,
+    width:'100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  textInput: {
+    height: 40,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    padding: 10,
+    margin: 10,
+    width: 250
+  },
 });
