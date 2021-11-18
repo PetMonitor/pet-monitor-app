@@ -29,7 +29,7 @@ export class LoginScreen extends React.Component {
           }).then(response => {
             console.log(response['sessionToken']);
             secureStoreSave('sessionToken', response['sessionToken']).then(() => {
-              // Navigate to Home screen.
+              // Navigate to UserProfile inside the Home screen navigator.
               // Pass userId as parameter to the nested navigators.
               navigation.navigate('Home', {
                 screen: 'UserProfile',
@@ -47,11 +47,12 @@ export class LoginScreen extends React.Component {
   
       return (
         <SafeAreaView style={styles.container}>
-          <View style={[styles.section, { paddingTop: 80 } ]}> 
-            <Image style={{height:120, width:120}} source={require('../assets/LOGO.jpeg')} />
-            <Text style={{position:'absolute', paddingLeft:110, paddingTop:180, fontSize:20}}>et Monitor</Text>
+          <View style={[styles.section, { backgroundColor: '#72b1a1', paddingTop: 80, paddingBottom:20 } ]}> 
+            <Image style={{justifyContent: 'center'}} source={require('../assets/LOGO.png')} />
           </View>
-          <View style={[styles.section, {flexDirection: 'column'}]}>
+          <View style={[styles.section, {flex:2, flexDirection: 'column', backgroundColor: 'white'}]}>
+            <Text>Login to get started</Text>
+
             <TextInput 
               placeholder = 'username'
               onChangeText = {text => { this.setState({ username:text })}}
@@ -70,23 +71,26 @@ export class LoginScreen extends React.Component {
               secureTextEntry = { true } 
             />
             <TouchableOpacity onPress={handleLoginPress} style={styles.button}>
-              <Text style={{fontSize:18}}>Login</Text>
+              <Text style={styles.buttonFont}>Login</Text>
             </TouchableOpacity>
           </View>
-          <View style={{flex:1, justifyContent: 'center'}}>
-            <TouchableOpacity onPress={handleRegisterPress} style={styles.button}>
-              <Text style={{fontSize:18}}>Register</Text>
+          <View style={[styles.section, {flexDirection: 'column', backgroundColor: 'white'}]}>
+            <Image source={require('../assets/kitten_paw_2.png')} style={{position:'absolute', left: 0, bottom:0, opacity: 0.5}}/>
+            <Text>Not a member yet?</Text>
+            <Text style={{textDecorationLine: 'underline', paddingBottom:20}} onPress={handleRegisterPress}>Sign up</Text>
+            <TouchableOpacity style={[styles.button, {backgroundColor:'#4267B2'}]}>
+              <Text style={styles.buttonFont}>Login with Facebook</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
       )
     }
-  }
+}
 
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#fbdc14',
+      backgroundColor: 'white',
       flexDirection: 'column', // main axis: vertical
       alignItems: 'center', // align items across secondary axis (horizontal)
       justifyContent: 'center', // justify along main axis (vertical)
@@ -98,11 +102,20 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       padding: 10,
       margin: 10,
-      width: 250
+      width: '60%',
     },
     button: {
       padding: 10,
       margin: 10,
+      borderRadius: 10,
+      backgroundColor: '#72b1a1',
+      width: '60%',
+      alignItems: 'center'
+    },
+    buttonFont: {
+      fontSize:18, 
+      color: 'white',
+      fontWeight: 'bold'
     },
     section: {
       flex: 1,
