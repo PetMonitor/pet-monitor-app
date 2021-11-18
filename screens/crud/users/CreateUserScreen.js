@@ -1,15 +1,16 @@
 import React from 'react';
-import { Button, Text, TextInput, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
-import { postJsonData } from '../utils/requests.js'
+import { TouchableOpacity, Text, TextInput, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
+import { postJsonData } from '../../../utils/requests.js'
 
-export class RegisterUserScreen extends React.Component {
+export class CreateUserScreen extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
             username: '',
             email: '',
-            password: ''
+            password: '',
+            confirmPassword: ''
         }
     }
 
@@ -17,27 +18,38 @@ export class RegisterUserScreen extends React.Component {
         
         const { navigation } = this.props;
 
+        const validateEmail = (email) => {
+            var emailValidationRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return emailValidationRegex.test(email);
+        };
+
         const handleRegisterPress = () => {
-            postJsonData(global.noticeServiceBaseUrl + '/users', 
-              {
+
+            if(!validateEmail(this.state.email)) {
+                alert('Please enter a valid email address!');
+                return;
+            }
+
+            if (this.state.password != this.state.confirmPassword) {
+                alert('Password entries did not match!');
+                return;
+            }
+
+            navigation.push('AskCreatePet', { 
+              user: {
                 'username': this.state.username, 
                 'email': this.state.email,
-                'password': this.state.password 
+                'password': this.state.password,
+                'pets': []
               }
-            ).then(response => {
-                console.log(response);
-                alert('Successfully created user!')
-                // go back to login page
-                navigation.popToTop();
-            }).catch(err => {
-                alert(err)
             });
+
         };
 
         const styles = StyleSheet.create({
             container: {
                 flex: 1,
-                backgroundColor: '#fbdc14',
+                backgroundColor: 'white',
                 flexDirection: 'column', // main axis: vertical
                 alignItems: 'center', // align items across secondary axis (horizontal)
                 justifyContent: 'center', // justify along main axis (vertical)
@@ -54,11 +66,21 @@ export class RegisterUserScreen extends React.Component {
             button: {
                 padding: 10,
                 margin: 10,
+                borderRadius: 10,
+                backgroundColor: '#72b1a1',
+                width: '60%',
+                alignItems: 'center'
+            },
+            buttonFont: {
+                fontSize:18, 
+                color: 'white',
+                fontWeight: 'bold'
             }
         });
 
         return (
-            <SafeAreaView style={styles.container}>            
+            <SafeAreaView style={styles.container}>
+                <Text>Create your account</Text>            
                 <TextInput 
                     placeholder = 'username'
                     onChangeText = { usernameInput => { this.setState({ username: usernameInput })}}
@@ -84,10 +106,18 @@ export class RegisterUserScreen extends React.Component {
                     maxLength = { 30 }
                     secureTextEntry = { true }   
                 />
-                <Button
-                    title="Register"
-                    onPress={handleRegisterPress} //TODO: change this to TouchableOpacity and fix styles
-                    />
+                <TextInput 
+                    placeholder = 'confirm password'
+                    onChangeText = { passwordInput => { this.setState({ confirmPassword: passwordInput })}}
+                    autoCapitalize = 'none'
+                    autoCorrect = { false }
+                    style = {styles.textInput}
+                    maxLength = { 30 }
+                    secureTextEntry = { true }   
+                />
+                <TouchableOpacity onPress={handleRegisterPress} style={styles.button}>
+                    <Text style={styles.buttonFont}>Sign Up</Text>
+                </TouchableOpacity>
             </SafeAreaView>
         )
     }

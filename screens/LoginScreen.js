@@ -31,7 +31,7 @@ export class LoginScreen extends React.Component {
           }).then(response => {
             console.log(response['sessionToken']);
             secureStoreSave('sessionToken', response['sessionToken']).then(() => {
-              // Navigate to Home screen.
+              // Navigate to UserProfile inside the Home screen navigator.
               // Pass userId as parameter to the nested navigators.
               navigation.navigate('Home', {
                 screen: 'UserProfile',
@@ -86,7 +86,7 @@ export class LoginScreen extends React.Component {
         </View>
       )
     }
-  }
+}
 
 const styles = StyleSheet.create({
   button: {
