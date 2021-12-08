@@ -1,4 +1,8 @@
 import React from 'react';
+
+import { postJsonData } from '../../../utils/requests.js';
+import colors from '../../../config/colors';
+
 import { Picker, Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, ScrollView, View } from 'react-native';
 
 export class CreatePetScreen extends React.Component {
@@ -6,13 +10,13 @@ export class CreatePetScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            petName: '',
-            petType: props.route.params.initPetType,
-            size: 'small',
-            lifeStage: 'puppy',
+            name: '',
+            type: props.route.params.initPetType,
+            size: 'SMALL',
+            lifeStage: 'PUPPY',
             breed: '',
-            sex: 'male',
-            furColour: '',
+            sex: 'MALE',
+            furColor: '',
             description: ''
         }
     }
@@ -51,51 +55,60 @@ export class CreatePetScreen extends React.Component {
             ]
             
             console.log('Create user:');
-            console.log(JSON.stringify(userInfo));        
+            console.log(JSON.stringify(userInfo));  
+
+            postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
+                console.log(response);
+                alert('Successfully created user!')
+                // go back to login page
+                this.props.navigation.popToTop();
+            }).catch(err => {
+                alert(err)
+            });      
         };
 
         return (
             <SafeAreaView style={styles.container}>   
                 <ScrollView style={styles.scrollView} >
-                    <Text style={styles.label}>Name</Text>
+                    <Text style={styles.label}>Nombre</Text>
                     <TextInput 
-                        onChangeText = { petName => { this.setState({ petName: petName })}}
+                        onChangeText = { petName => { this.setState({ name: petName })}}
                         autoCapitalize = 'none'
                         autoCorrect = { false }
                         style = { styles.textInput }
                         maxLength = { 100 } />
                     <View style={{flex:1, flexDirection: 'row'}}>
                         <View style={{flex:1, flexDirection: 'column'}}>
-                            <Text style={styles.label}>Type</Text>
+                            <Text style={styles.label}>Tipo</Text>
                             <Picker
-                                selectedValue={this.state.petType}
-                                style={{ height: 44, width: 100, marginBottom: 15, marginTop: 5}}
+                                selectedValue={this.state.type}
+                                style={{ height: 44, width: 150, marginBottom: 15, marginTop: 5}}
                                 itemStyle={{height: 88}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ petType: itemValue })}>
-                                    <Picker.Item label="Cat" value="cat" />
-                                    <Picker.Item label="Dog" value="dog" />
+                                onValueChange={(itemValue, itemIndex) => this.setState({ type: itemValue })}>
+                                    <Picker.Item label="CAT" value="CAT" />
+                                    <Picker.Item label="DOG" value="DOG" />
                             </Picker>
-                            <Text style={styles.label}>Sex</Text>
+                            <Text style={styles.label}>Sexo</Text>
                             <Picker
                                 selectedValue={this.state.sex}
-                                style={{ height: 64, width: 100 }}
+                                style={{ height: 64, width: 150 }}
                                 itemStyle={{height: 88}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ sex: itemValue })}>
-                                    <Picker.Item label="Male" value="male" />
-                                    <Picker.Item label="Female" value="female" />
+                                    <Picker.Item label="Macho" value="MALE" />
+                                    <Picker.Item label="Hembra" value="FEMALE" />
                             </Picker>
                             
                         </View>
                         <View style={{flex:1, flexDirection: 'column'}}>
-                            <Text style={styles.label}>Life Stage</Text>
+                            <Text style={styles.label}>Etapa de la vida</Text>
                             <Picker
                                 selectedValue={this.state.lifeStage}
                                 style={{ height: 44, width: 150, marginBottom: 15, marginTop: 5 }}
                                 itemStyle={{height: 88}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ lifeStage: itemValue })}>
-                                    <Picker.Item label="Puppy" value="puppy" />
-                                    <Picker.Item label="Middle Age" value="middleAge" />
-                                    <Picker.Item label="Old" value="old" />
+                                    <Picker.Item label="Bebé" value="BABY" />
+                                    <Picker.Item label="Adulto" value="ADULT" />
+                                    <Picker.Item label="Mayor" value="SENIOR" />
                             </Picker>
                             <Text style={styles.label}>Size</Text>
                             <Picker
@@ -103,30 +116,30 @@ export class CreatePetScreen extends React.Component {
                                 style={{ height: 44, width: 150 }}
                                 itemStyle={{height: 88}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ size: itemValue })}>
-                                    <Picker.Item label="Small" value="small" />
-                                    <Picker.Item label="Medium" value="medium" />
-                                    <Picker.Item label="Large" value="large" />
+                                    <Picker.Item label="Pequeño" value="SMALL" />
+                                    <Picker.Item label="Mediano" value="MEDIUM" />
+                                    <Picker.Item label="Grande" value="LARGE" />
                             </Picker>
                         </View>
                     </View>
-                    <Text style={styles.label}>Breed</Text>
+                    <Text style={styles.label}>Raza</Text>
                     <TextInput 
                         onChangeText = { breed => { this.setState({ breed: breed })}}
                         autoCapitalize = 'none'
                         autoCorrect = { false }
                         style = { styles.textInput }
                         maxLength = { 100 } />
-                    <Text style={styles.label}>Fur Colour</Text>
+                    <Text style={styles.label}>Color de Pelaje</Text>
                     <TextInput 
-                        onChangeText = { furColour => { this.setState({ furColour: furColour })}}
+                        onChangeText = { furColor => { this.setState({ furColor: furColor })}}
                         autoCapitalize = 'none'
                         autoCorrect = { false }
                         style = { styles.textInput }
                         maxLength = { 100 } />
                     <TouchableOpacity  style={styles.button}>
-                        <Text style={styles.buttonFont}>Upload Photo</Text>
+                        <Text style={styles.buttonFont}>Subir Foto</Text>
                     </TouchableOpacity>
-                    <Text style={styles.label}>Description</Text>
+                    <Text style={styles.label}>Descripción</Text>
                     <TextInput 
                         multiline={true}
                         numberOfLines={Platform.OS === 'ios' ? null : numberOfLines}
@@ -141,10 +154,10 @@ export class CreatePetScreen extends React.Component {
                         create user profile + add pets. 
                     */}
                     <TouchableOpacity onPress={handleNextPet}  style={styles.button}>
-                        <Text style={styles.buttonFont}>Next Pet</Text>
+                        <Text style={styles.buttonFont}>Nueva Mascota</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleFinishInitialSetup} style={styles.button}>
-                        <Text style={styles.buttonFont}>Finish</Text>
+                        <Text style={styles.buttonFont}>Finalizar</Text>
                     </TouchableOpacity>
                     {/* This next view is a workaround because scrollview won't go 
                         all the way to the bottom of the page 
@@ -173,9 +186,13 @@ const styles = StyleSheet.create({
         paddingLeft: '7%',
     },
     textInput: {
-        height: '4%',
-        backgroundColor: 'white',
-        borderWidth: 1,
+        borderRadius: 8, 
+        backgroundColor: colors.inputGrey, 
+        padding: 15, 
+        borderWidth: 1, 
+        borderColor: colors.inputGrey, 
+        fontSize: 16, 
+        fontWeight: '500',
         margin: 10,
         width: '80%',
     },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, TextInput, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
-import { postJsonData } from '../../../utils/requests.js'
+
+import colors from '../../../config/colors';
 
 export class CreateUserScreen extends React.Component {
 
@@ -56,33 +57,37 @@ export class CreateUserScreen extends React.Component {
                 paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
             },
             textInput: {
-                height: 40,
-                backgroundColor: 'white',
-                borderWidth: 1,
+                borderRadius: 8, 
+                backgroundColor: colors.inputGrey, 
+                borderWidth: 1, 
+                borderColor: colors.inputGrey, 
+                fontSize: 16, 
+                fontWeight: '500',
                 padding: 10,
                 margin: 10,
-                width: 250
+                width: '70%'
             },
             button: {
-                padding: 10,
-                margin: 10,
-                borderRadius: 10,
-                backgroundColor: '#72b1a1',
-                width: '60%',
-                alignItems: 'center'
+                backgroundColor: colors.primary,
+                marginTop: "5%", 
+                padding: 18, 
+                borderRadius: 7, 
+                left: "15%", 
+                width: "70%", 
+                alignSelf: 'flex-start'
             },
             buttonFont: {
-                fontSize:18, 
-                color: 'white',
-                fontWeight: 'bold'
+                fontSize: 16, 
+                fontWeight: '500', 
+                alignSelf: 'center'
             }
         });
 
         return (
             <SafeAreaView style={styles.container}>
-                <Text>Create your account</Text>            
+                <Text style={{ fontSize: 24, padding: 20 }}>Crear Cuenta</Text>            
                 <TextInput 
-                    placeholder = 'username'
+                    placeholder = 'Usuario'
                     onChangeText = { usernameInput => { this.setState({ username: usernameInput })}}
                     autoCapitalize = 'none'
                     autoCorrect = { false }
@@ -90,7 +95,7 @@ export class CreateUserScreen extends React.Component {
                     maxLength = { 30 }
                 />
                 <TextInput 
-                    placeholder = 'email'
+                    placeholder = 'Email'
                     onChangeText = { emailInput => { this.setState({ email: emailInput })}}
                     autoCapitalize = 'none'
                     autoCorrect = { false }
@@ -98,7 +103,7 @@ export class CreateUserScreen extends React.Component {
                     maxLength = { 30 }
                 />
                 <TextInput 
-                    placeholder = 'password'
+                    placeholder = 'Contraseña'
                     onChangeText = { passwordInput => { this.setState({ password: passwordInput })}}
                     autoCapitalize = 'none'
                     autoCorrect = { false }
@@ -107,7 +112,7 @@ export class CreateUserScreen extends React.Component {
                     secureTextEntry = { true }   
                 />
                 <TextInput 
-                    placeholder = 'confirm password'
+                    placeholder = 'Confirmar contraseña'
                     onChangeText = { passwordInput => { this.setState({ confirmPassword: passwordInput })}}
                     autoCapitalize = 'none'
                     autoCorrect = { false }
@@ -116,7 +121,7 @@ export class CreateUserScreen extends React.Component {
                     secureTextEntry = { true }   
                 />
                 <TouchableOpacity onPress={handleRegisterPress} style={styles.button}>
-                    <Text style={styles.buttonFont}>Sign Up</Text>
+                    <Text style={[styles.buttonFont, { color: colors.white }]}>Sign Up</Text>
                 </TouchableOpacity>
             </SafeAreaView>
         )

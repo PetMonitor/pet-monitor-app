@@ -61,7 +61,7 @@ export class LoginScreen extends React.Component {
                 onChangeText = {text => { this.setState({ username:text })}}
                 autoCapitalize = 'none'
                 autoCorrect = { false }
-                style = {{borderRadius: 8, backgroundColor: colors.inputGrey, padding: 15, borderWidth: 1, borderColor: colors.inputGrey, fontSize: 16, fontWeight: '500', marginTop: 20}}
+                style = {[styles.textInput, { marginTop: 20 }]}
                 maxLength = { 30 }
               />
               <TextInput 
@@ -69,18 +69,18 @@ export class LoginScreen extends React.Component {
                 onChangeText = {password => { this.setState({ password:password })}}
                 autoCapitalize = 'none'
                 autoCorrect = { false }
-                style = {{borderRadius: 8, backgroundColor: colors.inputGrey, padding: 15, borderWidth: 1, borderColor: colors.inputGrey, fontSize: 16, fontWeight: '500', marginTop: 25}}
+                style = {[styles.textInput, { marginTop: 25 }]}
                 maxLength = { 30 }
                 secureTextEntry = { true } 
               />
             </View>
-            <TouchableOpacity style={{backgroundColor: colors.primary, marginTop: "5%", padding: 18, borderRadius: 7, left: "15%", width: "70%", alignSelf: 'flex-start', marginTop: 40}} onPress={handleLoginPress}>
-              <Text style={{color: colors.white, fontSize: 16, fontWeight: '500', alignSelf: 'center'}}>Iniciar sesión</Text>
+            <TouchableOpacity style={[styles.button, { marginTop: 40 }]} onPress={handleLoginPress}>
+              <Text style={[styles.buttonFont, { color: colors.white }]}>Iniciar sesión</Text>
             </TouchableOpacity>
             <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', alignSelf: 'center', marginTop: 5}}>¿No sos miembro? <Text style={{textDecorationLine: 'underline'}} onPress={handleRegisterPress}>Registrate</Text></Text>
             
-            <TouchableOpacity style={{backgroundColor: colors.facebook, marginTop: "5%", padding: 18, borderRadius: 7, left: "15%", width: "70%", alignSelf: 'flex-start', marginTop: 60}} onPress={() => console.log("Facebook login not implemented yet, do we need this?")}>
-              <Text style={{color: colors.white, fontSize: 16, fontWeight: '500', alignSelf: 'center'}}>Continuar con Facebook</Text>
+            <TouchableOpacity style={[styles.button, { backgroundColor: colors.facebook, marginTop: 60 }]} onPress={() => console.log("Facebook login not implemented yet, do we need this?")}>
+              <Text style={[styles.buttonFont, { color: colors.white }]}>Continuar con Facebook</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -90,8 +90,18 @@ export class LoginScreen extends React.Component {
 
 const styles = StyleSheet.create({
   button: {
-    padding: 10,
-    margin: 10,
+    backgroundColor: colors.primary,
+    marginTop: "5%", 
+    padding: 18, 
+    borderRadius: 7, 
+    left: "15%", 
+    width: "70%", 
+    alignSelf: 'flex-start'
+  },
+  buttonFont: {
+    fontSize: 16, 
+    fontWeight: '500', 
+    alignSelf: 'center'
   },
   container: {
     flex: 1,
@@ -113,11 +123,12 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   textInput: {
-    height: 40,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    padding: 10,
-    margin: 10,
-    width: 250
+    borderRadius: 8, 
+    backgroundColor: colors.inputGrey, 
+    padding: 15, 
+    borderWidth: 1, 
+    borderColor: colors.inputGrey, 
+    fontSize: 16, 
+    fontWeight: '500'
   },
 });

@@ -21,7 +21,7 @@ export default class App extends React.Component {
               <Stack.Screen name="Home" component={HomeScreen} options={{ headerLeft: () => null }} />
               <Stack.Screen name="CreateUser" component={CreateUserScreen} options={{title: '', headerStyle: {backgroundColor:'#72b1a1'}}}/>
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor:'#72b1a1'}}} />
-              <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor:'#72b1a1', color:'white', fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'dog'}} />
+              <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor:'#72b1a1', color:'white', fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
             </Stack.Navigator>
           </NavigationContainer>;
   }

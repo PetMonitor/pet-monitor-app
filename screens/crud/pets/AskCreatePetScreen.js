@@ -1,5 +1,8 @@
 import React from 'react';
-import {Image, Text, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
+
+import { postJsonData } from '../../../utils/requests.js';
+
+import { Image, Text, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
 
 export class AskCreatePetScreen extends React.Component {
 
@@ -34,49 +37,40 @@ export class AskCreatePetScreen extends React.Component {
             // Pass user info, and indicate that we are coming from the initial setup page,
             // so the whole user info structure will be passed for the user to be created
             // along with an initial set of pets.
-            navigation.push('CreatePet', { userInfo: user, initialSetup: true, initPetType: petType}); 
+            this.props.navigation.push('CreatePet', { userInfo: user, initialSetup: true, initPetType: petType}); 
         };
 
         const handleSkipStep = () => {
-            alert('Create user with no pets');
             // User should be registered and redirected to login page.
-            /*postJsonData(global.noticeServiceBaseUrl + '/users', 
-              {
-                'username': this.state.username, 
-                'email': this.state.email,
-                'password': this.state.password 
-              }
-            ).then(response => {
+            postJsonData(global.noticeServiceBaseUrl + '/users', user).then(response => {
                 console.log(response);
                 alert('Successfully created user!')
                 // go back to login page
-                //navigation.popToTop();
-                navigation.navigate('CreatePet');
+                this.props.navigation.popToTop();
             }).catch(err => {
                 alert(err)
-            });*/
-            navigation.popToTop();
+            });
         };
 
         return (
             <SafeAreaView style={styles.container}>
                 <View style={{flex:2}} style={{paddingTop:50, paddingBottom:50}}>  
-                    <Text style={styles.title}>Introduce us to your pets!</Text>  
+                    <Text style={styles.title}>Presentanos a tus mascotas!</Text>  
                 </View> 
                 <View style={{flex:1, alignItems: 'center'}}> 
-                    <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>We recommend that you create a profile for all your pets.</Text>
-                    <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>Shall we start with the first one?</Text>  
+                    <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>Recomendamos registrar a todas tus mascotas.</Text>
+                    <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>¿Empezamos con la primera?</Text>  
                 </View> 
                 <View style={{flex:2,flexDirection:'row',paddingTop:20, paddingBottom:50}} >
-                    <TouchableOpacity onPress={() => handleCreatePet('cat')}>
+                    <TouchableOpacity onPress={() => handleCreatePet('CAT')}>
                         <Image source={require('../../../assets/kitten_paw_1.png')} style={{opacity:0.8}}/>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleCreatePet('dog')}>
+                    <TouchableOpacity onPress={() => handleCreatePet('DOG')}>
                         <Image source={require('../../../assets/dog_paw_1.png')} style={{opacity:0.8}} />
                     </TouchableOpacity>
                 </View>
                 <View style={{flex:1}}>
-                    <Text style={{textDecorationLine: 'underline', paddingBottom:20, fontSize: 16}} onPress={handleSkipStep}>Skip this step</Text>
+                    <Text style={{textDecorationLine: 'underline', paddingBottom:20, fontSize: 16}} onPress={handleSkipStep}>Saltear este paso</Text>
                 </View>
             </SafeAreaView>
         )
