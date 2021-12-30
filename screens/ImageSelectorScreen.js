@@ -1,6 +1,6 @@
 import React, { Component }  from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import {  Platform, StatusBar, StyleSheet, Text } from 'react-native';
+import { Image, Platform, StatusBar, StyleSheet, Text } from 'react-native';
 import { AssetsSelector } from 'expo-images-picker';
 import styled from "styled-components";
 
@@ -71,7 +71,8 @@ export default class ImageSelectorScreen extends Component {
                             this.props.navigation.navigate({
                               name: 'CreatePet',
                               params: { images: data.map((image, index) => { 
-                                  return <Text>id: {image["id"]}, base64: {image["base64"]}</Text>
+                                  var base64ImgUrl = "data:image/png;base64," + image["base64"]
+                                  return <Image style={{width: 100, height: 50, resizeMode: "contain", borderWidth: 1, borderColor: 'red'}} source={{ uri: base64ImgUrl }}/>
                                 }
                               )},
                               merge: true
