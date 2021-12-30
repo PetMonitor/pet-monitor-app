@@ -9,6 +9,7 @@ import { LoginScreen } from './screens/LoginScreen.js';
 import { CreateUserScreen } from './screens/crud/users/CreateUserScreen';
 import { CreatePetScreen } from './screens/crud/pets/CreatePetScreen';
 import { AskCreatePetScreen } from './screens/crud/pets/AskCreatePetScreen';
+import ImageSelectorScreen from './screens/ImageSelectorScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,26 +20,12 @@ export default class App extends React.Component {
             <Stack.Navigator initialRouteName="Login">
               <Stack.Screen name="Login" component={LoginScreen} options={{title: ''}} />
               <Stack.Screen name="Home" component={HomeScreen} options={{ headerLeft: () => null }} />
-              <Stack.Screen name="CreateUser" component={CreateUserScreen} options={{title: '', headerStyle: {backgroundColor:'#72b1a1'}}}/>
+              <Stack.Screen name="CreateUserScreen" component={CreateUserScreen} options={{title: '', headerStyle: {backgroundColor:'#72b1a1'}}}/>
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor:'#72b1a1'}}} />
               <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor:'#72b1a1', color:'white', fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
+              <Stack.Screen name="ImageSelectorScreen" component={ImageSelectorScreen} />
+
             </Stack.Navigator>
           </NavigationContainer>;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

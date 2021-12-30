@@ -67,6 +67,12 @@ export class CreatePetScreen extends React.Component {
             });      
         };
 
+
+        const handleImagePickerPress = () => {
+            this.props.navigation.navigate('ImageSelectorScreen');
+        };
+
+
         return (
             <SafeAreaView style={styles.container}>   
                 <ScrollView style={styles.scrollView} >
@@ -136,9 +142,16 @@ export class CreatePetScreen extends React.Component {
                         autoCorrect = { false }
                         style = { styles.textInput }
                         maxLength = { 100 } />
-                    <TouchableOpacity  style={styles.button}>
-                        <Text style={styles.buttonFont}>Subir Foto</Text>
+
+                    <TouchableOpacity style={styles.button} onPress={handleImagePickerPress} >
+                        <Text style={styles.buttonFont}>Subir Fotos</Text>
                     </TouchableOpacity>
+
+                    {/* Render uploaded images here 
+                    */}
+                    {this.props.route.params?.images}
+
+
                     <Text style={styles.label}>Descripción</Text>
                     <TextInput 
                         multiline={true}

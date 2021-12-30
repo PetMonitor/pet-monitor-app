@@ -44,7 +44,7 @@ export class LoginScreen extends React.Component {
       };
   
       const handleRegisterPress = () => { 
-        this.props.navigation.navigate('CreateUser');
+        this.props.navigation.navigate("CreateUserScreen");
       };
   
       return (
@@ -81,7 +81,7 @@ export class LoginScreen extends React.Component {
             
             <TouchableOpacity style={[styles.button, { backgroundColor: colors.facebook, marginTop: 60 }]} onPress={() => console.log("Facebook login not implemented yet, do we need this?")}>
               <Text style={[styles.buttonFont, { color: colors.white }]}>Continuar con Facebook</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>            
           </View>
         </View>
       )
