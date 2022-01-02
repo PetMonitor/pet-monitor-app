@@ -1,110 +1,127 @@
-import React, { Component }  from 'react';
+import React, { useMemo }  from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Platform, StatusBar, StyleSheet, Text } from 'react-native';
+import { Platform, StatusBar, StyleSheet } from 'react-native';
 import { AssetsSelector } from 'expo-images-picker';
-import styled from "styled-components";
+import { MediaType } from 'expo-media-library';
+import PageContainer from '../utils/PageContainer';
 
-import colors from '../config/colors';
+const ImageSelectorScreen = ({ route, navigation }) => {
 
-export default class ImageSelectorScreen extends Component {
+  const { onImageSelectionDone } = route.params;
 
-  constructor(props){
-    super(props);
-    this.state={
-        visible:false,
-    }
+  onImagePickSuccess = (data) => {
+    navigation.goBack();
+    onImageSelectionDone({ images: data.map((image, index) => { 
+      return "data:image/png;base64," + image["base64"];
+      })
+    });
   }
 
-  open = () => {
-      this.setState({visible:true});
-  }
 
-  close = () => {
-      this.setState({visible:false});
-  }
+  const widgetErrors = useMemo(
+    () => ({
+      errorTextColor: 'black',
+      errorMessages: {
+        hasErrorWithPermissions: 'Please Allow media gallery permissions.',
+        hasErrorWithLoading: 'There was an error while loading images.',
+        hasErrorWithResizing: 'There was an error while loading images.',
+        hasNoAssets: 'No images found.',
+      },
+    }),
+    [],
+  );
 
-  render() {
+  const widgetSettings = useMemo(
+    () => ({
+      getImageMetaData: false, // true might perform slower results but gives meta data and absolute path for ios users
+      initialLoad: 100,
+      assetsType: [MediaType.photo],
+      minSelection: 1,
+      maxSelection: 10,
+      portraitCols: 4,
+      landscapeCols: 4,
+    }),
+    [],
+  );
 
-      const emptyStayComponent = () => <Text>No Images Found</Text>;
+  const widgetNavigator = useMemo(
+    () => ({
+      Texts: {
+        finish: 'finish',
+        back: 'back',
+        selected: 'selected',
+      },
+      midTextColor: 'black',
+      minSelection: 1,
+      buttonTextStyle: { color: 'white' },
+      buttonStyle: { backgroundColor: 'orange', borderRadius: 5 },
+      onBack: () => {
+        navigation.pop();
+      },
+      onSuccess: (data) => onImagePickSuccess(data),
+    }),
+    [],
+  );
 
-      return (
-        <Container>
-          <AssetsSelector 
-              options={{
-                    assetsType: ["photo"],
-                    maxSelections: 5,
-                    margin: 3,
-                    portraitCols: 4,
-                    landscapeCols: 5,
-                    manipulate: {
-                        width: 512,
-                        compress: 0.7,
-                        base64: true,
-                        saveTo: 'jpeg',
-                    },
-                    widgetWidth: 100,
-                    widgetBgColor: 'white',
-                    selectedBgColor: 'rgba(0,0,0,0.5)',
-                    portraitCols: 4,
-                    videoIcon: {
-                        Component: Ionicons,
-                        iconName: 'ios-videocam',
-                        color: 'white',
-                        size: 20,
-                    },
-                    selectedIcon: {
-                        Component: Ionicons,
-                        iconName: 'ios-checkmark-circle-outline',
-                        color: 'white',
-                        bg: 'rgba(0,0,0,0.5)',
-                        size: 20,
-                    },
-                    defaultTopNavigator: {
-                        continueText: 'Done',
-                        goBackText: 'Back',
-                        backFunction: () => this.close(),
-                        doneFunction: (data) => {
-                            this.close();
-                            //this.props.onChange(data);
-                            console.log(data);
-                            //Pass data to Create Pet Screen
-                            this.props.navigation.navigate({
-                              name: 'CreatePet',
-                              params: { images: data.map((image, index) => { 
-                                  var base64ImgUrl = "data:image/png;base64," + image["base64"]
-                                  return <Image style={{width: 100, height: 50, resizeMode: "contain", borderWidth: 1, borderColor: 'red'}} source={{ uri: base64ImgUrl }}/>
-                                }
-                              )},
-                              merge: true
-                            });
-                        },
-                    },
-                    noAssets: {
-                        Component: emptyStayComponent,
-                    },
-              }}
+  const widgetResize = useMemo(
+    () => ({
+        base64: true,
+        saveTo: 'png',
+    }),
+    []
+  );
+
+  const widgetStyles = useMemo(
+    () => ({
+      margin: 2,
+      bgColor: 'white',
+      spinnerColor: 'blue',
+      widgetWidth: 99,
+      videoIcon: {
+        Component: Ionicons,
+        iconName: 'ios-videocam',
+        color: 'tomato',
+        size: 20,
+      },
+      selectedIcon: {
+        Component: Ionicons,
+        iconName: 'ios-checkmark-circle-outline',
+        color: 'white',
+        bg: '#0eb14970',
+        size: 26,
+      },
+    }),
+    [],
+  );
+
+  return (
+        <PageContainer>
+          <AssetsSelector
+            Settings={widgetSettings}
+            Errors={widgetErrors}
+            Styles={widgetStyles}
+            Resize={widgetResize}
+            Navigator={widgetNavigator} 
           />
-        </Container>
-    );
-  }
-}
-
-const Container = styled.View`
-  flex: 1;
-`;
+        </PageContainer>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: "#FFFFFF",
     flexDirection: 'column', // main axis: vertical
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   textStyle: {
-    color: colors.white,
+    color: "#FFFFFF",
   },
   buttonStyle: {
-    backgroundColor: colors.primary,
+    backgroundColor: "#73B1A2",
     borderRadius: 5,
   }
 });
+
+
+export default ImageSelectorScreen;
