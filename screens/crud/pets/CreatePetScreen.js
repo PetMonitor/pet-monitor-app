@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 
 import { postJsonData } from '../../../utils/requests.js';
 import colors from '../../../config/colors';
 
-import { Image, Picker, Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, ScrollView, View } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { EventRegister } from 'react-native-event-listeners';
+import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, ScrollView, View, Image } from 'react-native';
 
 export class CreatePetScreen extends React.Component {
 
@@ -23,16 +25,16 @@ export class CreatePetScreen extends React.Component {
         }
     }
 
-    async componentDidMount(){
-        this._unsubscribe = this.props.navigation.addListener('focus', () => {
-            console.log('Did some focusing');
-        });
+    componentDidMount() {
+        this.listener = EventRegister.addEventListener("SET_IMAGES",(selectedImages) => {
+            // console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
+            this.setState({ petImages: selectedImages });
+        })
     }
 
-
     componentWillUnmount() {
-        this._unsubscribe;
-    };
+      EventRegister.removeEventListener(this.listener);
+    }
 
     render() {
 
@@ -80,13 +82,8 @@ export class CreatePetScreen extends React.Component {
             });      
         };
 
-
-        const onImageSelectionDone = (images) => {
-            this.setState({petImages: images['images'] });
-        }
-
         const handleImagePickerPress = () => {
-            this.props.navigation.navigate('ImageSelectorScreen', { onImageSelectionDone: onImageSelectionDone });
+            this.props.navigation.navigate('ImageSelectorScreen');
         };
 
         return (
@@ -166,10 +163,11 @@ export class CreatePetScreen extends React.Component {
                     {/* Render uploaded images here 
                     */}
 
-                    {this.state.petImages.map((item, index) => {
-                        console.log(item);
-                        return <Image key={index} style={{width: 100, height: 50, resizeMode: "contain", borderWidth: 1, borderColor: 'red'}} source={{ uri: item['base64'] }}/>
-                    })}
+                    <View style={{flexDirection:'row'}}>
+                        {this.state.petImages.map((item, index) => {
+                            return <Image key={item.id} style={{width: 60, height: 60, margin: 2}} source={{ uri: item.uri }}/>
+                        })}
+                    </View>
 
                     <Text style={styles.label}>Descripción</Text>
                     <TextInput 

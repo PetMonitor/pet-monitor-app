@@ -1,20 +1,34 @@
-import React, { useMemo }  from 'react';
+import React, { useMemo, useEffect, useState }  from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, StatusBar, StyleSheet } from 'react-native';
 import { AssetsSelector } from 'expo-images-picker';
 import { MediaType } from 'expo-media-library';
 import PageContainer from '../utils/PageContainer';
+import * as ImagePicker from 'expo-image-picker';
+import { EventRegister } from 'react-native-event-listeners'
 
 const ImageSelectorScreen = ({ route, navigation }) => {
 
-  const { onImageSelectionDone } = route.params;
+  const [ selectedImages, setSelectedImages ] = useState([]);
 
-  onImagePickSuccess = (data) => {
-    navigation.goBack();
-    onImageSelectionDone({ images: data.map((image, index) => { 
-      return "data:image/png;base64," + image["base64"];
-      })
+  useEffect(() => {
+    (async () => {
+      const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if(status !== 'granted'){
+        alert('Sorry, we need camera roll permissions to make this work!')
+      }
+    })();
+  }, []);
+
+  const onImagePickSuccess = async (data) => {
+    const images = data.map((image, index) => { 
+        return {id: index, uri: "data:image/png;base64," + image["base64"] };
     });
+    //console.log(`Set selected images to ${JSON.stringify(images)}`);
+
+    EventRegister.emit("SET_IMAGES", images);
+
+    navigation.goBack();
   }
 
 
