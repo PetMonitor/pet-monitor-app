@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState }  from 'react';
+import React, { useMemo, useEffect }  from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, StatusBar, StyleSheet } from 'react-native';
 import { AssetsSelector } from 'expo-images-picker';
@@ -8,8 +8,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { EventRegister } from 'react-native-event-listeners'
 
 const ImageSelectorScreen = ({ route, navigation }) => {
-
-  const [ selectedImages, setSelectedImages ] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -22,7 +20,7 @@ const ImageSelectorScreen = ({ route, navigation }) => {
 
   const onImagePickSuccess = async (data) => {
     const images = data.map((image, index) => { 
-        return {id: index, uri: "data:image/png;base64," + image["base64"] };
+        return image["base64"];
     });
     //console.log(`Set selected images to ${JSON.stringify(images)}`);
 

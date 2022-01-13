@@ -21,14 +21,14 @@ export class CreatePetScreen extends React.Component {
             sex: 'MALE',
             furColor: '',
             description: '',
-            petImages: []
+            photos: []
         }
     }
 
     componentDidMount() {
         this.listener = EventRegister.addEventListener("SET_IMAGES",(selectedImages) => {
-            // console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
-            this.setState({ petImages: selectedImages });
+            console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
+            this.setState({ photos: selectedImages });
         })
     }
 
@@ -164,8 +164,8 @@ export class CreatePetScreen extends React.Component {
                     */}
 
                     <View style={{flexDirection:'row'}}>
-                        {this.state.petImages.map((item, index) => {
-                            return <Image key={item.id} style={{width: 60, height: 60, margin: 2}} source={{ uri: item.uri }}/>
+                        {this.state.photos.map((imageBase64, index) => {
+                            return <Image key={index} style={{width: 60, height: 60, margin: 2}} source={{ uri: "data:image/png;base64," + imageBase64 }}/>
                         })}
                     </View>
 
