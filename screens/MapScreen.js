@@ -17,9 +17,9 @@ export class MapScreen extends React.Component {
             container: {
                 flex: 1,
                 backgroundColor: 'white',
-                flexDirection: 'column', // main axis: vertical
-                alignItems: 'center', // align items across secondary axis (horizontal)
-                justifyContent: 'center', // justify along main axis (vertical)
+                flexDirection: 'column',    // main axis: vertical
+                alignItems: 'center',       // align items across secondary axis (horizontal)
+                justifyContent: 'center',   // justify along main axis (vertical)
                 paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
             }
         });

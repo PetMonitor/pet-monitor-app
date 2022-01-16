@@ -8,4 +8,5 @@ export default {
     grey: "#BBBCBE",
     inputGrey: "#EBEBEB",
     facebook: "#3b5998",
+    errorTextColor: "#cc0000"
 }
