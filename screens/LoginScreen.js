@@ -34,7 +34,7 @@ export class LoginScreen extends React.Component {
               // Navigate to UserProfile inside the Home screen navigator.
               // Pass userId as parameter to the nested navigators.
               navigation.navigate('Home', {
-                screen: 'UserProfile',
+                screen: 'ViewUserDetailsScreen',
                 params: { userId: response['userId'] }
               });
             });

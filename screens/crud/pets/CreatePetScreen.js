@@ -27,7 +27,7 @@ export class CreatePetScreen extends React.Component {
 
     componentDidMount() {
         this.listener = EventRegister.addEventListener("SET_IMAGES",(selectedImages) => {
-            console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
+            // console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
             this.setState({ photos: selectedImages });
         })
     }
@@ -69,8 +69,8 @@ export class CreatePetScreen extends React.Component {
                 this.state
             ]
             
-            console.log('Create user:');
-            console.log(JSON.stringify(userInfo));  
+            //console.log('Create user:');
+            //console.log(JSON.stringify(userInfo));  
 
             postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
                 console.log(response);
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
         padding: 10,
         margin: 10,
         borderRadius: 7,
-        backgroundColor: '#e1ad01',
+        backgroundColor: colors.yellow,
         width: '80%',
         alignItems: 'center'
     },

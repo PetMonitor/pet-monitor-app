@@ -5,8 +5,11 @@ export default {
     clearBlack: "rgba(0, 0, 0, 0.6)",
     white: "#FFFFFF",
     pink: "#EB7568",
+    lightGrey: "#EAEBEB",
     grey: "#BBBCBE",
+    darkGery: "#676767",
     inputGrey: "#EBEBEB",
     facebook: "#3b5998",
-    errorTextColor: "#cc0000"
+    errorTextColor: "#cc0000",
+    yellow: "#e1ad01"
 }
