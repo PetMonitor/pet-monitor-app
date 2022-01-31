@@ -23,6 +23,7 @@
     "expo-secure-store": "~11.0.3",
     "expo-status-bar": "~1.1.0",
     "expo-ui-kit": "^0.1.6",
+    "phosphor-react-native": "^1.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-native": "~0.64.3",
@@ -30,7 +31,10 @@
     "react-native-fetch-api": "^3.0.0",
     "react-native-safe-area-context": "~3.3.2",
     "react-native-screens": "~3.10.1",
+    "react-native-segmented-control-tab": "^4.0.0",
+    "react-native-svg": "^12.1.1",
     "react-native-unimodules": "~0.15.0",
+    "react-native-vector-icons": "^9.0.0",
     "react-native-web": "~0.17.5",
     "styled-components": "^5.3.3",
     "unimodules-permissions-interface": "^6.1.0"
