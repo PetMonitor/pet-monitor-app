@@ -20,28 +20,29 @@ export class BottomTabNavigator extends React.Component {
     }
 
     render() {
+        const tabIconSize = 30;
         return (
             <Tab.Navigator>
                 {/* Each tab screen represents a tab in the bottom tab navigation bar */}
                 <Tab.Screen name='Reports' component={ReportListScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <MapPin size={30} color={color} weight={defineWeight(focused)} />
+                        <MapPin size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                     )}}/>
                 <Tab.Screen name='Face Recognition Search' component={FaceRecognitionSearchScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <Dog size={30} color={color} weight={defineWeight(focused)} />
+                        <Dog size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>
                 <Tab.Screen name='Create Report' component={CreateReportScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <PlusCircle size={30} color={color} weight={defineWeight(focused)} />
+                        <PlusCircle size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>
                 <Tab.Screen name='Temporal Foster Volunteers' component={FosteringVolunteersScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <UsersThree size={30} color={color} weight={defineWeight(focused)} />
+                        <UsersThree size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>  
                 <Tab.Screen name='UserProfile' component={UserProfileScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <User size={30} color={color} weight={defineWeight(focused)} />  
+                        <User size={tabIconSize} color={color} weight={this.defineWeight(focused)} />  
                 )}}/>             
             </Tab.Navigator>
         )

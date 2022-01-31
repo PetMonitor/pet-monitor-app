@@ -18,7 +18,7 @@ export class ReportListScreen extends React.Component {
         };
     }
 
-    _getReportColorFromType = type => {
+    getReportColorFromType = type => {
         if (type == "Encontrado") {
             return colors.primary;
         } else if (type == "En adopción") {
@@ -27,18 +27,18 @@ export class ReportListScreen extends React.Component {
         return colors.pink
     }
 
-    _renderItem = ({item}) =>  {
+    renderItem = ({item}) =>  {
         return (
             <TouchableOpacity onPress={() => console.log(item.photo)}>
                 <Image style={{height: (width - 20) / 2, width: (width - 20) / 2, borderRadius: 5, margin: 5}}
                         source={require('../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}
                 />
-                <Text style={{fontSize: 16, fontWeight: 'bold', color: this._getReportColorFromType(item.type), paddingLeft: 7, paddingBottom: 20}}>{item.type}</Text>
+                <Text style={{fontSize: 16, fontWeight: 'bold', color: this.getReportColorFromType(item.type), paddingLeft: 7, paddingBottom: 20}}>{item.type}</Text>
             </TouchableOpacity>
         )
     }
 
-    handleIndexChange = index => {
+    handleTabSegmenterIndexChange = index => {
         this.setState({
           selectedIndex: index
         });
@@ -53,17 +53,20 @@ export class ReportListScreen extends React.Component {
 
         const { navigation } = this.props;
         // const { user } = this.props.route.params;
+        const mapTabTitle = "Mapa";
+        const listTabTitle = "Lista";
+        const segmentedTabTitles = [mapTabTitle, listTabTitle];
 
         return (
-            <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+            <SafeAreaView style={styles.container}>
                 <View style={{justifyContent: 'center', alignItems: 'flex-start'}}>
                     <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 40, paddingBottom: 10, color: colors.primary}}>Reportes</Text>
                 </View>
                 <View>
                     <SegmentedControlTab 
-                        values={["Mapa", "Lista"]}
+                        values={segmentedTabTitles}
                         selectedIndex={this.state.selectedIndex}
-                        onTabPress={this.handleIndexChange}
+                        onTabPress={this.handleTabSegmenterIndexChange}
                         tabsContainerStyle={{margin: 5}}
                         tabTextStyle={{color: colors.grey, fontWeight: 'bold', fontSize: 14, paddingVertical: 8}}
                         tabStyle={{backgroundColor: colors.transparent, borderColor: colors.transparent}}
@@ -71,7 +74,7 @@ export class ReportListScreen extends React.Component {
                         activeTabTextStyle={{color: colors.primary, fontWeight: 'bold', fontSize: 14}}
                     />
                 </View>
-                {this.state.selectedIndex == 1 &&
+                {this.state.selectedIndex == segmentedTabTitles.indexOf(listTabTitle) && 
                     <View style={{flex:1}}>
                         <View style={{padding: 10, alignItems:'flex-end', backgroundColor: colors.transparent}}>
                             <Icon
@@ -85,79 +88,21 @@ export class ReportListScreen extends React.Component {
                             numColumns={2}
                             keyExtractor={(_, index) => index.toString()}
                             initialNumToRender={this.state.images.length}
-                            renderItem={this._renderItem}
+                            renderItem={this.renderItem}
 
                         />
                     </View>
-
-                    // <View style={{flex:1}}>
-                    
-                    //     <FlatList 
-                    //         data={this.state.images} 
-                    //         numColumns={2}
-                    //         keyExtractor={(_, index) => index.toString()}
-                    //         initialNumToRender={this.state.images.length}
-                    //         renderItem={this._renderItem}
-
-                    //     />
-                    //     <View style={{padding: 0, width: width, backgroundColor: colors.semiTransparent, position: 'absolute'}}>
-                    //         <Icon
-                    //             style={{alignSelf: 'flex-end'}}
-                    //             name='tune'
-                    //             size={33}
-                    //             color={colors.secondary}
-                    //             onPress={() => console.log('hello')} />
-                    //     </View>
-                    // </View>
                 }
             </SafeAreaView>
         )
     }
 }
 
-
 const styles = StyleSheet.create({
-    button: {
-      backgroundColor: colors.primary,
-      marginTop: "5%", 
-      padding: 18, 
-      borderRadius: 7, 
-      left: "15%", 
-      width: "70%", 
-      alignSelf: 'flex-start'
-    },
-    buttonFont: {
-      fontSize: 16, 
-      fontWeight: '500', 
-      alignSelf: 'center'
-    },
     container: {
       flex: 1,
       backgroundColor: colors.white,
       flexDirection: 'column', // main axis: vertical
       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
-    loginUpperContainer: {
-      height: "30%",
-      width: "100%",
-      backgroundColor: colors.primary,
-      alignItems: 'center', // align items across secondary axis (horizontal)
-    },
-    section: {
-      flex: 1,
-      width:'100%',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
-    textInput: {
-      borderRadius: 8, 
-      backgroundColor: colors.inputGrey, 
-      padding: 15, 
-      borderWidth: 1, 
-      borderColor: colors.inputGrey, 
-      fontSize: 16, 
-      fontWeight: '500'
-    },
+    }
   });
-

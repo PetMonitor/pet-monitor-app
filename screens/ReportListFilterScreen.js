@@ -24,73 +24,70 @@ export class ReportListFilterScreen extends React.Component {
         };
     }
 
-    _cleanFilters = () => {
+    cleanFilters = () => {
         // TODO: implement this logic
         console.log("Filters should be cleaned here")
     }
 
-    _saveFilters = () => (
+    saveFilters = () => (
         // TODO: implement this logic
         console.log("Filters should be saved here")
     )
 
-    render() {
-        const { navigation } = this.props;
-        // const { user } = this.props.route.params;
+    showFiltersHeader = () => (
+        <>
+            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 40, marginBottom: 20}}>
+                <Icon
+                    name='arrow-left'
+                    size={33}
+                    color={colors.secondary}
+                    style={{marginLeft: 10}}
+                    onPress={() => this.props.navigation.goBack()} />
+                <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Filtros</Text>
+                <TouchableOpacity style={{paddingRight: 20, alignSelf: 'flex-end', position: 'absolute'}} onPress={() => this.cleanFilters()}>
+                    <Text style={{fontSize: 16, fontWeight: '500', color: colors.pink}}>Reestablecer</Text>
+                </TouchableOpacity>
+            </View>
+            <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
+        </>
+    )
 
+    showCheckBoxItem = (optionIsSelected, checkBoxTitle) => (
+        <>
+            <Icon
+                name={optionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
+                size={25}
+                color={optionIsSelected ? colors.secondary : colors.inputGrey}
+                style={{marginLeft: 10}}
+            />
+            <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
+        </>
+    )
+
+    render() {
         return (
-            <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-                <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 40, marginBottom: 20}}>
-                    <Icon
-                        name='arrow-left'
-                        size={33}
-                        color={colors.secondary}
-                        style={{marginLeft: 10}}
-                        onPress={() => navigation.goBack()} />
-                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Filtros</Text>
-                    <TouchableOpacity style={{paddingRight: 20, alignSelf: 'flex-end', position: 'absolute'}} onPress={() => this._cleanFilters()}>
-                        <Text style={{fontSize: 16, fontWeight: '500', color: colors.pink}}>Reestablecer</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
+            <SafeAreaView style={styles.container}>
+                {this.showFiltersHeader()}
                 <ScrollView style={{flex:1, padding: 20}}>
                     {/* Report type filter */}
-                    <Text style={{fontSize: 16, color: colors.clearBlack, paddingTop: 10, paddingLeft: 20, paddingBottom: 5, fontWeight: '500'}}>Tipo de reporte</Text>
+                    <Text style={[styles.filterTitle, {paddingTop: 10}]}>Tipo de reporte</Text>
                     {/* custom checkbox */}
-                    <TouchableOpacity  style={{alignItems:'center', flexDirection: 'row', marginTop: 10}} 
+                    <TouchableOpacity  style={styles.alignedContent} 
                         onPress={() => this.setState({ lostPetIsSelected: !this.state.lostPetIsSelected })}>
-                        <Icon
-                            name={this.state.lostPetIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                            size={25}
-                            color={this.state.lostPetIsSelected ? colors.secondary : colors.inputGrey}
-                            style={{marginLeft: 10}}
-                        />
-                        <Text style={{marginLeft: 5, fontSize: 15}}>Mascotas perdidas</Text>
+                        {this.showCheckBoxItem(this.state.lostPetIsSelected, "Mascotas perdidas")}
                     </TouchableOpacity>
-                    <TouchableOpacity  style={{alignItems:'center', flexDirection: 'row', marginTop: 10}} 
+                    <TouchableOpacity  style={styles.alignedContent} 
                         onPress={() => this.setState({ petFoundIsSelected: !this.state.petFoundIsSelected })}>
-                        <Icon
-                            name={this.state.petFoundIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                            size={25}
-                            color={this.state.petFoundIsSelected ? colors.secondary : colors.inputGrey}
-                            style={{marginLeft: 10}}
-                        />
-                        <Text style={{marginLeft: 5, fontSize: 15}}>Mascotas encontradas</Text>
+                        {this.showCheckBoxItem(this.state.petFoundIsSelected, "Mascotas encontradas")}
                     </TouchableOpacity>
-                    <TouchableOpacity  style={{alignItems:'center', flexDirection: 'row', marginTop: 10}} 
+                    <TouchableOpacity  style={styles.alignedContent} 
                         onPress={() => this.setState({ petForAdoptionIsSelected: !this.state.petForAdoptionIsSelected })}>
-                        <Icon
-                            name={this.state.petForAdoptionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                            size={25}
-                            color={this.state.petForAdoptionIsSelected ? colors.secondary : colors.inputGrey}
-                            style={{marginLeft: 10}}
-                        />
-                        <Text style={{marginLeft: 5, fontSize: 15}}>Mascotas en adopción</Text>
+                        {this.showCheckBoxItem(this.state.petForAdoptionIsSelected, "Mascotas en adopción")}
                     </TouchableOpacity>    
 
                     {/* Pet filter */}
-                    <Text style={{fontSize: 16, color: colors.clearBlack, paddingLeft: 20, paddingTop: 25, paddingBottom: 5, fontWeight: '500'}}>Mascota</Text>
-                    <View style={{alignItems:'center', flexDirection: 'row', marginTop: 10, justifyContent:'space-evenly'}}>
+                    <Text style={styles.filterTitle}>Mascota</Text>
+                    <View style={[styles.alignedContent, {justifyContent:'space-evenly'}]}>
                         <TouchableOpacity onPress={() => this.setState({ dogIsSelected: !this.state.dogIsSelected })}>
                             <Dog color={this.state.dogIsSelected ? colors.secondary : colors.inputGrey} weight='regular' size={68} />
                         </TouchableOpacity>
@@ -100,62 +97,47 @@ export class ReportListFilterScreen extends React.Component {
                     </View>
 
                     {/* Sex filter */}
-                    <Text style={{fontSize: 16, color: colors.clearBlack, paddingLeft: 20, paddingTop: 25, paddingBottom: 5, fontWeight: '500'}}>Sexo</Text>
-                    <TouchableOpacity  style={{alignItems:'center', flexDirection: 'row', marginTop: 10}} 
+                    <Text style={styles.filterTitle}>Sexo</Text>
+                    <TouchableOpacity  style={styles.alignedContent} 
                         onPress={() => this.setState({ femaleIsSelected: !this.state.femaleIsSelected })}>
-                        <Icon
-                            name={this.state.femaleIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                            size={25}
-                            color={this.state.femaleIsSelected ? colors.secondary : colors.inputGrey}
-                            style={{marginLeft: 10}}
-                        />
-                        <Text style={{marginLeft: 5, fontSize: 15}}>Hembra</Text>
+                        {this.showCheckBoxItem(this.state.femaleIsSelected, "Hembra")}
                     </TouchableOpacity>
-                    <TouchableOpacity  style={{alignItems:'center', flexDirection: 'row', marginTop: 10}} 
+                    <TouchableOpacity  style={styles.alignedContent} 
                         onPress={() => this.setState({ maleIsSelected: !this.state.maleIsSelected })}>
-                        <Icon
-                            name={this.state.maleIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                            size={25}
-                            color={this.state.maleIsSelected ? colors.secondary : colors.inputGrey}
-                            style={{marginLeft: 10}}
-                        />
-                        <Text style={{marginLeft: 5, fontSize: 15}}>Macho</Text>
+                        {this.showCheckBoxItem(this.state.maleIsSelected, "Macho")}
                     </TouchableOpacity>
 
                     {/* Breed filter */}
-                    <Text style={{fontSize: 16, color: colors.clearBlack, paddingLeft: 20, paddingTop: 25, paddingBottom: 5, fontWeight: '500'}}>Raza</Text>
+                    <Text style={styles.filterTitle}>Raza</Text>
                     <TextInput
                         placeholder = 'Mestizo'
                         onChangeText = {text => { this.setState({ breed: text })}}
-                        autoCapitalize = 'none'
                         autoCorrect = { false }
-                        style = {[styles.textInput, { marginLeft: 10, marginTop: 10, marginRight: 10 }]}
+                        style = {styles.textInput}
                         maxLength = { 30 }
                     />
 
                     {/* Province filter */}
-                    <Text style={{fontSize: 16, color: colors.clearBlack, paddingLeft: 20, paddingTop: 25, paddingBottom: 5, fontWeight: '500'}}>Provincia</Text>
+                    <Text style={styles.filterTitle}>Provincia</Text>
                     <TextInput
                         placeholder = 'Buenos Aires'
                         onChangeText = {text => { this.setState({ province: text })}}
-                        autoCapitalize = 'none'
                         autoCorrect = { false }
-                        style = {[styles.textInput, { marginLeft: 10, marginTop: 10, marginRight: 10 }]}
+                        style = {styles.textInput}
                         maxLength = { 30 }
                     />
 
                     {/* City filter */}
-                    <Text style={{fontSize: 16, color: colors.clearBlack, paddingLeft: 20, paddingTop: 25, paddingBottom: 5, fontWeight: '500'}}>Ciudad</Text>
+                    <Text style={styles.filterTitle}>Ciudad</Text>
                     <TextInput
                         placeholder = 'CABA'
-                        onChangeText = {text => { this.setState({ province: text })}}
-                        autoCapitalize = 'none'
+                        onChangeText = {text => { this.setState({ city: text })}}
                         autoCorrect = { false }
-                        style = {[styles.textInput, { marginLeft: 10, marginTop: 10, marginRight: 10 }]}
+                        style = {styles.textInput}
                         maxLength = { 30 }
                     />
 
-                    <TouchableOpacity style={styles.button} onPress={() => this._saveFilters()}>
+                    <TouchableOpacity style={styles.button} onPress={() => this.saveFilters()}>
                         <Text style={styles.buttonFont}>Aplicar filtros</Text>
                     </TouchableOpacity>  
                     
@@ -188,6 +170,23 @@ const styles = StyleSheet.create({
       flexDirection: 'column', // main axis: vertical
       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
+    alignedContent: {
+        alignItems:'center', 
+        flexDirection: 'row', 
+        marginTop: 10
+    },
+    filterTitle: {
+        fontSize: 16, 
+        color: colors.clearBlack, 
+        paddingLeft: 20, 
+        paddingTop: 25, 
+        paddingBottom: 5, 
+        fontWeight: '500'
+    },
+    checkBoxOptionTitle: {
+        marginLeft: 5, 
+        fontSize: 15
+    },
     textInput: {
       borderRadius: 8, 
       backgroundColor: colors.inputGrey, 
@@ -195,7 +194,10 @@ const styles = StyleSheet.create({
       borderWidth: 1, 
       borderColor: colors.inputGrey, 
       fontSize: 16, 
-      fontWeight: '500'
+      fontWeight: '500',
+      marginLeft: 10, 
+      marginTop: 10, 
+      marginRight: 10
     },
   });
 
