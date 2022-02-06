@@ -202,7 +202,7 @@ export class CreatePetScreen extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: colors.white,
         flexDirection: 'column', // main axis: vertical
         alignItems: 'center', // align items across secondary axis (horizontal)
         justifyContent: 'center', // justify along main axis (vertical)
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
         width:'100%',
-        backgroundColor: 'white',
+        backgroundColor: colors.white,
         marginHorizontal: 20,
         paddingLeft: '7%',
     },
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     },
     buttonFont: {
         fontSize:18, 
-        color: 'white',
+        color: colors.white,
         fontWeight: 'bold'
     }
 });

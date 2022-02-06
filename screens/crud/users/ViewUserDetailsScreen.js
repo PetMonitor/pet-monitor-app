@@ -2,9 +2,10 @@ import React from "react";
 import { getJsonData } from '../../../utils/requests';
 import { getSecureStoreValueFor } from '../../../utils/store';
 import colors from '../../../config/colors';
-import { UserPetListView } from './UserPetListView';
+import { UserPetGridView } from '../pets/UserPetGridView';
 
-import { Text, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, ScrollView, View, Image } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, SafeAreaView, View, Image, LogBox } from 'react-native';
+LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 
 export class ViewUserDetailsScreen extends React.Component {
 
@@ -14,10 +15,13 @@ export class ViewUserDetailsScreen extends React.Component {
 
         this.state = {
             petView: true,
-            editing: false,
-            userData: { username: '', email: '' },
+            userData: { },
             pets: []
         }
+    }
+
+    updateUserData = (newUserData) => {
+        this.setState({ userData: newUserData })
     }
 
     fetchUserPetsDetails = () => {
@@ -36,13 +40,14 @@ export class ViewUserDetailsScreen extends React.Component {
 
                     this.setState({ pets : [...this.state.pets, pet] });
                 })
-            })
-            .catch(err => {
+                console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
+
+            }).catch(err => {
                 console.log(err);
                 alert(err)
             });
         });
-    }
+    };
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
@@ -51,7 +56,6 @@ export class ViewUserDetailsScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                // console.log(response);
                 this.setState({ userData : response }, this.fetchUserPetsDetails());
             }).catch(err => {
                 console.log(err);
@@ -62,6 +66,8 @@ export class ViewUserDetailsScreen extends React.Component {
     }
 
     render() {
+
+        const { navigation } = this.props;
 
         const handleToggleViewToPets = () => {
             if (this.state.petView) {
@@ -82,6 +88,10 @@ export class ViewUserDetailsScreen extends React.Component {
             this.setState({ petView: false });
         };
         
+        const handleEditProfile = () => {
+            navigation.push('EditUserScreen', { userData: this.state.userData , updateUser: this.updateUserData });
+        }
+
 
         return (
             <SafeAreaView style={styles.container}>   
@@ -91,7 +101,10 @@ export class ViewUserDetailsScreen extends React.Component {
                                         style={{width: 130, height: 130, borderRadius: 130/2}} />
                     </View>
                     <View style={{flexDirection:'column-reverse', justifyContent:'left', flex: 3}}>
-                        <TouchableOpacity style={[styles.button]}>
+                        <TouchableOpacity 
+                            style={[styles.button]}
+                            onPress={handleEditProfile}
+                        >
                             <Text style={[styles.buttonFont, { color: colors.white }]}>Editar Perfil</Text>
                         </TouchableOpacity>
                         <Text style={{color: colors.darkGery, fontSize:16}}>{this.state.userData.username}</Text>
@@ -109,7 +122,7 @@ export class ViewUserDetailsScreen extends React.Component {
                     </View>
 
 
-                    { this.state.pets.length > 0 ? <UserPetListView pets={this.state.pets} /> : null }
+                    { this.state.pets.length > 0 ? <UserPetGridView pets={this.state.pets} /> : null }
                                 
                 </View>
             </SafeAreaView>
@@ -122,7 +135,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.white,
         flexDirection: "column", // main axis: vertical
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     },
     scrollView: {
         flex: 1,

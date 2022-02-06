@@ -37,7 +37,7 @@ export class AskCreatePetScreen extends React.Component {
             // Pass user info, and indicate that we are coming from the initial setup page,
             // so the whole user info structure will be passed for the user to be created
             // along with an initial set of pets.
-            this.props.navigation.push('CreatePet', { userInfo: user, initialSetup: true, initPetType: petType}); 
+            navigation.push('CreatePet', { userInfo: user, initialSetup: true, initPetType: petType}); 
         };
 
         const handleSkipStep = () => {
@@ -46,7 +46,7 @@ export class AskCreatePetScreen extends React.Component {
                 console.log(response);
                 alert('Successfully created user!')
                 // go back to login page
-                this.props.navigation.popToTop();
+                navigation.popToTop();
             }).catch(err => {
                 alert(err)
             });

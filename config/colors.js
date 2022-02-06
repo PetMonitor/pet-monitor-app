@@ -11,5 +11,6 @@ export default {
     inputGrey: "#EBEBEB",
     facebook: "#3b5998",
     errorTextColor: "#cc0000",
-    yellow: "#e1ad01"
+    yellow: "#e1ad01",
+    pink: "#ec746a"
 }

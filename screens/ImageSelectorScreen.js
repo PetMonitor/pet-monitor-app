@@ -6,6 +6,7 @@ import { MediaType } from 'expo-media-library';
 import PageContainer from '../utils/PageContainer';
 import * as ImagePicker from 'expo-image-picker';
 import { EventRegister } from 'react-native-event-listeners'
+import colors from '../config/colors';
 
 const ImageSelectorScreen = ({ route, navigation }) => {
 
@@ -66,7 +67,7 @@ const ImageSelectorScreen = ({ route, navigation }) => {
       midTextColor: 'black',
       minSelection: 1,
       buttonTextStyle: { color: 'white' },
-      buttonStyle: { backgroundColor: 'orange', borderRadius: 5 },
+      buttonStyle: { backgroundColor: colors.yellow, borderRadius: 5 },
       onBack: () => {
         navigation.pop();
       },
