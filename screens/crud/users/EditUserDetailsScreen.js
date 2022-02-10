@@ -11,8 +11,6 @@ import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBack
 
 export class EditUserDetailsScreen extends React.Component {
 
-    
-
     constructor(props) {
         super(props);
         this.state = Object.assign({ }, 
@@ -27,6 +25,9 @@ export class EditUserDetailsScreen extends React.Component {
 
         const handleToggleAlerts = () => {
             this.setState(prevState => ({ alertsActivated: !prevState.alertsActivated }) )
+            if (!this.state.alertsActivated) {
+                this.setState({ alertRadius: -1 }) 
+            }
         }
 
         const handleEditProfile = () => {
@@ -163,11 +164,11 @@ export class EditUserDetailsScreen extends React.Component {
                                 trackColor={{ false: colors.grey, true: colors.pink }}
                                 thumbColor={ colors.white }
                                 onValueChange={handleToggleAlerts}
-                                value={!this.state.alertsActivated}
+                                value={this.state.alertsActivated}
                             />
                         </View>
 
-                        <View style={{flexDirection:'row', marginLeft: 20}}>
+                        {this.state.alertsActivated ? <View style={{flexDirection:'row', marginLeft: 20}}>
                             <Text style={styles.textLabel}>Radio</Text>
                             <Picker selectedValue={this.state.alertRadius}
                                 style={{ height: 44, width: 150, marginLeft: 40 }}
@@ -175,12 +176,12 @@ export class EditUserDetailsScreen extends React.Component {
                                 onValueChange={(itemValue, itemIndex) => this.setState({ alertRadius:itemValue })}
                                 enabled={this.state.alertsActivated}
                                 >
-                                <Picker.Item label="1 km" value="1" />
-                                <Picker.Item label="3 km" value="3" />
-                                <Picker.Item label="5 km" value="5" />
-                                <Picker.Item label="10 km" value="10" />
+                                <Picker.Item label="1 km" value={1} />
+                                <Picker.Item label="3 km" value={3} />
+                                <Picker.Item label="5 km" value={5} />
+                                <Picker.Item label="10 km" value={10} />
                             </Picker>
-                        </View>
+                        </View> : null}
                         
                         
                     </View>

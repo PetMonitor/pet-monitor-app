@@ -46,59 +46,66 @@ const ChangePasswordScreen = ({ route, navigation }) => {
     
     return (
         <SafeAreaView style={styles.container}>
-                <Text>Contraseña actual</Text>
-                    <TextInput 
-                        onChangeText = { passwordInput => { setOldPassword(passwordInput) }}
-                        autoCapitalize = 'none'
-                        autoCorrect = { false }
-                        style = {styles.textInput}
-                        maxLength = { 30 }
-                        secureTextEntry = { true }   
-                    />
+            <View style={styles.topContainer}>
+                <Text style={styles.textLabel}>Contraseña actual</Text>
+                <TextInput 
+                    onChangeText = { passwordInput => { setOldPassword(passwordInput) }}
+                    autoCapitalize = 'none'
+                    autoCorrect = { false }
+                    style = {styles.textInput}
+                    maxLength = { 30 }
+                    secureTextEntry = { true }   
+                />
                     
-                    <Text>Nueva contraseña</Text>
-                    <TextInput 
-                        onChangeText = { passwordInput => { setNewPassword(passwordInput) }}
-                        autoCapitalize = 'none'
-                        autoCorrect = { false }
-                        style = {styles.textInput}
-                        maxLength = { 30 }
-                        secureTextEntry = { true }   
-                    />
+                <Text style={styles.textLabel}>Nueva contraseña</Text>
+                <TextInput 
+                    onChangeText = { passwordInput => { setNewPassword(passwordInput) }}
+                    autoCapitalize = 'none'
+                    autoCorrect = { false }
+                    style = {styles.textInput}
+                    maxLength = { 30 }
+                    secureTextEntry = { true }   
+                />
 
-                    <Text>Repetir nueva contraseña</Text>
-                    <TextInput 
-                        onChangeText = { passwordInput => { setConfirmedNewPassword(passwordInput) }}
-                        autoCapitalize = 'none'
-                        autoCorrect = { false }
-                        style = {styles.textInput}
-                        maxLength = { 30 }
-                        secureTextEntry = { true }   
-                    />
+                <Text style={styles.textLabel}>Repetir nueva contraseña</Text>
+                <TextInput 
+                    onChangeText = { passwordInput => { setConfirmedNewPassword(passwordInput) }}
+                    autoCapitalize = 'none'
+                    autoCorrect = { false }
+                    style = {[styles.textInput, {marginBottom: 40}]}
+                    maxLength = { 30 }
+                    secureTextEntry = { true }   
+                />
                 <TouchableOpacity 
-                        style={[styles.button]}
-                        onPress={handleSetNewPassword}>
-                        <Text style={[styles.buttonFont, { color: colors.white }]}>Guardar Cambios</Text>
+                    style={[styles.button]}
+                    onPress={handleSetNewPassword}>
+                    <Text style={[styles.buttonFont, { color: colors.white }]}>Guardar Cambios</Text>
                 </TouchableOpacity>
+            </View>
         </SafeAreaView>
     );
 
 }
 
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
-        backgroundColor: colors.pink,
+        backgroundColor: colors.white,
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    },
+    topContainer: {
         flexDirection: 'column',
-        alignItems: 'baseline'
+        justifyContent: 'center',
+        alignItems: 'baseline',
+        marginLeft: 15,
     },
     textLabel: {
         color: colors.darkGery,
         fontSize: 20,
-        marginTop: 24,
-        marginLeft: 20,
-        marginBottom: 18
+        marginTop: 10,
+        marginBottom: 10,
+        marginLeft: '10%',
     },
     textInput: {
         color: colors.darkGery,
@@ -108,26 +115,23 @@ const styles = StyleSheet.create({
         borderColor: colors.inputGrey, 
         fontSize: 18, 
         fontWeight: '500',
-        margin: 15,
-        width: '80%',
-        height: '8%',
-        padding: 15,
+        height: '10%',
+        padding: 10,
+        margin: 10,
+        width: '70%',
+        marginLeft: '10%',
     },
     buttonFont: {
         fontSize: 18, 
         fontWeight: "bold", 
         alignSelf: "center",
-        marginTop: 15,
     },
     button: {
+        padding: 10,
+        borderRadius: 7,
         backgroundColor: colors.primary,
-        paddingBottom: 10, 
-        borderRadius: 7, 
-        width: "80%", 
-        marginLeft: 40, 
-        marginBottom: 20,
-        marginTop: 25,
-        height: "10%", 
+        width: '70%',
+        marginLeft:'10%'
     },
 });
 
