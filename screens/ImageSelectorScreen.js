@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect }  from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, StatusBar, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { AssetsSelector } from 'expo-images-picker';
 import { MediaType } from 'expo-media-library';
 import PageContainer from '../utils/PageContainer';
@@ -123,15 +123,14 @@ const ImageSelectorScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     flexDirection: 'column', // main axis: vertical
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   textStyle: {
-    color: "#FFFFFF",
+    color: colors.white,
   },
   buttonStyle: {
-    backgroundColor: "#73B1A2",
+    backgroundColor: colors.yellow,
     borderRadius: 5,
   }
 });
