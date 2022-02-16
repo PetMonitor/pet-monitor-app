@@ -40,7 +40,7 @@ export class ViewUserDetailsScreen extends React.Component {
 
                     this.setState({ pets : [...this.state.pets, pet] });
                 })
-                console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
+                // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
 
             }).catch(err => {
                 console.log(err);
@@ -122,7 +122,7 @@ export class ViewUserDetailsScreen extends React.Component {
                     </View>
 
 
-                    { this.state.pets.length > 0 ? <UserPetGridView pets={this.state.pets} /> : null }
+                    { this.state.pets.length > 0 ? <UserPetGridView userId={this.state.userData.id} pets={this.state.pets} /> : null }
                                 
                 </View>
             </SafeAreaView>

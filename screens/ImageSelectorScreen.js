@@ -60,8 +60,8 @@ const ImageSelectorScreen = ({ route, navigation }) => {
   const widgetNavigator = useMemo(
     () => ({
       Texts: {
-        finish: 'finish',
-        back: 'back',
+        finish: 'finalizar',
+        back: 'volver',
         selected: 'selected',
       },
       midTextColor: 'black',

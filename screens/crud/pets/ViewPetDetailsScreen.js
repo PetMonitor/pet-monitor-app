@@ -2,6 +2,23 @@ import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBack
 
 
 const ViewPetDetalsScreen = ({ route, navigation }) => {
+
+
+    fetchPetsDetails = (petId) => {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.userId + '/pets/' + petId, 
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }).then(response => {
+                this.setState({ petData : response });
+            }).catch(err => {
+                console.log(err);
+                alert(err)
+            });
+        });
+    };
+
+
     return (
         <View style={styles.container}>
             <View style={{flex: 1}}>

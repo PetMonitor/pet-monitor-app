@@ -13,6 +13,7 @@ import { EditUserDetailsScreen } from './screens/crud/users/EditUserDetailsScree
 import ChangePasswordScreen from './screens/crud/users/ChangePasswordScreen';
 
 import ImageSelectorScreen from './screens/ImageSelectorScreen';
+import ViewPetDetalsScreen from './screens/crud/pets/ViewPetDetailsScreen.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,7 @@ export default class App extends React.Component {
 
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor:'#72b1a1'}}} />
               <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor:'#72b1a1', color:'white', fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
+              <Stack.Screen name="ViewPet" component={ViewPetDetalsScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor:'#72b1a1', color:'white', fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
               <Stack.Screen name="ImageSelectorScreen" component={ImageSelectorScreen} />
 
             </Stack.Navigator>

@@ -13,22 +13,21 @@ export class UserPetGridView extends React.PureComponent {
 
     render() {
 
+        const { navigation } = this.props;
+
         const handleNavigateToPetProfile = (petId) => {
-            alert('Redirect to create new pet!');
+            navigation.push("ViewPet", { userId: this.props.userId, petId: petId });
         }
 
         const handleCreateNewPet = () => {
-            alert('Redirect to create new pet!');
+            navigation.push("CreatePet");
         }
 
         return(
             <View style={styles.container}>
                 {this.props.pets?.map((pet, index) => {
-                    console.log(`PETS ${JSON.stringify(this.props.pets)}`)
-
-                    //console.log(`Rendering pet image ${JSON.stringify(this.state.pets)}`)
                     return <View key={'view_' + index} >
-                        <TouchableOpacity key={'img_btn_'+ index} onPress={()=>{alert('Get pet profile!')}}>
+                        <TouchableOpacity key={'img_btn_'+ index} onPress={()=>{handleNavigateToPetProfile(pet.id)}}>
                             <Image key={'img_' + index} style={{width: 120, height: 120, margin: 20, padding: 20}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + pet.photoId }}/>
                         </TouchableOpacity>
                         <Text key={'text_' + index} style={styles.text}>{pet.name?.toUpperCase()}</Text>
@@ -62,8 +61,5 @@ const styles = StyleSheet.create({
     },
     column: {
         width: '50%'
-    },
-    line: {
-
     }
 });
