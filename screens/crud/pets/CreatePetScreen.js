@@ -6,6 +6,8 @@ import colors from '../../../config/colors';
 import { Picker } from '@react-native-picker/picker';
 import { EventRegister } from 'react-native-event-listeners';
 import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, ScrollView, View, Image } from 'react-native';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export class CreatePetScreen extends React.Component {
 
@@ -21,13 +23,14 @@ export class CreatePetScreen extends React.Component {
             sex: 'MALE',
             furColor: '',
             description: '',
-            photos: []
+            photos: [],
+            myPetIsSelected: false
         }
     }
 
     componentDidMount() {
         this.listener = EventRegister.addEventListener("SET_IMAGES",(selectedImages) => {
-            console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
+            // console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
             this.setState({ photos: selectedImages });
         })
     }
@@ -38,7 +41,7 @@ export class CreatePetScreen extends React.Component {
 
     render() {
 
-        const { userInfo, initialSetup, initPetType } = this.props.route.params;
+        const { userInfo, initialSetup, initPetType, creatingNewPetFromReport } = this.props.route.params;
         const numberOfLines = 7;
 
         const handleNextPet = () => {
@@ -85,6 +88,18 @@ export class CreatePetScreen extends React.Component {
         const handleImagePickerPress = () => {
             this.props.navigation.navigate('ImageSelectorScreen');
         };
+
+        const showCheckBoxItem = (optionIsSelected, checkBoxTitle) => (
+            <>
+                <MaterialIcon
+                    name={optionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
+                    size={25}
+                    color={optionIsSelected ? colors.secondary : colors.inputGrey}
+                    style={{marginLeft: 10}}
+                />
+                <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
+            </>
+        );
 
         return (
             <SafeAreaView style={styles.container}>   
@@ -156,8 +171,9 @@ export class CreatePetScreen extends React.Component {
                         style = { styles.textInput }
                         maxLength = { 100 } />
 
-                    <TouchableOpacity style={styles.button} onPress={handleImagePickerPress} >
-                        <Text style={styles.buttonFont}>Subir Fotos</Text>
+                    <TouchableOpacity style={[styles.button, {flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}]} onPress={handleImagePickerPress} >
+                        <FeatherIcon name={'upload'} size={20} color={colors.white} style={{marginRight: 10}} />
+                        <Text style={styles.buttonFont}>Subir fotos</Text>
                     </TouchableOpacity>
 
                     {/* Render uploaded images here 
@@ -180,19 +196,29 @@ export class CreatePetScreen extends React.Component {
                         style = { styles.textInput }
                         maxLength = { 100 } />
 
-                    {/* Buttons for initial setup where user can
+                    {creatingNewPetFromReport ? 
+                    <>
+                        <TouchableOpacity  style={styles.alignedContent} 
+                            onPress={() => this.setState({ myPetIsSelected: !this.state.myPetIsSelected })}>
+                            {showCheckBoxItem(this.state.myPetIsSelected, "Es mi mascota")}
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity onPress={handleFinishInitialSetup} style={[styles.button, {marginTop: '10%', marginBottom: '30%'}]}>
+                            <Text style={styles.buttonFont}>Guardar mascota</Text>
+                        </TouchableOpacity> 
+                    </> :
+                    
+                    /* Buttons for initial setup where user can
                         create user profile + add pets. 
-                    */}
-                    <TouchableOpacity onPress={handleNextPet}  style={styles.button}>
-                        <Text style={styles.buttonFont}>Nueva Mascota</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleFinishInitialSetup} style={styles.button}>
-                        <Text style={styles.buttonFont}>Finalizar</Text>
-                    </TouchableOpacity>
-                    {/* This next view is a workaround because scrollview won't go 
-                        all the way to the bottom of the page 
-                    */}
-                    <View style={{flex:1, paddingTop:'30%'}}/> 
+                    */
+                    <>
+                        <TouchableOpacity onPress={handleNextPet} style={styles.button}>
+                            <Text style={styles.buttonFont}>Nueva Mascota</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleFinishInitialSetup} style={[styles.button, {marginBottom: '30%'}]}>
+                            <Text style={styles.buttonFont}>Finalizar</Text>
+                        </TouchableOpacity>
+                    </>}
                 </ScrollView>
             </SafeAreaView>
         )
@@ -243,5 +269,15 @@ const styles = StyleSheet.create({
         fontSize:18, 
         color: 'white',
         fontWeight: 'bold'
-    }
+    },
+
+    alignedContent: {
+        alignItems:'center', 
+        flexDirection: 'row', 
+        marginTop: 10
+    },
+    checkBoxOptionTitle: {
+        marginLeft: 5, 
+        fontSize: 15
+    },
 });

@@ -9,7 +9,7 @@ import colors from '../config/colors';
 export class ReportListFilterScreen extends React.Component {
 
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             lostPetIsSelected: false,
             petFoundIsSelected: false,
@@ -64,6 +64,15 @@ export class ReportListFilterScreen extends React.Component {
         </>
     )
 
+    showTextInput = (onChangeText) => (
+        <TextInput
+            onChangeText = {onChangeText}
+            autoCorrect = { false }
+            style = {styles.textInput}
+            maxLength = { 50 }
+        />
+    )
+
     render() {
         return (
             <SafeAreaView style={styles.container}>
@@ -109,33 +118,15 @@ export class ReportListFilterScreen extends React.Component {
 
                     {/* Breed filter */}
                     <Text style={styles.filterTitle}>Raza</Text>
-                    <TextInput
-                        placeholder = 'Mestizo'
-                        onChangeText = {text => { this.setState({ breed: text })}}
-                        autoCorrect = { false }
-                        style = {styles.textInput}
-                        maxLength = { 30 }
-                    />
+                    {this.showTextInput(text => { this.setState({ breed: text })})}
 
                     {/* Province filter */}
                     <Text style={styles.filterTitle}>Provincia</Text>
-                    <TextInput
-                        placeholder = 'Buenos Aires'
-                        onChangeText = {text => { this.setState({ province: text })}}
-                        autoCorrect = { false }
-                        style = {styles.textInput}
-                        maxLength = { 30 }
-                    />
+                    {this.showTextInput(text => { this.setState({ province: text })})}
 
                     {/* City filter */}
                     <Text style={styles.filterTitle}>Ciudad</Text>
-                    <TextInput
-                        placeholder = 'CABA'
-                        onChangeText = {text => { this.setState({ city: text })}}
-                        autoCorrect = { false }
-                        style = {styles.textInput}
-                        maxLength = { 30 }
-                    />
+                    {this.showTextInput(text => { this.setState({ city: text })})}
 
                     <TouchableOpacity style={styles.button} onPress={() => this.saveFilters()}>
                         <Text style={styles.buttonFont}>Aplicar filtros</Text>

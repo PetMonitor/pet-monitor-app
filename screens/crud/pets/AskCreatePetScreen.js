@@ -42,14 +42,14 @@ export class AskCreatePetScreen extends React.Component {
 
         const handleSkipStep = () => {
             // User should be registered and redirected to login page.
-            postJsonData(global.noticeServiceBaseUrl + '/users', user).then(response => {
-                console.log(response);
+            // postJsonData(global.noticeServiceBaseUrl + '/users', user).then(response => {
+                // console.log(response);
                 alert('Successfully created user!')
                 // go back to login page
                 this.props.navigation.popToTop();
-            }).catch(err => {
-                alert(err)
-            });
+            // }).catch(err => {
+            //     alert(err)
+            // });
         };
 
         return (

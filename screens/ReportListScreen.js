@@ -5,13 +5,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import colors from '../config/colors';
 
-const { heigh, width } = Dimensions.get("screen")
+const { height, width } = Dimensions.get("screen")
 
 /** Implements the screen that lists all the pets' reports. */
 export class ReportListScreen extends React.Component {
 
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             images: [{photo: "w", type: "Encontrado"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "En adopción"}, {photo: "w", type: "Encontrado"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "Encontrado"}, {photo: "w", type: "En adopción"}, {photo: "w", type: "Encontrado"}, {photo: "w", type: "En adopción"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "Perdido"}],
             selectedIndex: 0
@@ -50,8 +50,6 @@ export class ReportListScreen extends React.Component {
     }
     
     render() {
-
-        const { navigation } = this.props;
         // const { user } = this.props.route.params;
         const mapTabTitle = "Mapa";
         const listTabTitle = "Lista";
@@ -59,7 +57,7 @@ export class ReportListScreen extends React.Component {
 
         return (
             <SafeAreaView style={styles.container}>
-                <View style={{justifyContent: 'center', alignItems: 'flex-start'}}>
+                <View style={{alignItems: 'flex-start'}}>
                     <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 40, paddingBottom: 10, color: colors.primary}}>Reportes</Text>
                 </View>
                 <View>
@@ -89,9 +87,28 @@ export class ReportListScreen extends React.Component {
                             keyExtractor={(_, index) => index.toString()}
                             initialNumToRender={this.state.images.length}
                             renderItem={this.renderItem}
-
                         />
                     </View>
+
+                    // <View style={{flex:1}}>
+                    
+                    //     <FlatList 
+                    //         data={this.state.images} 
+                    //         numColumns={2}
+                    //         keyExtractor={(_, index) => index.toString()}
+                    //         initialNumToRender={this.state.images.length}
+                    //         renderItem={this.renderItem}
+
+                    //     />
+                    //     <View style={{padding: 0, width: width, backgroundColor: colors.semiTransparent, position: 'absolute'}}>
+                    //         <Icon
+                    //             style={{alignSelf: 'flex-end'}}
+                    //             name='tune'
+                    //             size={33}
+                    //             color={colors.secondary}
+                    //             onPress={() => console.log('hello')} />
+                    //     </View>
+                    // </View>
                 }
             </SafeAreaView>
         )

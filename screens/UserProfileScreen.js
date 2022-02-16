@@ -14,21 +14,21 @@ export class UserProfileScreen extends React.Component {
         }
     }
 
-    componentDidMount() {
-        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId, 
-            {
-                'Authorization': 'Basic ' + sessionToken 
-            }
-            ).then(response => {
-                console.log(response);
-                this.setState({ userData : response });
-            }).catch(err => {
-                console.log(err);
-                alert(err)
-            });
-        });
-    }
+    // componentDidMount() {
+    //     getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+    //         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId, 
+    //         {
+    //             'Authorization': 'Basic ' + sessionToken 
+    //         }
+    //         ).then(response => {
+    //             console.log(response);
+    //             this.setState({ userData : response });
+    //         }).catch(err => {
+    //             console.log(err);
+    //             alert(err)
+    //         });
+    //     });
+    // }
 
     render() {
 

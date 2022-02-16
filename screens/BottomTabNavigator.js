@@ -21,8 +21,14 @@ export class BottomTabNavigator extends React.Component {
 
     render() {
         const tabIconSize = 30;
+
+        const bottomNavigatorConfigs = {
+            screenOptions: {
+                tabBarStyle: { height: 300 },
+            },
+        };
         return (
-            <Tab.Navigator>
+            <Tab.Navigator screenOptions={{tabBarStyle: { height: 70 }}}>
                 {/* Each tab screen represents a tab in the bottom tab navigation bar */}
                 <Tab.Screen name='Reports' component={ReportListScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
