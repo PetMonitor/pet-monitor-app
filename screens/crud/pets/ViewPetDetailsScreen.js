@@ -1,7 +1,7 @@
 import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
 
 
-const ViewPetDetalsScreen = ({ route, navigation }) => {
+const ViewPetDetailsScreen = ({ route, navigation }) => {
 
 
     fetchPetsDetails = (petId) => {
@@ -64,4 +64,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default ViewPetDetalsScreen;
+export default ViewPetDetailsScreen;
