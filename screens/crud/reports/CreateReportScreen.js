@@ -60,7 +60,7 @@ export class CreateReportScreen extends React.Component {
     }
 
     navigateToReport = () => {
-        this.props.navigation.navigate('ReportView'); 
+        this.props.navigation.push('ReportView'); 
     }
 
     render() {
@@ -129,7 +129,7 @@ export class CreateReportScreen extends React.Component {
                                 // is24Hour={true}
                                 display="default"
                                 onChange={(event, selectedDate) => this.setState({ date: selectedDate })}
-                                style={{paddingTop: 50}}
+                                style={{marginLeft: 10, paddingTop: 50}}
                             />
 
                         </View>    
@@ -142,7 +142,7 @@ export class CreateReportScreen extends React.Component {
                                 is24Hour={true}
                                 display='default'
                                 onChange={(event, selectedDate) => this.setState({ hour: selectedDate })}
-                                style={{paddingTop: 50, marginRight: 10}}
+                                style={{paddingTop: 50, marginRight: 10, marginLeft: 10}}
                             />
                         </View>
                     </View>
@@ -214,10 +214,10 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: colors.secondary,
         marginTop: 10,
-        marginLeft: 20,
+        marginLeft: 10,
         padding: 18, 
         borderRadius: 7, 
-        width: '60%', 
+        width: '55%', 
         alignSelf: 'flex-start'
     },
     buttonFont: {

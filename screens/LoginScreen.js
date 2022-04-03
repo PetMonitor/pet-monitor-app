@@ -24,27 +24,23 @@ export class LoginScreen extends React.Component {
       const { navigation } = this.props;
 
       const handleLoginPress = () => { 
-        // postJsonData(global.noticeServiceBaseUrl + '/users/login', 
-        //   {
-        //     'username': this.state.username, 
-        //     'password': this.state.password 
-        //   }).then(response => {
-        //     console.log(response['sessionToken']);
-        //     secureStoreSave('sessionToken', response['sessionToken']).then(() => {
-        //       // Navigate to UserProfile inside the Home screen navigator.
-        //       // Pass userId as parameter to the nested navigators.
-        //       navigation.navigate('BottomTabNavigator', {
-        //         screen: 'UserProfile',
-        //         params: { userId: response['userId'] }
-        //       });
-        //     });
-        //   }).catch(err => {
-        //     alert(err)
-        //   });
-        navigation.navigate('BottomTabNavigator', {
-          screen: 'UserProfile',
-          // params: { userId: response['userId'] }
-        });
+        postJsonData(global.noticeServiceBaseUrl + '/users/login', 
+          {
+            'username': this.state.username, 
+            'password': this.state.password 
+          }).then(response => {
+            console.log(response['sessionToken']);
+            secureStoreSave('sessionToken', response['sessionToken']).then(() => {
+              // Navigate to UserProfile inside the Home screen navigator.
+              // Pass userId as parameter to the nested navigators.
+              navigation.navigate('BottomTabNavigator', {
+                screen: 'UserProfile',
+                params: { userId: response['userId'] }
+              });
+            });
+          }).catch(err => {
+            alert(err)
+          });
       };
   
       const handleRegisterPress = () => { 

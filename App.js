@@ -12,6 +12,9 @@ import { AskCreatePetScreen } from './screens/crud/pets/AskCreatePetScreen';
 import ImageSelectorScreen from './screens/ImageSelectorScreen';
 import { ReportListFilterScreen } from './screens/ReportListFilterScreen';
 import { ReportViewScreen } from './screens/ReportViewScreen';
+import { FosteringVolunteerProfileScreen } from './screens/FosteringVolunteerProfileScreen';
+import { FosteringVolunteerProfileSettingsScreen } from './screens/FosteringVolunteerProfileSettingsScreen';
+import { FaceRecognitionResultsScreen } from './screens/FaceRecognitionResultsScreen';
 
 import colors from './config/colors';
 
@@ -28,8 +31,11 @@ export default class App extends React.Component {
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor: colors.primary}}} />
               <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor: colors.primary, color: colors.white, fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
               <Stack.Screen name="ImageSelectorScreen" component={ImageSelectorScreen} />
+              <Stack.Screen name="FosteringVolunteerProfile" component={FosteringVolunteerProfileScreen} options={{headerShown: false}} />
+              <Stack.Screen name="FosteringVolunteerProfileSettings" component={FosteringVolunteerProfileSettingsScreen} options={{headerShown: false}} />
               <Stack.Screen name="ReportListFilter" component={ReportListFilterScreen} options={{headerShown: false}} />
               <Stack.Screen name="ReportView" component={ReportViewScreen} options={{headerShown: false}} />
+              <Stack.Screen name="FaceRecognitionResults" component={FaceRecognitionResultsScreen} options={{headerShown: false}} />
             </Stack.Navigator>
           </NavigationContainer>;
   }

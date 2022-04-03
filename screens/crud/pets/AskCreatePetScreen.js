@@ -42,19 +42,19 @@ export class AskCreatePetScreen extends React.Component {
 
         const handleSkipStep = () => {
             // User should be registered and redirected to login page.
-            // postJsonData(global.noticeServiceBaseUrl + '/users', user).then(response => {
-                // console.log(response);
+            postJsonData(global.noticeServiceBaseUrl + '/users', user).then(response => {
+                console.log(response);
                 alert('Successfully created user!')
                 // go back to login page
                 this.props.navigation.popToTop();
-            // }).catch(err => {
-            //     alert(err)
-            // });
+            }).catch(err => {
+                alert(err)
+            });
         };
 
         return (
             <SafeAreaView style={styles.container}>
-                <View style={{flex:2}} style={{paddingTop:50, paddingBottom:50}}>  
+                <View style={{flex:2, paddingTop:50, paddingBottom:50}}>  
                     <Text style={styles.title}>Presentanos a tus mascotas!</Text>  
                 </View> 
                 <View style={{flex:1, alignItems: 'center'}}> 

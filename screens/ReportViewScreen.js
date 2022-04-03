@@ -1,6 +1,8 @@
 import React from 'react';
 
 import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { getJsonData } from '../utils/requests.js';
+import { getSecureStoreValueFor } from '../utils/store';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 
@@ -15,23 +17,22 @@ export class ReportViewScreen extends React.Component {
         super(props);
         this.state = {
             // TODO: change this for request data
-            reportType: 'Mascota encontrada',
-            name: 'Pepe',
+            reportType: '',
+            name: '',
             province: 'Buenos Aires',
             city: 'CABA',
             location: 'Av Independencia 400',
             date: new Date(),
             hour: new Date(),
-            eventDescription: 'this is a description, a very very long description with bunch of details about the event',
-            petPhotos: ["", "", "", "", ""],
-            sex: 'Macho',
-            type: 'Perro',
-            furColor: 'Marrón',
-            breed: 'Mestizo',
-            size: 'Chico',
-            lifeStage: 'Cachorro',
-            petDescription: 'this is a description, a very very long description with bunch of details about the pet',
-            isMyReport: true,
+            eventDescription: '',
+            petPhotos: [],
+            sex: '',
+            type: '',
+            furColor: '',
+            breed: '',
+            size: '',
+            lifeStage: '',
+            petDescription: '',
             selectedIndex: 0,
         };
     }
@@ -79,15 +80,99 @@ export class ReportViewScreen extends React.Component {
         // TODO: edit event/pet page or history depending on the index
     }
 
+    navigateToReports = () => {
+        this.props.navigation.navigate('Reports');  
+    }
+
+    showHeader = () => (
+        <>
+            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 40, marginBottom: 20}}>
+                <MaterialIcon
+                    name='arrow-left'
+                    size={33}
+                    color={colors.secondary}
+                    style={{marginLeft: 10}}
+                    onPress={() => this.navigateToReports()} />
+                <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Reporte</Text>
+            </View>
+            <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
+        </>
+    )
+
+    componentDidMount() {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId + '/notices/' + this.props.route.params.noticeId, 
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }
+            ).then(response => {
+                // console.log(response);
+                this.setState({ 
+                    reportType: response.noticeType,
+                    eventDescription: response.description 
+                });
+                getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+                    const promises = [];
+                    getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId + '/pets/' + response.pet.id, 
+                    {
+                        'Authorization': 'Basic ' + sessionToken 
+                    }
+                    ).then(responsePet => {
+                        
+                        // for (let i = 0; i < responsePet.photos.length; i++) {
+                        //     promises.push(getImgData(global.noticeServiceBaseUrl + '/photos/' + responsePet.photos[i].photoId, { 'Authorization': 'Basic ' + sessionToken }));
+                        //     // ).then(photo => {
+                        //     //     for (let i = 0; i < responsePet.photos.length; i++) {
+                        //     //         console.log(photo)
+                        //     //     }
+                        //     //     // this.setState({ 
+                        //     //     //     petPhotos: responsePet.photos,
+                        //     //     // });
+                        //     // }).catch(err => {
+                        //     //     console.log(err);
+                        //     //     alert(err)
+                        //     // });
+                        // }
+                        // Promise.all(promises)
+                        // .then((results) => {
+                        //     console.log("results")
+                        //     console.log(results)
+                            this.setState({ 
+                                name : responsePet.name,
+                                petPhotos: responsePet.photos,
+                                sex: responsePet.sex,
+                                type: responsePet.type,
+                                furColor: responsePet.furColor,
+                                breed: responsePet.breed,
+                                size: responsePet.size,
+                                lifeStage: responsePet.lifeStage,
+                                petDescription: responsePet.description
+                            });
+                        // }).catch(err => {
+                        //     console.log(err);
+                        //     alert(err)
+                        // });
+                        
+                    }).catch(err => {
+                        console.log(err);
+                        alert(err)
+                    });
+                });
+            }).catch(err => {
+                console.log(err);
+                alert(err)
+            }).finally(() => this.setState({ isLoading : false }));
+        });
+    }
+
     render() {
-
-
         const infoTitle = "Información";
         const historyTitle = "Historial";
         const segmentedTabTitles = [infoTitle, historyTitle];
 
         return (
             <SafeAreaView style={styles.container}>
+                {this.showHeader()}
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
                         data={this.state.petPhotos} 
@@ -104,7 +189,7 @@ export class ReportViewScreen extends React.Component {
                     <View style={{alignItems: 'flex-start'}}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 35, paddingTop: 20, paddingBottom: 20, color: this.getReportColorFromType(this.state.reportType)}}>{this.state.reportType}</Text>
-                            {this.state.isMyReport ? 
+                            {this.props.isMyReport ? 
                                 <TouchableOpacity onPress={() => this.changeToEditMode()}>
                                     <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
                                 </TouchableOpacity> : <></>}
@@ -206,7 +291,6 @@ export class ReportViewScreen extends React.Component {
         )
     }
 }
-
 
 const styles = StyleSheet.create({
     container: {

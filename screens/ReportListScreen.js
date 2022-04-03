@@ -1,5 +1,9 @@
 import React from 'react';
 import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
+import { getJsonData } from '../utils/requests.js';
+import { getSecureStoreValueFor } from '../utils/store';
+import { Buffer } from 'buffer'
+
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -13,27 +17,49 @@ export class ReportListScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            images: [{photo: "w", type: "Encontrado"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "En adopción"}, {photo: "w", type: "Encontrado"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "Encontrado"}, {photo: "w", type: "En adopción"}, {photo: "w", type: "Encontrado"}, {photo: "w", type: "En adopción"}, {photo: "w", type: "Perdido"}, {photo: "w", type: "Perdido"}],
-            selectedIndex: 0
+            notices: [],
+            selectedIndex: 0,
+            isLoading: true
         };
     }
 
+    mapReportTypeToLabel = type => {
+        type = type.toLowerCase();
+        if (type == "lost" || type == "stolen") {
+            return "Perdido";
+        }
+        if (type == "found") {
+            return "Encontrado";
+        }
+        if (type == "for_adoption") {
+            return "En adopción";
+        }
+    }
+
     getReportColorFromType = type => {
-        if (type == "Encontrado") {
+        type = type.toLowerCase();
+        if (type == "lost" || type == "stolen") {
+            return colors.pink;
+        }
+        if (type == "found") {
             return colors.primary;
-        } else if (type == "En adopción") {
+        }
+        if (type == "for_adoption") {
             return colors.secondary;
-        } 
-        return colors.pink
+        }
+    }
+
+    navigateToReportView = (userId, noticeId) => {
+        this.props.navigation.push('ReportView', { userId: userId, noticeId: noticeId, isMyReport: false });
     }
 
     renderItem = ({item}) =>  {
         return (
-            <TouchableOpacity onPress={() => console.log(item.photo)}>
-                <Image style={{height: (width - 20) / 2, width: (width - 20) / 2, borderRadius: 5, margin: 5}}
-                        source={require('../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}
+            <TouchableOpacity onPress={() => this.navigateToReportView(item.userId, item.noticeId)}>
+                <Image style={{height: (width - 20) / 2, width:  (width - 20) / 2, borderRadius: 5, margin: 5}}
+                        source={{uri:`data:image/png;base64,${Buffer.from(item.pet.photo).toString('base64')}`}}
                 />
-                <Text style={{fontSize: 16, fontWeight: 'bold', color: this.getReportColorFromType(item.type), paddingLeft: 7, paddingBottom: 20}}>{item.type}</Text>
+                <Text style={{fontSize: 16, fontWeight: 'bold', color: this.getReportColorFromType(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{this.mapReportTypeToLabel(item.noticeType)}</Text> 
             </TouchableOpacity>
         )
     }
@@ -47,6 +73,22 @@ export class ReportListScreen extends React.Component {
     navigateToFilterSettings = () => {
         // Navigate to filter settings page.
         this.props.navigation.navigate('ReportListFilter'); 
+    }
+
+    componentDidMount() {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getJsonData(global.noticeServiceBaseUrl + '/notices', 
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }
+            ).then(response => {
+                console.log(response);
+                this.setState({ notices : response });
+            }).catch(err => {
+                console.log(err);
+                alert(err)
+            }).finally(() => this.setState({ isLoading : false }));
+        });
     }
     
     render() {
@@ -82,33 +124,13 @@ export class ReportListScreen extends React.Component {
                                 onPress={() => this.navigateToFilterSettings()} />
                         </View>
                         <FlatList 
-                            data={this.state.images} 
+                            data={this.state.notices} 
                             numColumns={2}
                             keyExtractor={(_, index) => index.toString()}
-                            initialNumToRender={this.state.images.length}
+                            initialNumToRender={this.state.notices.length}
                             renderItem={this.renderItem}
                         />
                     </View>
-
-                    // <View style={{flex:1}}>
-                    
-                    //     <FlatList 
-                    //         data={this.state.images} 
-                    //         numColumns={2}
-                    //         keyExtractor={(_, index) => index.toString()}
-                    //         initialNumToRender={this.state.images.length}
-                    //         renderItem={this.renderItem}
-
-                    //     />
-                    //     <View style={{padding: 0, width: width, backgroundColor: colors.semiTransparent, position: 'absolute'}}>
-                    //         <Icon
-                    //             style={{alignSelf: 'flex-end'}}
-                    //             name='tune'
-                    //             size={33}
-                    //             color={colors.secondary}
-                    //             onPress={() => console.log('hello')} />
-                    //     </View>
-                    // </View>
                 }
             </SafeAreaView>
         )
