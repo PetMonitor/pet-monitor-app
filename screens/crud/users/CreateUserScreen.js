@@ -121,7 +121,7 @@ export class CreateUserScreen extends React.Component {
                     secureTextEntry = { true }   
                 />
                 <TouchableOpacity onPress={handleRegisterPress} style={styles.button}>
-                    <Text style={[styles.buttonFont, { color: colors.white }]}>Sign Up</Text>
+                    <Text style={[styles.buttonFont, { color: colors.white }]}>Registrarse</Text>
                 </TouchableOpacity>
             </SafeAreaView>
         )

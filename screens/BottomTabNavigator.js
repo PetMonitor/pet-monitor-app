@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { UserProfileScreen } from './UserProfileScreen';
+import { ViewUserDetailsScreen } from './crud/users/ViewUserDetailsScreen';
 import { ReportListScreen } from './ReportListScreen';
 import { FaceRecognitionSearchScreen } from './FaceRecognitionSearchScreen';
 import { CreateReportScreen } from './crud/reports/CreateReportScreen';
@@ -46,7 +46,7 @@ export class BottomTabNavigator extends React.Component {
                     tabBarIcon: ({ color, focused }) => (
                         <UsersThree size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>  
-                <Tab.Screen name='UserProfile' component={UserProfileScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
+                <Tab.Screen name='User Profile' component={ViewUserDetailsScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <User size={tabIconSize} color={color} weight={this.defineWeight(focused)} />  
                 )}}/>             

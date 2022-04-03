@@ -72,8 +72,8 @@ export class CreatePetScreen extends React.Component {
                 this.state
             ]
             
-            console.log('Create user:');
-            console.log(JSON.stringify(userInfo));  
+            //console.log('Create user:');
+            //console.log(JSON.stringify(userInfo));  
 
             postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
                 console.log(response);
@@ -228,7 +228,7 @@ export class CreatePetScreen extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: colors.white,
         flexDirection: 'column', // main axis: vertical
         alignItems: 'center', // align items across secondary axis (horizontal)
         justifyContent: 'center', // justify along main axis (vertical)
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
         width:'100%',
-        backgroundColor: 'white',
+        backgroundColor: colors.white,
         marginHorizontal: 20,
         paddingLeft: '7%',
     },
@@ -261,13 +261,13 @@ const styles = StyleSheet.create({
         padding: 10,
         margin: 10,
         borderRadius: 7,
-        backgroundColor: '#e1ad01',
+        backgroundColor: colors.yellow,
         width: '80%',
         alignItems: 'center'
     },
     buttonFont: {
         fontSize:18, 
-        color: 'white',
+        color: colors.white,
         fontWeight: 'bold'
     },
 
