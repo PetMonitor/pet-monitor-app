@@ -1,3 +1,4 @@
+import colors from '../../../config/colors';
 import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
 
 
