@@ -1,10 +1,12 @@
 import React from 'react';
 
-import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
+
+import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../utils/mappers';
 
 import colors from '../config/colors';
 
@@ -27,35 +29,28 @@ export class ReportViewScreen extends React.Component {
             eventDescription: '',
             petPhotos: [],
             sex: '',
-            type: '',
+            petType: '',
             furColor: '',
             breed: '',
             size: '',
             lifeStage: '',
             petDescription: '',
+            contactInfo: {},
             selectedIndex: 0,
+            contactInfoModalVisible: false
         };
     }
 
-    getReportColorFromType = type => {
-        if (type == "Mascota encontrada") {
-            return colors.primary;
-        } else if (type == "Mascota en adopción") {
-            return colors.secondary;
-        } 
-        return colors.pink
+    renderPet = ({item}) => {
+        return (
+            <View style={{ aspectRatio: 1 }}>
+                <Image key={'img_' + item.photoId} resizeMode="cover" style={{aspectRatio: 1, height: height/3.5, borderRadius: 5, marginLeft: 5}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}/>
+            </View>
+        )
     }
 
-    renderPet = (item) =>  {
-        return (
-            // TODO; check how to handle images that are not squared
-            // <View style={{ aspectRatio: 1 }}>
-            //     <Image resizeMode="cover" style={{ aspectRatio: 1, height: 100 }} />
-            // </View>
-            <Image style={{width: height/3, height: height/3, borderRadius: 5, margin: 5}}
-                    source={require('../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}
-            />
-        )
+    setModalVisible = (visible) => {
+        this.setState({ contactInfoModalVisible: visible });
     }
 
     handleTabSegmenterIndexChange = index => {
@@ -65,7 +60,7 @@ export class ReportViewScreen extends React.Component {
     };
 
     showContactInfo = () => {
-        // TODO: show modal with info
+        this.setModalVisible(true);
     }
 
     resolveReport = () => {
@@ -81,7 +76,7 @@ export class ReportViewScreen extends React.Component {
     }
 
     navigateToReports = () => {
-        this.props.navigation.navigate('Reports');  
+        this.props.navigation.navigate('ReportList');  
     }
 
     showHeader = () => (
@@ -101,62 +96,56 @@ export class ReportViewScreen extends React.Component {
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId + '/notices/' + this.props.route.params.noticeId, 
+            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.props.route.params.noticeId, 
             {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                // console.log(response);
                 this.setState({ 
                     reportType: response.noticeType,
                     eventDescription: response.description 
                 });
                 getSecureStoreValueFor('sessionToken').then((sessionToken) => {
                     const promises = [];
-                    getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId + '/pets/' + response.pet.id, 
+                    getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + response.pet.id, 
                     {
                         'Authorization': 'Basic ' + sessionToken 
                     }
                     ).then(responsePet => {
-                        
-                        // for (let i = 0; i < responsePet.photos.length; i++) {
-                        //     promises.push(getImgData(global.noticeServiceBaseUrl + '/photos/' + responsePet.photos[i].photoId, { 'Authorization': 'Basic ' + sessionToken }));
-                        //     // ).then(photo => {
-                        //     //     for (let i = 0; i < responsePet.photos.length; i++) {
-                        //     //         console.log(photo)
-                        //     //     }
-                        //     //     // this.setState({ 
-                        //     //     //     petPhotos: responsePet.photos,
-                        //     //     // });
-                        //     // }).catch(err => {
-                        //     //     console.log(err);
-                        //     //     alert(err)
-                        //     // });
-                        // }
-                        // Promise.all(promises)
-                        // .then((results) => {
-                        //     console.log("results")
-                        //     console.log(results)
-                            this.setState({ 
-                                name : responsePet.name,
-                                petPhotos: responsePet.photos,
-                                sex: responsePet.sex,
-                                type: responsePet.type,
-                                furColor: responsePet.furColor,
-                                breed: responsePet.breed,
-                                size: responsePet.size,
-                                lifeStage: responsePet.lifeStage,
-                                petDescription: responsePet.description
-                            });
-                        // }).catch(err => {
-                        //     console.log(err);
-                        //     alert(err)
-                        // });
+                        this.setState({ 
+                            name : responsePet.name,
+                            petPhotos: responsePet.photos,
+                            sex: responsePet.sex,
+                            petType: responsePet.type,
+                            furColor: responsePet.furColor,
+                            breed: responsePet.breed,
+                            size: responsePet.size,
+                            lifeStage: responsePet.lifeStage,
+                            petDescription: responsePet.description
+                        });
                         
                     }).catch(err => {
                         console.log(err);
                         alert(err)
                     });
+                });
+            }).catch(err => {
+                console.log(err);
+                alert(err)
+            }).finally(() => this.setState({ isLoading : false }));
+        });
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId, 
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }
+            ).then(response => {
+                this.setState({ 
+                    contactInfo: {
+                        name: response.name,
+                        email: response.email,
+                        phoneNumber: response.phoneNumber,
+                    }
                 });
             }).catch(err => {
                 console.log(err);
@@ -172,6 +161,32 @@ export class ReportViewScreen extends React.Component {
 
         return (
             <SafeAreaView style={styles.container}>
+                <View>
+                <Modal 
+                    animationType="slide"
+                    transparent={true}
+                    visible={this.state.contactInfoModalVisible}
+                    onRequestClose={() => {
+                        Alert.alert("Modal has been closed.");
+                        this.setModalVisible(!modalVisible);
+                    }}>
+                    <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
+                        <View style={styles.modalView}>
+                            <Text style={styles.modalTitle}>Datos de contacto</Text>
+                            {this.state.contactInfo.name ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Nombre: </Text>{this.state.contactInfo.name}</Text> : <></>}
+                            {this.state.contactInfo.email ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>e-mail: </Text>{this.state.contactInfo.email}</Text> : <></>}
+                            {this.state.contactInfo.phoneNumber ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Teléfono: </Text>{this.state.contactInfo.phoneNumber}</Text> : <></>}
+                            <TouchableOpacity
+                                style={[styles.button, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
+                                onPress={() => {
+                                    this.setModalVisible(!this.state.contactInfoModalVisible);
+                                }}>
+                                <Text>Ok</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>  
+                </View>
                 {this.showHeader()}
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
@@ -188,18 +203,18 @@ export class ReportViewScreen extends React.Component {
                 <View style={{flex: 2}}>
                     <View style={{alignItems: 'flex-start'}}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 35, paddingTop: 20, paddingBottom: 20, color: this.getReportColorFromType(this.state.reportType)}}>{this.state.reportType}</Text>
+                            <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 35, paddingTop: 20, paddingBottom: 10, color: mapReportTypeToLabelColor(this.state.reportType)}}>{mapReportTypeToLabel(this.state.reportType)}</Text>
                             {this.props.isMyReport ? 
                                 <TouchableOpacity onPress={() => this.changeToEditMode()}>
                                     <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
                                 </TouchableOpacity> : <></>}
                         </View> 
-                        {this.state.reportType == 'Mascota encontrada' ?
+                        {mapReportTypeToLabel(this.state.reportType) == 'Encontrado' ?
                             <SegmentedControlTab 
                                 values={segmentedTabTitles}
                                 selectedIndex={this.state.selectedIndex}
                                 onTabPress={this.handleTabSegmenterIndexChange}
-                                tabsContainerStyle={{marginLeft: 35, marginRight: 35, marginBottom: 25}}
+                                tabsContainerStyle={{marginLeft: 35, marginRight: 35, marginBottom: 10}}
                                 tabTextStyle={{color: colors.grey, fontWeight: 'bold', fontSize: 14, paddingVertical: 8}}
                                 tabStyle={{backgroundColor: colors.inputGrey, borderColor: colors.transparent}}
                                 activeTabStyle={{borderRadius: 5, backgroundColor: colors.white, shadowOpacity:0.2, shadowOffset: {width: 1, height: 1}}}
@@ -232,11 +247,11 @@ export class ReportViewScreen extends React.Component {
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                     <View style={{flexDirection: 'column', flex: 0.5}}>
                                         <Text style={styles.optionTitle}>Tipo</Text>
-                                        <Text style={styles.textInput}>{this.state.type}</Text>
+                                        <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text>
                                         <Text style={styles.optionTitle}>Sexo</Text>
-                                        <Text style={styles.textInput}>{this.state.sex}</Text>
+                                        <Text style={styles.textInput}>{mapPetSexToLabel(this.state.sex)}</Text>
                                         <Text style={styles.optionTitle}>Tamaño</Text>
-                                        <Text style={styles.textInput}>{this.state.size}</Text>
+                                        <Text style={styles.textInput}>{mapPetSizeToLabel(this.state.size)}</Text>
                                 
                                     </View>
                                     <View style={{flexDirection: 'column', flex: 0.5}}>
@@ -245,7 +260,7 @@ export class ReportViewScreen extends React.Component {
                                         <Text style={styles.optionTitle}>Color pelaje</Text>
                                         <Text style={styles.textInput}>{this.state.furColor}</Text>
                                         <Text style={styles.optionTitle}>Etapa</Text>
-                                        <Text style={styles.textInput}>{this.state.lifeStage}</Text>
+                                        <Text style={styles.textInput}>{mapPetLifeStageToLabel(this.state.lifeStage)}</Text>
                                     </View>
                                 </View>
 
@@ -322,4 +337,29 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         color: colors.white
     },
+    modalView: {
+        margin: 20,
+        backgroundColor: colors.white,
+        borderRadius: 20,
+        padding: 35,
+        shadowColor: colors.clearBlack,
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalTitle: {
+        marginBottom: 15,
+        color: colors.secondary,
+        fontWeight: 'bold',
+        fontSize: 18,
+        textAlign: "center"
+    },
+    modalText: {
+      marginBottom: 15,
+      color: colors.clearBlack
+    }
   });

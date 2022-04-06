@@ -93,14 +93,12 @@ const styles = StyleSheet.create({
     buttonSearch: {
         backgroundColor: colors.secondary,
         marginTop: 30,
-        // marginLeft: 10,
         padding: 18, 
         borderRadius: 7, 
         width: '50%', 
         alignSelf: 'center'
     },
     buttonFont: {
-        // flexDirection: 'column',
         fontSize: 16, 
         fontWeight: '500', 
         alignSelf: 'center',

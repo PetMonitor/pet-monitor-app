@@ -3,6 +3,7 @@ import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
+import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
 
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -18,39 +19,52 @@ export class ReportListScreen extends React.Component {
         super(props);
         this.state = {
             notices: [],
-            selectedIndex: 0,
+            selectedIndex: this.props.selectedIndex ? this.props.selectedIndex : 0,
             isLoading: true
         };
     }
 
-    mapReportTypeToLabel = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return "Perdido";
-        }
-        if (type == "found") {
-            return "Encontrado";
-        }
-        if (type == "for_adoption") {
-            return "En adopción";
-        }
-    }
+    getFilters = () => {
+        const filters = this.props.filters
+        var filtersToApply = {}
 
-    getReportColorFromType = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return colors.pink;
+        if (!filters || (filters && Object.keys(filters).length === 0)) {
+            console.log("empty")
+            return filtersToApply
         }
-        if (type == "found") {
-            return colors.primary;
+        // TODO: add province/city once locations are resolved
+        if (filters.breed != '') {
+            filtersToApply.breed = filters.breed
         }
-        if (type == "for_adoption") {
-            return colors.secondary;
+        if (!(filters.lostPetIsSelected && filters.petForAdoptionIsSelected && filters.petFoundIsSelected)) {
+            if (filters.lostPetIsSelected) {
+                filtersToApply.lostPetIsSelected = filters.lostPetIsSelected
+            }
+            if (filters.petForAdoptionIsSelected) {
+                filtersToApply.petForAdoptionIsSelected = filters.petForAdoptionIsSelected
+            }
+            if (filters.petFoundIsSelected) {
+                filtersToApply.petFoundIsSelected = filters.petFoundIsSelected
+            }
         }
-    }
-
-    navigateToReportView = (userId, noticeId) => {
-        this.props.navigation.push('ReportView', { userId: userId, noticeId: noticeId, isMyReport: false });
+        if (!(filters.catIsSelected && filters.dogIsSelected)) {
+            if (filters.catIsSelected) {
+                filtersToApply.catIsSelected = filters.catIsSelected
+            }
+            if (filters.dogIsSelected) {
+                filtersToApply.dogIsSelected = filters.dogIsSelected
+            }
+        }
+        if (!(filters.femaleIsSelected && filters.maleIsSelected)) {
+            if (filters.femaleIsSelected) {
+                filtersToApply.femaleIsSelected = filters.femaleIsSelected
+            }
+            if (filters.maleIsSelected) {
+                filtersToApply.maleIsSelected = filters.maleIsSelected
+            }
+        }
+        console.log(filtersToApply)
+        return filtersToApply
     }
 
     renderItem = ({item}) =>  {
@@ -59,7 +73,7 @@ export class ReportListScreen extends React.Component {
                 <Image style={{height: (width - 20) / 2, width:  (width - 20) / 2, borderRadius: 5, margin: 5}}
                         source={{uri:`data:image/png;base64,${Buffer.from(item.pet.photo).toString('base64')}`}}
                 />
-                <Text style={{fontSize: 16, fontWeight: 'bold', color: this.getReportColorFromType(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{this.mapReportTypeToLabel(item.noticeType)}</Text> 
+                <Text style={{fontSize: 16, fontWeight: 'bold', color: mapReportTypeToLabelColor(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{mapReportTypeToLabel(item.noticeType)}</Text> 
             </TouchableOpacity>
         )
     }
@@ -69,6 +83,10 @@ export class ReportListScreen extends React.Component {
           selectedIndex: index
         });
     };
+
+    navigateToReportView = (userId, noticeId) => {
+        this.props.navigation.push('ReportView', { noticeUserId: userId, noticeId: noticeId, isMyReport: false });
+    }
 
     navigateToFilterSettings = () => {
         // Navigate to filter settings page.
@@ -82,7 +100,7 @@ export class ReportListScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                console.log(response);
+                // console.log(response);
                 this.setState({ notices : response });
             }).catch(err => {
                 console.log(err);
@@ -90,12 +108,29 @@ export class ReportListScreen extends React.Component {
             }).finally(() => this.setState({ isLoading : false }));
         });
     }
+
+    componentDidUpdate(prevProps) {
+        //Typical usage, don't forget to compare the props
+        if (this.props.userName !== prevProps.userName) {
+          this.fetchData(this.props.userName);
+        }
+       }
+
+    onFocus = () => {
+        //your param fetch here and data get/set
+        // this.props.navigation.getParam('param')
+        //get
+        //set
+        console.log("result refreshed")
+       }
     
     render() {
-        // const { user } = this.props.route.params;
         const mapTabTitle = "Mapa";
         const listTabTitle = "Lista";
         const segmentedTabTitles = [mapTabTitle, listTabTitle];
+        if (this.props.route.params) {
+            console.log(this.props.route.params.filters)
+        }
 
         return (
             <SafeAreaView style={styles.container}>

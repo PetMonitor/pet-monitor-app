@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     volunteerBox: {
         marginTop: 20, 
         borderWidth: 0.9,
-        borderColor: colors.inputGrey
+        borderColor: colors.inputGrey,
     },
     button: {
         backgroundColor: colors.secondary,

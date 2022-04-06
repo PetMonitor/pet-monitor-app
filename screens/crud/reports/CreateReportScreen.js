@@ -80,7 +80,7 @@ export class CreateReportScreen extends React.Component {
                         <View style={styles.modalView}>
                         <Text style={styles.modalText}>Reporte creado!</Text>
                         <TouchableOpacity
-                            style={[styles.button, {width: '50%', alignSelf: 'center', alignItems: 'center', marginRight: 20}]}
+                            style={[styles.button, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
                             onPress={() => {
                                 this.setModalVisible(!this.state.operationResultModalVisible);
                                 this.navigateToReport();
@@ -234,8 +234,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         shadowColor: colors.clearBlack,
         shadowOffset: {
-        width: 0,
-        height: 2
+            width: 0,
+            height: 2
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
@@ -243,6 +243,6 @@ const styles = StyleSheet.create({
     },
     modalText: {
       marginBottom: 15,
-      textAlign: "center"
+      textAlign: "center",
     }
 });

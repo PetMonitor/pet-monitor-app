@@ -24,7 +24,7 @@ export class FosteringVolunteerProfileScreen extends React.Component {
             petSizeToFoster: "SMALL",
             additionalInfo: "Vivo con perros y con chicos. Tengo balcón en el depto.",
             contactInfo: {
-                mail: "email@gmail.com",
+                email: "email@gmail.com",
                 phoneNumber: "112345678"
             }
         };
@@ -77,10 +77,10 @@ export class FosteringVolunteerProfileScreen extends React.Component {
     renderPetsToFoster = () => {
         var pets = []
         if (this.state.canFoster.includes("DOG")) {
-            pets.push(<Dog color={colors.secondary} weight='regular' size={68} />) 
+            pets.push(<Dog color={colors.secondary} weight='regular' size={68} key={"dog"}/>) 
         }  
         if  (this.state.canFoster.includes("DOG")) {
-            pets.push(<Cat color={colors.secondary} weight='regular' size={68} />)
+            pets.push(<Cat color={colors.secondary} weight='regular' size={68} key={"cat"} />)
         }
         return pets
     }
@@ -124,7 +124,7 @@ export class FosteringVolunteerProfileScreen extends React.Component {
                     <Text style={styles.text}>{this.state.available ? "Disponible" : "No disponible"}</Text>
 
                     <Text style={styles.titleText}>Contacto</Text>
-                    <Text style={styles.text}>{this.state.contactInfo.mail}</Text>
+                    <Text style={styles.text}>{this.state.contactInfo.email}</Text>
                     <Text style={styles.text}>{this.state.contactInfo.phoneNumber}</Text>
                 </ScrollView>               
             </SafeAreaView>

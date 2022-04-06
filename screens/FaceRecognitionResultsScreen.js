@@ -4,6 +4,7 @@ import { Text, SafeAreaView, StyleSheet, View, FlatList, TouchableOpacity, Image
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
+import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -44,35 +45,9 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 <Image style={{height: (width - 50) / 2, width:  (width - 50) / 2, borderRadius: 5, margin: 5}}
                         source={{uri:`data:image/png;base64,${Buffer.from(item.pet.photo).toString('base64')}`}}
                 />
-                <Text style={{fontSize: 16, fontWeight: 'bold', color: this.getReportColorFromType(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{this.mapReportTypeToLabel(item.noticeType)}</Text> 
+                <Text style={{fontSize: 16, fontWeight: 'bold', color: mapReportTypeToLabelColor(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{mapReportTypeToLabel(item.noticeType)}</Text> 
             </TouchableOpacity>
         )
-    }
-
-    mapReportTypeToLabel = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return "Perdido";
-        }
-        if (type == "found") {
-            return "Encontrado";
-        }
-        if (type == "for_adoption") {
-            return "En adopción";
-        }
-    }
-
-    getReportColorFromType = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return colors.pink;
-        }
-        if (type == "found") {
-            return colors.primary;
-        }
-        if (type == "for_adoption") {
-            return colors.secondary;
-        }
     }
 
     componentDidMount() {
