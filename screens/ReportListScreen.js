@@ -24,11 +24,15 @@ export class ReportListScreen extends React.Component {
         };
     }
 
+    objectIsEmpty = (object) => {
+        return Object.keys(object).length === 0
+    }
+
     getFilters = () => {
-        const filters = this.props.filters
+        const filters = this.props.route.params.filters
         var filtersToApply = {}
 
-        if (!filters || (filters && Object.keys(filters).length === 0)) {
+        if (!filters || (filters && this.objectIsEmpty(filters))) {
             console.log("empty")
             return filtersToApply
         }
@@ -36,34 +40,38 @@ export class ReportListScreen extends React.Component {
         if (filters.breed != '') {
             filtersToApply.breed = filters.breed
         }
+        
         if (!(filters.lostPetIsSelected && filters.petForAdoptionIsSelected && filters.petFoundIsSelected)) {
+            var reportTypes = []
             if (filters.lostPetIsSelected) {
-                filtersToApply.lostPetIsSelected = filters.lostPetIsSelected
+                reportTypes.push('LOST')
             }
             if (filters.petForAdoptionIsSelected) {
-                filtersToApply.petForAdoptionIsSelected = filters.petForAdoptionIsSelected
+                reportTypes.push('FOR_ADOPTION')
             }
             if (filters.petFoundIsSelected) {
-                filtersToApply.petFoundIsSelected = filters.petFoundIsSelected
+                reportTypes.push('FOUND')
+            }
+            if (reportTypes.length > 0) {
+                filtersToApply.reportType = reportTypes.join(",")
             }
         }
         if (!(filters.catIsSelected && filters.dogIsSelected)) {
             if (filters.catIsSelected) {
-                filtersToApply.catIsSelected = filters.catIsSelected
+                filtersToApply.petType = 'CAT'
             }
             if (filters.dogIsSelected) {
-                filtersToApply.dogIsSelected = filters.dogIsSelected
+                filtersToApply.petType = 'DOG'
             }
         }
         if (!(filters.femaleIsSelected && filters.maleIsSelected)) {
             if (filters.femaleIsSelected) {
-                filtersToApply.femaleIsSelected = filters.femaleIsSelected
+                filtersToApply.petSex = 'FEMALE'
             }
             if (filters.maleIsSelected) {
-                filtersToApply.maleIsSelected = filters.maleIsSelected
+                filtersToApply.petSex = 'MALE'
             }
         }
-        console.log(filtersToApply)
         return filtersToApply
     }
 
@@ -90,7 +98,38 @@ export class ReportListScreen extends React.Component {
 
     navigateToFilterSettings = () => {
         // Navigate to filter settings page.
-        this.props.navigation.navigate('ReportListFilter'); 
+        this.props.navigation.navigate('ReportListFilter', {filters: this.props.route.params ? this.props.route.params.filters : undefined}); 
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.route.params) {
+            let filters = this.props.route.params.filters
+            if ((filters && !prevProps.route.params) || (filters != prevProps.route.params.filters)) {
+                let queryParams = ''
+                
+                if (!this.objectIsEmpty(filters)) {
+                    queryParams = '?'
+                    
+                    const filtersToApply = this.getFilters()
+                    queryParams += filtersToApply.petSex ? "petSex=" + filtersToApply.petSex + "&" : ""
+                    queryParams += filtersToApply.petType ? "petType=" + filtersToApply.petType + "&" : ""
+                    queryParams += filtersToApply.reportType ? "noticeType=" + filtersToApply.reportType + "&" : ""
+                }
+
+                getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+                    getJsonData(global.noticeServiceBaseUrl + '/notices' + queryParams, 
+                    {
+                        'Authorization': 'Basic ' + sessionToken 
+                    }
+                    ).then(response => {
+                        this.setState({ notices : response });
+                    }).catch(err => {
+                        console.log(err);
+                        alert(err)
+                    }).finally(() => this.setState({ isLoading : false }));
+                });
+            }
+        }
     }
 
     componentDidMount() {
@@ -100,7 +139,6 @@ export class ReportListScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                // console.log(response);
                 this.setState({ notices : response });
             }).catch(err => {
                 console.log(err);
@@ -108,29 +146,11 @@ export class ReportListScreen extends React.Component {
             }).finally(() => this.setState({ isLoading : false }));
         });
     }
-
-    componentDidUpdate(prevProps) {
-        //Typical usage, don't forget to compare the props
-        if (this.props.userName !== prevProps.userName) {
-          this.fetchData(this.props.userName);
-        }
-       }
-
-    onFocus = () => {
-        //your param fetch here and data get/set
-        // this.props.navigation.getParam('param')
-        //get
-        //set
-        console.log("result refreshed")
-       }
     
     render() {
         const mapTabTitle = "Mapa";
         const listTabTitle = "Lista";
         const segmentedTabTitles = [mapTabTitle, listTabTitle];
-        if (this.props.route.params) {
-            console.log(this.props.route.params.filters)
-        }
 
         return (
             <SafeAreaView style={styles.container}>

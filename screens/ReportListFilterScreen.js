@@ -45,43 +45,6 @@ export class ReportListFilterScreen extends React.Component {
         this.navigateToReportList()
     }
 
-    // getFilters = () => {
-    //     var filters = {}
-    //     // TODO: add province/city once locations are resolved
-    //     if (this.state.breed != '') {
-    //         filters.breed = this.state.breed
-    //     }
-    //     if (!(this.state.lostPetIsSelected && this.state.petForAdoptionIsSelected && this.state.petFoundIsSelected)) {
-    //         if (this.state.lostPetIsSelected) {
-    //             filters.lostPetIsSelected = this.state.lostPetIsSelected
-    //         }
-    //         if (this.state.petForAdoptionIsSelected) {
-    //             filters.petForAdoptionIsSelected = this.state.petForAdoptionIsSelected
-    //         }
-    //         if (this.state.petFoundIsSelected) {
-    //             filters.petFoundIsSelected = this.state.petFoundIsSelected
-    //         }
-    //     }
-    //     if (!(this.state.catIsSelected && this.state.dogIsSelected)) {
-    //         if (this.state.catIsSelected) {
-    //             filters.catIsSelected = this.state.catIsSelected
-    //         }
-    //         if (this.state.dogIsSelected) {
-    //             filters.dogIsSelected = this.state.dogIsSelected
-    //         }
-    //     }
-    //     if (!(this.state.femaleIsSelected && this.state.maleIsSelected)) {
-    //         if (this.state.femaleIsSelected) {
-    //             filters.femaleIsSelected = this.state.femaleIsSelected
-    //         }
-    //         if (this.state.maleIsSelected) {
-    //             filters.maleIsSelected = this.state.maleIsSelected
-    //         }
-    //     }
-    //     console.log(filters)
-    //     return filters
-    // }
-
     navigateToReportList = () => {
         this.props.navigation.navigate('BottomTabNavigator', {
             screen: 'ReportList',
@@ -128,6 +91,17 @@ export class ReportListFilterScreen extends React.Component {
             value = {value}
         />
     )
+
+    componentDidUpdate() {
+        if (this.props.route.params) {
+            let filters = this.props.route.params.filters
+            if (filters != this.state) {
+                this.setState({
+                    ...filters
+                })
+            }
+        }
+    }
 
     render() {
         return (
