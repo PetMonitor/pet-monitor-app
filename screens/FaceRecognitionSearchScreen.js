@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, SafeAreaView, StyleSheet, View, FlatList, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
 import colors from '../config/colors';
@@ -31,9 +31,9 @@ export class FaceRecognitionSearchScreen extends React.Component {
 
     render() {
         return (
-            <SafeAreaView style={styles.container}>
+            <View style={styles.container}>
                  <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 40, paddingBottom: 20, color: colors.white}}>Reconocimiento facial</Text>
+                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Reconocimiento facial</Text>
                 </View>
                 <ScrollView style={{flex:1, padding: 20}}>
                 <Text style={{margin: 20, color: colors.clearBlack, fontSize: 15, marginTop: 30}}>Si perdiste o encontraste a una mascota podés iniciar una búsqueda por  reconocimiento facial para encontrar  mascotas similares.</Text>
@@ -61,7 +61,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
                     </View>
                 </TouchableOpacity> 
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         )
     }
 }
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',
         flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     },
     sectionTitle: {
         fontSize: 20, 

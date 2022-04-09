@@ -76,7 +76,8 @@ export class ReportViewScreen extends React.Component {
     }
 
     navigateToReports = () => {
-        this.props.navigation.navigate('ReportList');  
+        // this.props.navigation.navigate('ReportList');  
+        this.props.navigation.goBack();
     }
 
     showHeader = () => (

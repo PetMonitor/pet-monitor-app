@@ -42,7 +42,7 @@ export class BottomTabNavigator extends React.Component {
                     tabBarIcon: ({ color, focused }) => (
                         <PlusCircle size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>
-                <Tab.Screen name='TemporalFosterVolunteers' component={FosteringVolunteersScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
+                <Tab.Screen name='TemporalFosterVolunteers' component={FosteringVolunteersScreen} options={{headerShown: false, headerStyle: {backgroundColor: colors.primary}, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <UsersThree size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>  

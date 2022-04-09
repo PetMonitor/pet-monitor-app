@@ -92,14 +92,12 @@ export class ReportListFilterScreen extends React.Component {
         />
     )
 
-    componentDidUpdate() {
-        if (this.props.route.params) {
-            let filters = this.props.route.params.filters
-            if (filters != this.state) {
-                this.setState({
-                    ...filters
-                })
-            }
+    componentDidMount() {
+        let filters = this.props.route.params.filters
+        if (filters) {
+            this.setState({
+                ...filters
+            })
         }
     }
 

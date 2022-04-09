@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, SafeAreaView, StyleSheet, View, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, ScrollView } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -87,13 +87,13 @@ export class FosteringVolunteerProfileScreen extends React.Component {
 
     render() {
         return (
-            <SafeAreaView style={styles.container}> 
+            <View style={styles.container}> 
                 <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
                     <Icon
                         name='arrow-left'
-                        size={33}
+                        size={30}
                         color={colors.white}
-                        style={{marginLeft: 10, paddingTop: 30, paddingBottom: 15}}
+                        style={{marginLeft: 10, paddingTop: 60, paddingBottom: 15}}
                         onPress={() => this.props.navigation.goBack()} />
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, marginLeft: 20}}><Text style={[styles.text, {fontWeight: 'bold', fontSize: 24, color: colors.primary}]}>{this.state.name}</Text>{this.renderRating(this.state.stars)}</View>
@@ -127,7 +127,7 @@ export class FosteringVolunteerProfileScreen extends React.Component {
                     <Text style={styles.text}>{this.state.contactInfo.email}</Text>
                     <Text style={styles.text}>{this.state.contactInfo.phoneNumber}</Text>
                 </ScrollView>               
-            </SafeAreaView>
+            </View>
         )
     }
 }

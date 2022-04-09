@@ -85,7 +85,7 @@ export class CreateUserScreen extends React.Component {
 
         return (
             <SafeAreaView style={styles.container}>
-                <Text style={{ fontSize: 24, padding: 20 }}>Crear Cuenta</Text>            
+                <Text style={{ fontSize: 24, padding: 20 }}>Crear cuenta</Text>            
                 <TextInput 
                     placeholder = 'Usuario'
                     onChangeText = { usernameInput => { this.setState({ username: usernameInput })}}

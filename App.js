@@ -32,12 +32,12 @@ export default class App extends React.Component {
             <Stack.Navigator initialRouteName="Login">
               <Stack.Screen name="Login" component={LoginScreen} options={{title: '', headerShown: false}} />
               <Stack.Screen name="BottomTabNavigator" component={BottomTabNavigator} options={{ headerShown: false, headerLeft: () => null }} />
-              <Stack.Screen name="CreateUserScreen" component={CreateUserScreen} options={{title: '', headerStyle: {backgroundColor: colors.primary}}}/>
-              <Stack.Screen name="EditUserScreen" component={EditUserDetailsScreen} options={{title: '', headerBackTitle: 'Atrás' , headerStyle: {backgroundColor:'#72b1a1'}}}/>
-              <Stack.Screen name="ChangeUserPasswordScreen" component={ChangePasswordScreen} options={{title: '', headerBackTitle: 'Atrás' , headerStyle: {backgroundColor:'#72b1a1'}}}/>
+              <Stack.Screen name="CreateUserScreen" component={CreateUserScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
+              <Stack.Screen name="EditUserScreen" component={EditUserDetailsScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
+              <Stack.Screen name="ChangeUserPasswordScreen" component={ChangePasswordScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor: colors.primary}}} />
               <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor: colors.primary, color: colors.white, fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
-              <Stack.Screen name="ViewPet" component={ViewPetDetailsScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor:'#72b1a1', color:'white', fontWeight:'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
+              <Stack.Screen name="ViewPet" component={ViewPetDetailsScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor: colors.primary, color: colors.white, fontWeight: 'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
               <Stack.Screen name="ImageSelectorScreen" component={ImageSelectorScreen} />
               <Stack.Screen name="FosteringVolunteerProfile" component={FosteringVolunteerProfileScreen} options={{headerShown: false}} />
               <Stack.Screen name="FosteringVolunteerProfileSettings" component={FosteringVolunteerProfileSettingsScreen} options={{headerShown: false}} />

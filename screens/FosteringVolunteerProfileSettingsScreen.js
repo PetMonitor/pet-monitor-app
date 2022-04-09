@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, SafeAreaView, StyleSheet, View, TextInput, TouchableOpacity, Switch, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Switch, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Dog, Cat } from 'phosphor-react-native';
 
@@ -92,8 +92,8 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
 
     render() {
         return (
-            <SafeAreaView style={styles.container}> 
-                <View style={{justifyContent: 'center', alignItems: 'flex-start', marginBottom: 20, backgroundColor: colors.primary}}>
+            <View style={styles.container}> 
+                {/* <View style={{justifyContent: 'center', alignItems: 'flex-start', marginBottom: 20, backgroundColor: colors.primary}}>
                     <Icon
                         name='arrow-left'
                         size={33}
@@ -101,7 +101,15 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
                         style={{marginLeft: 10, paddingTop: 30, paddingBottom: 15}}
                         onPress={() => this.props.navigation.goBack()} />
                     <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.white, paddingTop: 10, position: 'absolute'}}>Información voluntariado</Text>
-
+                </View> */}
+                <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
+                    <Icon
+                        name='arrow-left'
+                        size={30}
+                        color={colors.white}
+                        style={{marginLeft: 10}}
+                        onPress={() => this.props.navigation.goBack()} />
+                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Información voluntariado</Text>
                 </View>
                
                 <ScrollView style={{marginLeft: 20, marginRight: 20}}>
@@ -151,7 +159,7 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
                         <Text style={styles.buttonFont}>Guardar Información</Text>
                     </TouchableOpacity>
                 </ScrollView>               
-            </SafeAreaView>
+            </View>
         )
     }
 }

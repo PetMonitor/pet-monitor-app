@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, SafeAreaView, View, Modal, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native';
+import { Text, View, Modal, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Feather';
@@ -65,7 +65,7 @@ export class CreateReportScreen extends React.Component {
 
     render() {
         return (
-            <SafeAreaView style={styles.container}> 
+            <View style={styles.container}> 
             <View>
                 {/* We can use the modal only to notify an error, and redirect automatically when post succeeds */}
                 <Modal 
@@ -92,7 +92,7 @@ export class CreateReportScreen extends React.Component {
                 </Modal>  
                 </View>
                 <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 40, paddingBottom: 20, color: colors.white}}>Crear reporte</Text>
+                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Crear reporte</Text>
                 </View>
                 <ScrollView style={{flex:1, padding: 20}}>
                     {/* Report type picker */}
@@ -172,7 +172,7 @@ export class CreateReportScreen extends React.Component {
                         <Text style={styles.buttonFont}>Crear reporte</Text>
                     </TouchableOpacity>       
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         )
     }
 }
