@@ -1,6 +1,8 @@
 import React from 'react';
 
 import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { getJsonData } from '../utils/requests.js';
+import { getSecureStoreValueFor } from '../utils/store';
 import Icon from 'react-native-vector-icons/Feather';
 
 import colors from '../config/colors';
@@ -11,22 +13,51 @@ export class FaceRecognitionSearchScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            userPets: ["", "", "", "", ""],
+            userPets: [],
+            userId: '',
+            petId: ''
         };
     }
 
-    renderPet = (item) =>  {
+    setSelectedPhoto = (petId) => {
+        this.setState({ petId: petId });
+    }
+
+    renderPet = ({item}) =>  {
+        const petId = item.petId
+        const photoId = item.photos[0].photoId
         return (
-            <TouchableOpacity onPress={() => console.log(item)}>
-                <Image style={{height: 100, width: 100, borderRadius: 5, margin: 5}}
-                        source={require('../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}
-                />
+            <TouchableOpacity onPress={() => this.setSelectedPhoto(petId)} style={{borderColor: this.state.petId == petId ? colors.secondary : colors.white, borderWidth: 3, borderRadius: 5}}>
+                <View style={{ aspectRatio: 1 }}>
+                <Image key={'img_' + photoId} resizeMode="cover" style={{aspectRatio: 1, height: 100, borderRadius: 5, margin: 3}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + photoId }}/>
+            </View>
             </TouchableOpacity>
         )
     }
 
     navigateToSearchResults = () => {
         this.props.navigation.push('FaceRecognitionResults'); 
+    }
+
+    componentDidMount() {
+        getSecureStoreValueFor('sessionToken').then(sessionToken =>  
+            getSecureStoreValueFor("userId").then(userId => {
+                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
+                {
+                    'Authorization': 'Basic ' + sessionToken 
+                }
+                ).then(pets => {
+                    this.setState({ 
+                        userPets: pets,
+                        userId: userId
+                    });
+                    
+                }).catch(err => {
+                    console.log(err);
+                    alert(err)
+                });
+            })
+        )
     }
 
     render() {

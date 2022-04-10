@@ -93,15 +93,6 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}> 
-                {/* <View style={{justifyContent: 'center', alignItems: 'flex-start', marginBottom: 20, backgroundColor: colors.primary}}>
-                    <Icon
-                        name='arrow-left'
-                        size={33}
-                        color={colors.white}
-                        style={{marginLeft: 10, paddingTop: 30, paddingBottom: 15}}
-                        onPress={() => this.props.navigation.goBack()} />
-                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.white, paddingTop: 10, position: 'absolute'}}>Información voluntariado</Text>
-                </View> */}
                 <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
                     <Icon
                         name='arrow-left'

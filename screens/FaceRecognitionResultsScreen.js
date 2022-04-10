@@ -75,7 +75,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                     }}>
                     <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
                         <View style={styles.modalView}>
-                            <Text style={styles.modalTitle}>Datos de contacto</Text>
+                            <Text style={styles.modalTitle}>Chequeos</Text>
                             {/* {this.state.contactInfo.name ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Nombre: </Text>{this.state.contactInfo.name}</Text> : <></>}
                             {this.state.contactInfo.email ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>e-mail: </Text>{this.state.contactInfo.email}</Text> : <></>}
                             {this.state.contactInfo.phoneNumber ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Teléfono: </Text>{this.state.contactInfo.phoneNumber}</Text> : <></>} */}

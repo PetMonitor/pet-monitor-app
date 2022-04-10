@@ -43,9 +43,7 @@ export class ReportViewScreen extends React.Component {
 
     renderPet = ({item}) => {
         return (
-            <View style={{ aspectRatio: 1 }}>
-                <Image key={'img_' + item.photoId} resizeMode="cover" style={{aspectRatio: 1, height: height/3.5, borderRadius: 5, marginLeft: 5}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}/>
-            </View>
+            <Image key={'img_' + item.photoId} resizeMode="cover" style={{aspectRatio: 1, height: height/3.5, borderRadius: 5, marginRight: 5}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}/>
         )
     }
 
@@ -76,8 +74,13 @@ export class ReportViewScreen extends React.Component {
     }
 
     navigateToReports = () => {
-        // this.props.navigation.navigate('ReportList');  
-        this.props.navigation.goBack();
+        if (this.props.goToUserProfile) {
+            navigation.navigate('BottomTabNavigator', {
+                screen: 'ViewUserDetails'
+              });
+        } else {
+            this.props.navigation.goBack();
+        }
     }
 
     showHeader = () => (
@@ -107,7 +110,6 @@ export class ReportViewScreen extends React.Component {
                     eventDescription: response.description 
                 });
                 getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-                    const promises = [];
                     getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + response.pet.id, 
                     {
                         'Authorization': 'Basic ' + sessionToken 
@@ -156,6 +158,7 @@ export class ReportViewScreen extends React.Component {
     }
 
     render() {
+        console.log(this.state.reportType)
         const infoTitle = "Información";
         const historyTitle = "Historial";
         const segmentedTabTitles = [infoTitle, historyTitle];

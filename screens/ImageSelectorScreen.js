@@ -60,14 +60,14 @@ const ImageSelectorScreen = ({ route, navigation }) => {
   const widgetNavigator = useMemo(
     () => ({
       Texts: {
-        finish: 'finalizar',
-        back: 'volver',
-        selected: 'selected',
+        finish: 'Finalizar',
+        back: 'Volver',
+        selected: 'seleccionados',
       },
-      midTextColor: 'black',
+      midTextColor: colors.clearBlack,
       minSelection: 1,
       buttonTextStyle: { color: 'white' },
-      buttonStyle: { backgroundColor: colors.yellow, borderRadius: 5 },
+      buttonStyle: { backgroundColor: colors.secondary, borderRadius: 5 },
       onBack: () => {
         navigation.pop();
       },
@@ -88,7 +88,7 @@ const ImageSelectorScreen = ({ route, navigation }) => {
     () => ({
       margin: 2,
       bgColor: 'white',
-      spinnerColor: 'blue',
+      spinnerColor: colors.primary,
       widgetWidth: 99,
       videoIcon: {
         Component: Ionicons,
@@ -100,7 +100,7 @@ const ImageSelectorScreen = ({ route, navigation }) => {
         Component: Ionicons,
         iconName: 'ios-checkmark-circle-outline',
         color: 'white',
-        bg: '#0eb14970',
+        bg: colors.primaryWithOpacity,
         size: 26,
       },
     }),
@@ -108,7 +108,7 @@ const ImageSelectorScreen = ({ route, navigation }) => {
   );
 
   return (
-        <PageContainer>
+        <PageContainer style={{paddingTop: 100, backgroundColor: colors.white}}>
           <AssetsSelector
             Settings={widgetSettings}
             Errors={widgetErrors}

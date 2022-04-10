@@ -30,12 +30,14 @@ export class LoginScreen extends React.Component {
             'password': this.state.password 
           }).then(response => {
             console.log(response['sessionToken']);
-            secureStoreSave('sessionToken', response['sessionToken']).then(() => {
+            let promises = []
+            promises.push(secureStoreSave('userId', response['userId']))
+            promises.push(secureStoreSave('sessionToken', response['sessionToken']))
+            Promise.all(promises).then(() => {
               // Navigate to UserProfile inside the Home screen navigator.
               // Pass userId as parameter to the nested navigators.
               navigation.navigate('BottomTabNavigator', {
-                screen: 'ViewUserDetails',
-                params: { userId: response['userId'] }
+                screen: 'ViewUserDetails'
               });
             });
           }).catch(err => {

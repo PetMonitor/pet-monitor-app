@@ -139,7 +139,7 @@ export class ReportListScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                this.setState({ notices : response });
+                this.setState({ notices: response });
             }).catch(err => {
                 console.log(err);
                 alert(err)

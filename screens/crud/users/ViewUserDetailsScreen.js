@@ -26,40 +26,43 @@ export class ViewUserDetailsScreen extends React.Component {
 
     fetchUserPetsDetails = () => {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId + '/pets', 
-            {
-                'Authorization': 'Basic ' + sessionToken 
-            }).then(response => {
-                response.map(async r => {
-                    const pet = { 
-                        key: r.petId,
-                        id: r.petId, 
-                        photoId: r.photos[0].photoId, 
-                        name: r.name 
-                    };
+            getSecureStoreValueFor("userId").then(userId => {
+                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
+                {
+                    'Authorization': 'Basic ' + sessionToken 
+                }).then(response => {
+                    response.map(async r => {
+                        const pet = { 
+                            key: r.petId,
+                            id: r.petId, 
+                            photoId: r.photos[0].photoId, 
+                            name: r.name 
+                        };
+                        this.setState({ pets : [...this.state.pets, pet] });
+                    })
+                    // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
 
-                    this.setState({ pets : [...this.state.pets, pet] });
-                })
-                // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
-
-            }).catch(err => {
-                console.log(err);
-                alert(err)
+                }).catch(err => {
+                    console.log(err);
+                    alert(err)
+                });
             });
         });
     };
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId, 
-            {
-                'Authorization': 'Basic ' + sessionToken 
-            }
-            ).then(response => {
-                this.setState({ userData : response }, this.fetchUserPetsDetails());
-            }).catch(err => {
-                console.log(err);
-                alert(err)
+            getSecureStoreValueFor("userId").then(userId => {
+                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId, 
+                {
+                    'Authorization': 'Basic ' + sessionToken 
+                }
+                ).then(response => {
+                    this.setState({ userData : response }, this.fetchUserPetsDetails());
+                }).catch(err => {
+                    console.log(err);
+                    alert(err)
+                });
             });
         });
         
