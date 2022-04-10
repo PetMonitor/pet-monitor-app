@@ -3,6 +3,7 @@ import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
+import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
 
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -18,39 +19,60 @@ export class ReportListScreen extends React.Component {
         super(props);
         this.state = {
             notices: [],
-            selectedIndex: 0,
+            selectedIndex: this.props.selectedIndex ? this.props.selectedIndex : 0,
             isLoading: true
         };
     }
 
-    mapReportTypeToLabel = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return "Perdido";
-        }
-        if (type == "found") {
-            return "Encontrado";
-        }
-        if (type == "for_adoption") {
-            return "En adopción";
-        }
+    objectIsEmpty = (object) => {
+        return Object.keys(object).length === 0
     }
 
-    getReportColorFromType = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return colors.pink;
-        }
-        if (type == "found") {
-            return colors.primary;
-        }
-        if (type == "for_adoption") {
-            return colors.secondary;
-        }
-    }
+    getFilters = () => {
+        const filters = this.props.route.params.filters
+        var filtersToApply = {}
 
-    navigateToReportView = (userId, noticeId) => {
-        this.props.navigation.push('ReportView', { userId: userId, noticeId: noticeId, isMyReport: false });
+        if (!filters || (filters && this.objectIsEmpty(filters))) {
+            console.log("empty")
+            return filtersToApply
+        }
+        // TODO: add province/city once locations are resolved
+        if (filters.breed != '') {
+            filtersToApply.breed = filters.breed
+        }
+        
+        if (!(filters.lostPetIsSelected && filters.petForAdoptionIsSelected && filters.petFoundIsSelected)) {
+            var reportTypes = []
+            if (filters.lostPetIsSelected) {
+                reportTypes.push('LOST')
+            }
+            if (filters.petForAdoptionIsSelected) {
+                reportTypes.push('FOR_ADOPTION')
+            }
+            if (filters.petFoundIsSelected) {
+                reportTypes.push('FOUND')
+            }
+            if (reportTypes.length > 0) {
+                filtersToApply.reportType = reportTypes.join(",")
+            }
+        }
+        if (!(filters.catIsSelected && filters.dogIsSelected)) {
+            if (filters.catIsSelected) {
+                filtersToApply.petType = 'CAT'
+            }
+            if (filters.dogIsSelected) {
+                filtersToApply.petType = 'DOG'
+            }
+        }
+        if (!(filters.femaleIsSelected && filters.maleIsSelected)) {
+            if (filters.femaleIsSelected) {
+                filtersToApply.petSex = 'FEMALE'
+            }
+            if (filters.maleIsSelected) {
+                filtersToApply.petSex = 'MALE'
+            }
+        }
+        return filtersToApply
     }
 
     renderItem = ({item}) =>  {
@@ -59,7 +81,7 @@ export class ReportListScreen extends React.Component {
                 <Image style={{height: (width - 20) / 2, width:  (width - 20) / 2, borderRadius: 5, margin: 5}}
                         source={{uri:`data:image/png;base64,${Buffer.from(item.pet.photo).toString('base64')}`}}
                 />
-                <Text style={{fontSize: 16, fontWeight: 'bold', color: this.getReportColorFromType(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{this.mapReportTypeToLabel(item.noticeType)}</Text> 
+                <Text style={{fontSize: 16, fontWeight: 'bold', color: mapReportTypeToLabelColor(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{mapReportTypeToLabel(item.noticeType)}</Text> 
             </TouchableOpacity>
         )
     }
@@ -70,9 +92,44 @@ export class ReportListScreen extends React.Component {
         });
     };
 
+    navigateToReportView = (userId, noticeId) => {
+        this.props.navigation.push('ReportView', { noticeUserId: userId, noticeId: noticeId, isMyReport: false });
+    }
+
     navigateToFilterSettings = () => {
         // Navigate to filter settings page.
-        this.props.navigation.navigate('ReportListFilter'); 
+        this.props.navigation.navigate('ReportListFilter', {filters: this.props.route.params ? this.props.route.params.filters : undefined}); 
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.route.params) {
+            let filters = this.props.route.params.filters
+            if ((filters && !prevProps.route.params) || (filters != prevProps.route.params.filters)) {
+                let queryParams = ''
+                
+                if (!this.objectIsEmpty(filters)) {
+                    queryParams = '?'
+                    
+                    const filtersToApply = this.getFilters()
+                    queryParams += filtersToApply.petSex ? "petSex=" + filtersToApply.petSex + "&" : ""
+                    queryParams += filtersToApply.petType ? "petType=" + filtersToApply.petType + "&" : ""
+                    queryParams += filtersToApply.reportType ? "noticeType=" + filtersToApply.reportType + "&" : ""
+                }
+
+                getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+                    getJsonData(global.noticeServiceBaseUrl + '/notices' + queryParams, 
+                    {
+                        'Authorization': 'Basic ' + sessionToken 
+                    }
+                    ).then(response => {
+                        this.setState({ notices : response });
+                    }).catch(err => {
+                        console.log(err);
+                        alert(err)
+                    }).finally(() => this.setState({ isLoading : false }));
+                });
+            }
+        }
     }
 
     componentDidMount() {
@@ -82,8 +139,7 @@ export class ReportListScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                console.log(response);
-                this.setState({ notices : response });
+                this.setState({ notices: response });
             }).catch(err => {
                 console.log(err);
                 alert(err)
@@ -92,7 +148,6 @@ export class ReportListScreen extends React.Component {
     }
     
     render() {
-        // const { user } = this.props.route.params;
         const mapTabTitle = "Mapa";
         const listTabTitle = "Lista";
         const segmentedTabTitles = [mapTabTitle, listTabTitle];

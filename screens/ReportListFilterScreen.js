@@ -11,13 +11,13 @@ export class ReportListFilterScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            lostPetIsSelected: false,
-            petFoundIsSelected: false,
-            petForAdoptionIsSelected: false,
-            dogIsSelected: false,
-            catIsSelected: false,
-            femaleIsSelected: false,
-            maleIsSelected:false,
+            lostPetIsSelected: true,
+            petFoundIsSelected: true,
+            petForAdoptionIsSelected: true,
+            dogIsSelected: true,
+            catIsSelected: true,
+            femaleIsSelected: true,
+            maleIsSelected: true,
             breed: '',
             province: '',
             city: ''
@@ -25,14 +25,32 @@ export class ReportListFilterScreen extends React.Component {
     }
 
     cleanFilters = () => {
-        // TODO: implement this logic
-        console.log("Filters should be cleaned here")
+        this.setState({
+            lostPetIsSelected: true,
+            petFoundIsSelected: true,
+            petForAdoptionIsSelected: true,
+            dogIsSelected: true,
+            catIsSelected: true,
+            femaleIsSelected: true,
+            maleIsSelected: true,
+            breed: '',
+            province: '',
+            city: ''
+        });
     }
 
-    saveFilters = () => (
+    saveFilters = () => {
         // TODO: implement this logic
-        console.log("Filters should be saved here")
-    )
+        // console.log("Filters should be saved here")
+        this.navigateToReportList()
+    }
+
+    navigateToReportList = () => {
+        this.props.navigation.navigate('BottomTabNavigator', {
+            screen: 'ReportList',
+            params: { selectedIndex: 1, filters: this.state }
+        });
+    }
 
     showFiltersHeader = () => (
         <>
@@ -64,14 +82,24 @@ export class ReportListFilterScreen extends React.Component {
         </>
     )
 
-    showTextInput = (onChangeText) => (
+    showTextInput = (onChangeText, value) => (
         <TextInput
             onChangeText = {onChangeText}
             autoCorrect = { false }
             style = {styles.textInput}
             maxLength = { 50 }
+            value = {value}
         />
     )
+
+    componentDidMount() {
+        let filters = this.props.route.params.filters
+        if (filters) {
+            this.setState({
+                ...filters
+            })
+        }
+    }
 
     render() {
         return (
@@ -118,15 +146,15 @@ export class ReportListFilterScreen extends React.Component {
 
                     {/* Breed filter */}
                     <Text style={styles.filterTitle}>Raza</Text>
-                    {this.showTextInput(text => { this.setState({ breed: text })})}
+                    {this.showTextInput(text => { this.setState({ breed: text })}, this.state.breed)}
 
                     {/* Province filter */}
                     <Text style={styles.filterTitle}>Provincia</Text>
-                    {this.showTextInput(text => { this.setState({ province: text })})}
+                    {this.showTextInput(text => { this.setState({ province: text })}, this.state.province)}
 
                     {/* City filter */}
                     <Text style={styles.filterTitle}>Ciudad</Text>
-                    {this.showTextInput(text => { this.setState({ city: text })})}
+                    {this.showTextInput(text => { this.setState({ city: text })}, this.state.city)}
 
                     <TouchableOpacity style={styles.button} onPress={() => this.saveFilters()}>
                         <Text style={styles.buttonFont}>Aplicar filtros</Text>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, SafeAreaView, StyleSheet, View, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
@@ -83,9 +83,9 @@ export class FosteringVolunteersScreen extends React.Component {
 
     render() {
         return (
-            <SafeAreaView style={styles.container}> 
+            <View style={styles.container}> 
                 <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 40, paddingBottom: 20, color: colors.white}}>Voluntarios para transitar</Text>
+                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Voluntarios para transitar</Text>
                 </View>
                 <FlatList 
                     data={this.state.volunteers}
@@ -98,7 +98,7 @@ export class FosteringVolunteersScreen extends React.Component {
                 <TouchableOpacity style={[styles.button, {marginBottom: 20, marginTop: 10}]} onPress={() => this.navigateToSettingsView()}>
                     <Text style={styles.buttonFont}>Quiero sumarme como voluntario</Text>
                 </TouchableOpacity>       
-            </SafeAreaView>
+            </View>
         )
     }
 }
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     volunteerBox: {
         marginTop: 20, 
         borderWidth: 0.9,
-        borderColor: colors.inputGrey
+        borderColor: colors.inputGrey,
     },
     button: {
         backgroundColor: colors.secondary,

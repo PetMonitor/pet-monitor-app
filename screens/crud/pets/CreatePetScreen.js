@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { postJsonData } from '../../../utils/requests.js';
+import { getSecureStoreValueFor } from '../../../utils/store';
 import colors from '../../../config/colors';
 
 import { Picker } from '@react-native-picker/picker';
 import { EventRegister } from 'react-native-event-listeners';
-import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, ScrollView, View, Image } from 'react-native';
+import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, ScrollView, View, Image, ActivityIndicator } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -24,7 +25,8 @@ export class CreatePetScreen extends React.Component {
             furColor: '',
             description: '',
             photos: [],
-            myPetIsSelected: false
+            isMyPet: false,
+            isLoading: false
         }
     }
 
@@ -85,6 +87,31 @@ export class CreatePetScreen extends React.Component {
             });      
         };
 
+        const createPet = () => {
+            this.setState({ isLoading : true });
+            getSecureStoreValueFor("userId").then(userId => {
+                postJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', {
+                    name: this.state.name,
+                    type: this.state.type,
+                    size: this.state.size,
+                    lifeStage: this.state.lifeStage,
+                    breed: this.state.breed,
+                    sex: this.state.sex,
+                    furColor: this.state.furColor,
+                    description: this.state.description,
+                    photos: this.state.photos,
+                    isMyPet: this.state.isMyPet,
+                }).then(response => {
+                    console.log(response);
+                    alert('Mascota creada!')
+                    // go back to previous page
+                    this.props.navigation.goBack();
+                }).catch(err => {
+                    alert(err)
+                }).finally(() => this.setState({ isLoading : false }));
+            })
+        }
+
         const handleImagePickerPress = () => {
             this.props.navigation.navigate('ImageSelectorScreen');
         };
@@ -102,9 +129,18 @@ export class CreatePetScreen extends React.Component {
         );
 
         return (
-            <SafeAreaView style={styles.container}>   
+            <View style={styles.container}>   
+                <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
+                    <MaterialIcon
+                        name='arrow-left'
+                        size={30}
+                        color={colors.white}
+                        style={{marginLeft: 10}}
+                        onPress={() => this.props.navigation.goBack()} />
+                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Crear mascota</Text>
+                </View>
                 <ScrollView style={styles.scrollView} >
-                    <Text style={styles.label}>Nombre</Text>
+                    <Text style={styles.optionTitle}>Nombre</Text>
                     <TextInput 
                         onChangeText = { petName => { this.setState( { name: petName }) }}
                         autoCapitalize = 'none'
@@ -113,20 +149,18 @@ export class CreatePetScreen extends React.Component {
                         maxLength = { 100 } />
                     <View style={{flex:1, flexDirection: 'row'}}>
                         <View style={{flex:1, flexDirection: 'column'}}>
-                            <Text style={styles.label}>Tipo</Text>
+                            <Text style={styles.optionTitle}>Tipo</Text>
                             <Picker
                                 selectedValue={this.state.type}
-                                style={{ height: 44, width: 150, marginBottom: 15, marginTop: 5}}
-                                itemStyle={{height: 88}}
+                                itemStyle={{height: 88, fontSize: 18}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ type: itemValue })}>
                                     <Picker.Item label="Gato" value="CAT" />
                                     <Picker.Item label="Perro" value="DOG" />
                             </Picker>
-                            <Text style={styles.label}>Sexo</Text>
+                            <Text style={styles.optionTitle}>Sexo</Text>
                             <Picker
                                 selectedValue={this.state.sex}
-                                style={{ height: 64, width: 150 }}
-                                itemStyle={{height: 88}}
+                                itemStyle={{height: 88, fontSize: 18}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ sex: itemValue })}>
                                     <Picker.Item label="Macho" value="MALE" />
                                     <Picker.Item label="Hembra" value="FEMALE" />
@@ -134,21 +168,19 @@ export class CreatePetScreen extends React.Component {
                             
                         </View>
                         <View style={{flex:1, flexDirection: 'column'}}>
-                            <Text style={styles.label}>Etapa de la vida</Text>
+                            <Text style={styles.optionTitle}>Etapa de la vida</Text>
                             <Picker
                                 selectedValue={this.state.lifeStage}
-                                style={{ height: 44, width: 150, marginBottom: 15, marginTop: 5 }}
-                                itemStyle={{height: 88}}
+                                itemStyle={{height: 88, fontSize: 18}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ lifeStage: itemValue }) }>
                                     <Picker.Item label="Bebé" value="BABY" />
                                     <Picker.Item label="Adulto" value="ADULT" />
                                     <Picker.Item label="Mayor" value="SENIOR" />
                             </Picker>
-                            <Text style={styles.label}>Size</Text>
+                            <Text style={styles.optionTitle}>Tamaño</Text>
                             <Picker
                                 selectedValue={this.state.size}
-                                style={{ height: 44, width: 150 }}
-                                itemStyle={{height: 88}}
+                                itemStyle={{height: 88, fontSize: 18}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ size: itemValue }) }>
                                     <Picker.Item label="Pequeño" value="SMALL" />
                                     <Picker.Item label="Mediano" value="MEDIUM" />
@@ -156,14 +188,14 @@ export class CreatePetScreen extends React.Component {
                             </Picker>
                         </View>
                     </View>
-                    <Text style={styles.label}>Raza</Text>
+                    <Text style={styles.optionTitle}>Raza</Text>
                     <TextInput 
                         onChangeText = { breed => { this.setState({ breed: breed }) }}
                         autoCapitalize = 'none'
                         autoCorrect = { false }
                         style = { styles.textInput }
                         maxLength = { 100 } />
-                    <Text style={styles.label}>Color de Pelaje</Text>
+                    <Text style={styles.optionTitle}>Color de pelaje</Text>
                     <TextInput 
                         onChangeText = { furColor => { this.setState({ furColor: furColor }) }}
                         autoCapitalize = 'none'
@@ -171,39 +203,38 @@ export class CreatePetScreen extends React.Component {
                         style = { styles.textInput }
                         maxLength = { 100 } />
 
-                    <TouchableOpacity style={[styles.button, {flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}]} onPress={handleImagePickerPress} >
+                    <Text style={styles.optionTitle}>Fotos</Text>
+                    <TouchableOpacity style={[styles.buttonUpload, {flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}]} onPress={handleImagePickerPress} >
                         <FeatherIcon name={'upload'} size={20} color={colors.white} style={{marginRight: 10}} />
                         <Text style={styles.buttonFont}>Subir fotos</Text>
                     </TouchableOpacity>
 
-                    {/* Render uploaded images here 
-                    */}
-
-                    <View style={{flexDirection:'row'}}>
+                    {/* Render uploaded images here */}
+                    <View style={{flexDirection:'row', marginTop: 10, marginLeft: 10}}>
                         {this.state.photos.map((imageBase64, index) => {
                             return <Image key={index} style={{width: 60, height: 60, margin: 2}} source={{ uri: "data:image/png;base64," + imageBase64 }}/>
                         })}
                     </View>
 
-                    <Text style={styles.label}>Descripción</Text>
+                    <Text style={styles.optionTitle}>Descripción de la mascota</Text>
                     <TextInput 
                         multiline={true}
+                        placeholder = {"Ingrese descripción"}
                         numberOfLines={Platform.OS === 'ios' ? null : numberOfLines}
                         minHeight={(Platform.OS === 'ios' && numberOfLines) ? (20 * numberOfLines) : null}
                         onChangeText = { description => { this.setState( { description: description } ) }}
-                        autoCapitalize = 'none'
                         autoCorrect = { false }
-                        style = { styles.textInput }
+                        style = { [styles.textInput, {paddingBottom: 90, paddingTop: 10}] }
                         maxLength = { 100 } />
 
                     {creatingNewPetFromReport ? 
                     <>
                         <TouchableOpacity  style={styles.alignedContent} 
-                            onPress={() => this.setState({ myPetIsSelected: !this.state.myPetIsSelected })}>
-                            {showCheckBoxItem(this.state.myPetIsSelected, "Es mi mascota")}
+                            onPress={() => this.setState({ isMyPet: !this.state.isMyPet })}>
+                            {showCheckBoxItem(this.state.isMyPet, "Es mi mascota")}
                         </TouchableOpacity>
                         
-                        <TouchableOpacity onPress={handleFinishInitialSetup} style={[styles.button, {marginTop: '10%', marginBottom: '30%'}]}>
+                        <TouchableOpacity onPress={createPet} style={[styles.button, {alignSelf: 'center', marginTop: 40, marginBottom: 60}]}>
                             <Text style={styles.buttonFont}>Guardar mascota</Text>
                         </TouchableOpacity> 
                     </> :
@@ -220,7 +251,12 @@ export class CreatePetScreen extends React.Component {
                         </TouchableOpacity>
                     </>}
                 </ScrollView>
-            </SafeAreaView>
+                {this.state.isLoading ? 
+                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
+                        <ActivityIndicator size="large" color={colors.clearBlack}/>
+                    </View>
+                : <></>}
+            </View>
         )
     }
 }
@@ -228,49 +264,14 @@ export class CreatePetScreen extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.white,
-        flexDirection: 'column', // main axis: vertical
-        alignItems: 'center', // align items across secondary axis (horizontal)
-        justifyContent: 'center', // justify along main axis (vertical)
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+        backgroundColor: 'white',
+        flexDirection: 'column',    // main axis: vertical
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     },
     scrollView: {
         flex: 1,
-        width:'100%',
-        backgroundColor: colors.white,
         marginHorizontal: 20,
-        paddingLeft: '7%',
     },
-    textInput: {
-        borderRadius: 8, 
-        backgroundColor: colors.inputGrey, 
-        padding: 15, 
-        borderWidth: 1, 
-        borderColor: colors.inputGrey, 
-        fontSize: 16, 
-        fontWeight: '500',
-        margin: 10,
-        width: '80%',
-    },
-    label: {
-        fontSize: 18,
-        paddingTop: 10,
-        marginTop: 20,
-    },
-    button: {
-        padding: 10,
-        margin: 10,
-        borderRadius: 7,
-        backgroundColor: colors.yellow,
-        width: '80%',
-        alignItems: 'center'
-    },
-    buttonFont: {
-        fontSize:18, 
-        color: colors.white,
-        fontWeight: 'bold'
-    },
-
     alignedContent: {
         alignItems:'center', 
         flexDirection: 'row', 
@@ -280,4 +281,74 @@ const styles = StyleSheet.create({
         marginLeft: 5, 
         fontSize: 15
     },
+    sectionTitle: {
+        fontSize: 20, 
+        color: colors.primary,
+        paddingLeft: 10, 
+        paddingTop: 25, 
+        paddingBottom: 5, 
+        fontWeight: 'bold',
+    },
+    optionTitle: {
+        fontSize: 16, 
+        color: colors.clearBlack,
+        paddingLeft: 10, 
+        paddingTop: 15, 
+        fontWeight: '500'
+    },
+    textInput: {
+        borderRadius: 8, 
+        backgroundColor: colors.inputGrey, 
+        padding: 15, 
+        borderWidth: 1, 
+        borderColor: colors.inputGrey, 
+        fontSize: 16, 
+        fontWeight: '500',
+        marginLeft: 10, 
+        marginTop: 10, 
+        marginRight: 10
+    },
+    buttonUpload: {
+        backgroundColor: colors.secondary,
+        marginTop: 10,
+        marginLeft: 10,
+        paddingHorizontal: 15, 
+        paddingVertical: 10,
+        borderRadius: 7, 
+        alignSelf: 'flex-start'
+    },
+    button: {
+        backgroundColor: colors.secondary,
+        marginTop: 10,
+        marginLeft: 10,
+        padding: 18, 
+        borderRadius: 7, 
+        width: '55%', 
+        alignSelf: 'flex-start'
+    },
+    buttonFont: {
+        fontSize: 16, 
+        fontWeight: '500', 
+        alignSelf: 'center',
+        color: colors.white
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: colors.white,
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: colors.clearBlack,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: "center",
+    }
 });

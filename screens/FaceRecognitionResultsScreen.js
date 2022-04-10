@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { Text, SafeAreaView, StyleSheet, View, FlatList, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, Dimensions, Modal } from 'react-native';
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
+import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -20,22 +21,17 @@ export class FaceRecognitionResultsScreen extends React.Component {
         this.state = {
             notices: [],
             selectedIndex: 0,
-            isLoading: true
+            isLoading: true,
+            checksSettingsModalVisible: false
         };
     }
 
-    renderPet = (item) =>  {
-        return (
-            <TouchableOpacity onPress={() => console.log(item)}>
-                <Image style={{height: 100, width: 100, borderRadius: 5, margin: 5}}
-                        source={require('../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}
-                />
-            </TouchableOpacity>
-        )
+    setModalVisible = (visible) => {
+        this.setState({ contactInfoModalVisible: visible });
     }
 
     navigateToReportView = (userId, noticeId) => {
-        this.props.navigation.push('ReportView', { userId: userId, noticeId: noticeId, isMyReport: false });
+        this.props.navigation.push('ReportView', { noticeUserId: userId, noticeId: noticeId, isMyReport: false });
     }
 
     renderItem = ({item}) =>  {
@@ -44,35 +40,9 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 <Image style={{height: (width - 50) / 2, width:  (width - 50) / 2, borderRadius: 5, margin: 5}}
                         source={{uri:`data:image/png;base64,${Buffer.from(item.pet.photo).toString('base64')}`}}
                 />
-                <Text style={{fontSize: 16, fontWeight: 'bold', color: this.getReportColorFromType(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{this.mapReportTypeToLabel(item.noticeType)}</Text> 
+                <Text style={{fontSize: 16, fontWeight: 'bold', color: mapReportTypeToLabelColor(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{mapReportTypeToLabel(item.noticeType)}</Text> 
             </TouchableOpacity>
         )
-    }
-
-    mapReportTypeToLabel = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return "Perdido";
-        }
-        if (type == "found") {
-            return "Encontrado";
-        }
-        if (type == "for_adoption") {
-            return "En adopción";
-        }
-    }
-
-    getReportColorFromType = type => {
-        type = type.toLowerCase();
-        if (type == "lost" || type == "stolen") {
-            return colors.pink;
-        }
-        if (type == "found") {
-            return colors.primary;
-        }
-        if (type == "for_adoption") {
-            return colors.secondary;
-        }
     }
 
     componentDidMount() {
@@ -83,7 +53,6 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                console.log(response);
                 this.setState({ notices : response });
             }).catch(err => {
                 console.log(err);
@@ -94,20 +63,45 @@ export class FaceRecognitionResultsScreen extends React.Component {
 
     render() {
         return (
-            <SafeAreaView style={styles.container}>
-                 <View style={{justifyContent: 'center', alignItems: 'flex-start', marginBottom: 20, backgroundColor: colors.primary}}>
+            <View style={styles.container}>
+                <View>
+                <Modal 
+                    animationType="slide"
+                    transparent={true}
+                    visible={this.state.checksSettingsModalVisible}
+                    onRequestClose={() => {
+                        Alert.alert("Modal has been closed.");
+                        this.setModalVisible(!modalVisible);
+                    }}>
+                    <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
+                        <View style={styles.modalView}>
+                            <Text style={styles.modalTitle}>Chequeos</Text>
+                            {/* {this.state.contactInfo.name ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Nombre: </Text>{this.state.contactInfo.name}</Text> : <></>}
+                            {this.state.contactInfo.email ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>e-mail: </Text>{this.state.contactInfo.email}</Text> : <></>}
+                            {this.state.contactInfo.phoneNumber ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Teléfono: </Text>{this.state.contactInfo.phoneNumber}</Text> : <></>} */}
+                            <TouchableOpacity
+                                style={[styles.button, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
+                                onPress={() => {
+                                    this.setModalVisible(!this.state.checksSettingsModalVisible);
+                                }}>
+                                <Text>Ok</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>  
+                </View>
+                <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
                     <Icon
                         name='arrow-left'
-                        size={33}
+                        size={30}
                         color={colors.white}
-                        style={{marginLeft: 10, paddingTop: 30, paddingBottom: 15}}
+                        style={{marginLeft: 10}}
                         onPress={() => this.props.navigation.goBack()} />
-                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.white, paddingTop: 10, position: 'absolute'}}>Resultados</Text>
-
+                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Resultados</Text>
                 </View>
                 <View style={styles.alignedContent}>
                     <Text style={styles.titleText}>Mascotas similares</Text>
-                    <MaterialIcon name='notifications' size={24} color={colors.secondary} style={{marginLeft: 5}}/>
+                    <MaterialIcon name='notifications' size={24} color={colors.secondary} style={{marginLeft: 5}} onPress={() => this.setModalVisible(true)}/>
                 </View>
 
                 <FlatList 
@@ -118,7 +112,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                     renderItem={this.renderItem}
                     style={{margin: 20}}
                 />
-            </SafeAreaView>
+            </View>
         )
     }
 }
@@ -142,4 +136,29 @@ const styles = StyleSheet.create({
         flexDirection: 'row', 
         marginTop: 10
     },
+    modalView: {
+        margin: 20,
+        backgroundColor: colors.white,
+        borderRadius: 20,
+        padding: 35,
+        shadowColor: colors.clearBlack,
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalTitle: {
+        marginBottom: 15,
+        color: colors.secondary,
+        fontWeight: 'bold',
+        fontSize: 18,
+        textAlign: "center"
+    },
+    modalText: {
+      marginBottom: 15,
+      color: colors.clearBlack
+    }
 });

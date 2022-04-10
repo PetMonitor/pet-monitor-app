@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, SafeAreaView, StyleSheet, View, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, ScrollView } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -24,7 +24,7 @@ export class FosteringVolunteerProfileScreen extends React.Component {
             petSizeToFoster: "SMALL",
             additionalInfo: "Vivo con perros y con chicos. Tengo balcón en el depto.",
             contactInfo: {
-                mail: "email@gmail.com",
+                email: "email@gmail.com",
                 phoneNumber: "112345678"
             }
         };
@@ -77,23 +77,23 @@ export class FosteringVolunteerProfileScreen extends React.Component {
     renderPetsToFoster = () => {
         var pets = []
         if (this.state.canFoster.includes("DOG")) {
-            pets.push(<Dog color={colors.secondary} weight='regular' size={68} />) 
+            pets.push(<Dog color={colors.secondary} weight='regular' size={68} key={"dog"}/>) 
         }  
         if  (this.state.canFoster.includes("DOG")) {
-            pets.push(<Cat color={colors.secondary} weight='regular' size={68} />)
+            pets.push(<Cat color={colors.secondary} weight='regular' size={68} key={"cat"} />)
         }
         return pets
     }
 
     render() {
         return (
-            <SafeAreaView style={styles.container}> 
+            <View style={styles.container}> 
                 <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
                     <Icon
                         name='arrow-left'
-                        size={33}
+                        size={30}
                         color={colors.white}
-                        style={{marginLeft: 10, paddingTop: 30, paddingBottom: 15}}
+                        style={{marginLeft: 10, paddingTop: 60, paddingBottom: 15}}
                         onPress={() => this.props.navigation.goBack()} />
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, marginLeft: 20}}><Text style={[styles.text, {fontWeight: 'bold', fontSize: 24, color: colors.primary}]}>{this.state.name}</Text>{this.renderRating(this.state.stars)}</View>
@@ -124,10 +124,10 @@ export class FosteringVolunteerProfileScreen extends React.Component {
                     <Text style={styles.text}>{this.state.available ? "Disponible" : "No disponible"}</Text>
 
                     <Text style={styles.titleText}>Contacto</Text>
-                    <Text style={styles.text}>{this.state.contactInfo.mail}</Text>
+                    <Text style={styles.text}>{this.state.contactInfo.email}</Text>
                     <Text style={styles.text}>{this.state.contactInfo.phoneNumber}</Text>
                 </ScrollView>               
-            </SafeAreaView>
+            </View>
         )
     }
 }

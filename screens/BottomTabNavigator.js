@@ -30,23 +30,23 @@ export class BottomTabNavigator extends React.Component {
         return (
             <Tab.Navigator screenOptions={{tabBarStyle: { height: 70 }}}>
                 {/* Each tab screen represents a tab in the bottom tab navigation bar */}
-                <Tab.Screen name='Reports' component={ReportListScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
+                <Tab.Screen name='ReportList' component={ReportListScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <MapPin size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                     )}}/>
-                <Tab.Screen name='Face Recognition Search' component={FaceRecognitionSearchScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
+                <Tab.Screen name='FaceRecognitionSearch' component={FaceRecognitionSearchScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <Dog size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>
-                <Tab.Screen name='Create Report' component={CreateReportScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
+                <Tab.Screen name='CreateReport' component={CreateReportScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <PlusCircle size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>
-                <Tab.Screen name='Temporal Foster Volunteers' component={FosteringVolunteersScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
+                <Tab.Screen name='TemporalFosterVolunteers' component={FosteringVolunteersScreen} options={{headerShown: false, headerStyle: {backgroundColor: colors.primary}, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <UsersThree size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>  
-                <Tab.Screen name='User Profile' component={ViewUserDetailsScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
+                <Tab.Screen name='ViewUserDetails' component={ViewUserDetailsScreen} options={{headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.grey, tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <User size={tabIconSize} color={color} weight={this.defineWeight(focused)} />  
                 )}}/>             
