@@ -82,13 +82,13 @@ export class EditUserDetailsScreen extends React.Component {
 
         return (
             <SafeAreaView style={styles.container}>   
-                <ScrollView style={styles.scrollView} >
+                <ScrollView>
                     <View style={styles.topContainer}>
                         {/* TODO: image source should be conditional to profilePicture value, this is just the default in case of null */}
                         <ImageBackground source={require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}  
-                            style={{width: 130, height: 130, marginTop: 10}} 
+                            style={{width: 130, height: 130, marginTop: 10, alignSelf: 'center'}} 
                             imageStyle={{borderRadius: 130/2}}>
-                                <View style={{position: 'absolute', top: 45, left:45}}>
+                                <View style={{position: 'absolute', top: 45, left: 45}}>
                                     <Icon.Button
                                         onPress={handlePickNewImage}
                                         size={30}
@@ -97,19 +97,21 @@ export class EditUserDetailsScreen extends React.Component {
                                         color={colors.white}/>
                                 </View>
                         </ImageBackground>
-                        <Text style={{color: colors.primary, fontWeight: 'bold', fontSize: 18, marginLeft: 15 , marginTop: 10}}>Información Básica</Text>
+                        <View style={{
+                            marginTop: 20,
+                            marginLeft: 30, 
+                            marginRight: 30,
+                            borderBottomColor: colors.inputGrey,
+                            borderBottomWidth: 1,
+                        }}
+                        />
+                        <Text style={{color: colors.primary, fontWeight: 'bold', fontSize: 20, marginLeft: 30, marginTop: 10, marginBottom: 10, alignSelf: 'flex-start'}}>Información básica</Text>
                         
                     </View>
 
-                    <View style={{flex: 1, flexDirection:'row' }}>
-                        <View style={[{flex: 1}, styles.column]}>
+                    <View style={{flex: 1,  marginHorizontal: 30 }}>
+                        <View style={styles.alignedContent}>
                             <Text style={styles.textLabel}>Nombre</Text>
-                            <Text style={styles.textLabel}>Usuario</Text>
-                            <Text style={styles.textLabel}>Email</Text>
-                            <Text style={styles.textLabel}>Teléfono</Text>
-                        </View>
-
-                        <View style={[{flex: 2}, styles.column]}>
                             <TextInput 
                                 value={this.state.name}
                                 onChangeText = { inputName => { this.setState({ name: inputName })}}
@@ -118,7 +120,9 @@ export class EditUserDetailsScreen extends React.Component {
                                 style = {styles.textInput}
                                 maxLength = { 30 }
                             />
-
+                        </View>
+                        <View style={styles.alignedContent}>
+                            <Text style={styles.textLabel}>Usuario</Text>
                             <TextInput 
                                 value={this.state.username}
                                 onChangeText = { inputUsername => { this.setState({ username: inputUsername })}}
@@ -127,7 +131,9 @@ export class EditUserDetailsScreen extends React.Component {
                                 style = {styles.textInput}
                                 maxLength = { 30 }
                             />
-
+                        </View>
+                        <View style={styles.alignedContent}>
+                            <Text style={styles.textLabel}>Email</Text>
                             <TextInput 
                                 value={this.state.email}
                                 onChangeText = { inputEmail => { this.setState({ email: inputEmail })}}
@@ -136,7 +142,9 @@ export class EditUserDetailsScreen extends React.Component {
                                 style = {styles.textInput}
                                 maxLength = { 30 }
                             />
-
+                        </View>
+                        <View style={styles.alignedContent}>
+                            <Text style={styles.textLabel}>Teléfono</Text>
                             <TextInput 
                                 value={this.state.phoneNumber}
                                 onChangeText = { inputPhoneNumber => { this.setState({ phoneNumber: inputPhoneNumber })}}
@@ -148,7 +156,7 @@ export class EditUserDetailsScreen extends React.Component {
                         </View>
                     </View>
 
-                    <View style={[{flex: 1}, styles.column]}>
+                    <View style={[{flex: 1, marginLeft: 30, marginBottom: 10}, styles.column]}>
                         <Text style={[styles.textLabel, {textDecorationLine: 'underline'} ]}
                             onPress={handleChangePassword}>
                             Cambiar contraseña
@@ -157,10 +165,10 @@ export class EditUserDetailsScreen extends React.Component {
 
                     <View style={styles.lowerContainer}>
 
-                        <View style={{flexDirection:'row', marginLeft: 10}}>
-                            <Text style={{fontWeight: 'bold', fontSize: 18, color: colors.pink, margin:15}}>Alertas</Text>
+                        <View style={{flexDirection:'row', marginLeft: 30}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 18, color: colors.pink, marginTop: 15, marginRight: 20}}>Alertas</Text>
                             <Switch 
-                                style={{margin: 10}}
+                                style={{marginTop: 10}}
                                 trackColor={{ false: colors.grey, true: colors.pink }}
                                 thumbColor={ colors.white }
                                 onValueChange={handleToggleAlerts}
@@ -168,12 +176,12 @@ export class EditUserDetailsScreen extends React.Component {
                             />
                         </View>
 
-                        {this.state.alertsActivated ? <View style={{flexDirection:'row', marginLeft: 20}}>
+                        {this.state.alertsActivated ? <View style={[styles.alignedContent, {marginLeft: 30}]}>
                             <Text style={styles.textLabel}>Radio</Text>
                             <Picker selectedValue={this.state.alertRadius}
-                                style={{ height: 44, width: 150, marginLeft: 40 }}
-                                itemStyle={{height: 88}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ alertRadius:itemValue })}
+                                style={{ width: 150, marginLeft: 40, marginRight: 30 }}
+                                itemStyle={{height: 88, fontSize: 16}}
+                                onValueChange={(itemValue, itemIndex) => this.setState({ alertRadius: itemValue })}
                                 enabled={this.state.alertsActivated}
                                 >
                                 <Picker.Item label="1 km" value={1} />
@@ -183,19 +191,14 @@ export class EditUserDetailsScreen extends React.Component {
                             </Picker>
                         </View> : null}
                         
-                        
                     </View>
-                    <View style={{flex: 1, alignItems: 'center', marginTop: 40}}>
+                    <View style={{flex: 1, alignItems: 'center', marginTop: 30, marginBottom: 40}}>
                         <TouchableOpacity 
                             style={[styles.button]}
                             onPress={handleEditProfile}>
-                            <Text style={[styles.buttonFont, { color: colors.white }]}>Guardar Cambios</Text>
+                            <Text style={[styles.buttonFont, { color: colors.white }]}>Guardar cambios</Text>
                         </TouchableOpacity>
                     </View>
-                    {/* This next view is a workaround because scrollview won't go 
-                        all the way to the bottom of the page 
-                    */}
-                    <View style={{flex:1, paddingTop:'20%'}}/> 
                 </ScrollView>
             </SafeAreaView>
         );
@@ -205,22 +208,16 @@ export class EditUserDetailsScreen extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.white,
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
-    scrollView: {
-        flex: 1,
-        width:'100%',
-        backgroundColor: colors.white,
+        backgroundColor: 'white',
+        flexDirection: 'column',    // main axis: vertical
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     },
     topContainer: {
         flex: 1,
         backgroundColor: colors.white,
         flexDirection: 'column',
-        alignItems: 'center'
     },
     column: {
-        
         backgroundColor: colors.white,
         flexDirection: 'column',
         alignItems: 'baseline'
@@ -233,37 +230,42 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start'
     },
     textLabel: {
-        color: colors.darkGery,
-        fontSize: 20,
-        marginTop: 40,
-        marginLeft: 10,
-        marginBottom: 18,
+        marginTop: 20,
+        marginBottom: 15,
+        fontSize: 16, 
+        color: colors.clearBlack,
+        fontWeight: '500',
+        flex: 1
     },
     textInput: {
-        color: colors.darkGery,
+        color: colors.clearBlack,
         borderRadius: 8, 
         backgroundColor: colors.inputGrey, 
         borderWidth: 1, 
         borderColor: colors.inputGrey, 
-        fontSize: 18, 
+        fontSize: 16, 
         fontWeight: '500',
-        marginTop: 17,
-        marginBottom: 15,
-        width: '90%',
-        height: '15%',
-        padding: 15
+        alignSelf: 'flex-end',
+        padding: 15,
+        flex: 3
     },
     buttonFont: {
-        fontSize: 18, 
-        fontWeight: "bold", 
+        fontSize: 16, 
+        fontWeight: "500", 
         alignSelf: "center",
     },
     button: {
-        padding: 10,
+        padding: 18,
         margin: 10,
         borderRadius: 7,
         backgroundColor: colors.primary,
-        width: '80%',
+        width: '55%',
+
         alignItems: 'center'
+    },
+    alignedContent: {
+        flexDirection: 'row', 
+        alignItems:'center', 
+        marginTop: 10
     },
 });
