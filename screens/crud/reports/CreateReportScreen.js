@@ -61,9 +61,7 @@ export class CreateReportScreen extends React.Component {
         const photoId = item.photos[0].photoId
         return (
             <TouchableOpacity onPress={() => this.setSelectedPhoto(petId)} style={{borderColor: this.state.petId == petId ? colors.secondary : colors.white, borderWidth: 3, borderRadius: 5}}>
-                <View style={{ aspectRatio: 1 }}>
                 <Image key={'img_' + photoId} resizeMode="cover" style={{aspectRatio: 1, height: 100, borderRadius: 5, margin: 3}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + photoId }}/>
-            </View>
             </TouchableOpacity>
         )
     }
@@ -152,7 +150,7 @@ export class CreateReportScreen extends React.Component {
                 </Modal>  
                 </View>
                 <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Crear reporte</Text>
+                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 30, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Crear reporte</Text>
                 </View>
                 <ScrollView style={{flex:1, padding: 20}}>
                     {/* Report type picker */}

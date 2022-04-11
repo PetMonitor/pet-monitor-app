@@ -155,7 +155,7 @@ export class ReportListScreen extends React.Component {
         return (
             <SafeAreaView style={styles.container}>
                 <View style={{alignItems: 'flex-start'}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 40, paddingBottom: 10, color: colors.primary}}>Reportes</Text>
+                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 30, paddingTop: 40, paddingBottom: 10, color: colors.primary}}>Reportes</Text>
                 </View>
                 <View>
                     <SegmentedControlTab 
