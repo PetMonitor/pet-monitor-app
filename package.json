@@ -31,6 +31,7 @@
     "react-native": "~0.64.3",
     "react-native-event-listeners": "^1.0.7",
     "react-native-fetch-api": "^3.0.0",
+    "react-native-maps": "0.30.1",
     "react-native-safe-area-context": "~3.3.2",
     "react-native-screens": "~3.10.1",
     "react-native-segmented-control-tab": "^4.0.0",
@@ -40,7 +41,8 @@
     "react-native-vector-icons": "^9.0.0",
     "react-native-web": "~0.17.5",
     "styled-components": "^5.3.3",
-    "unimodules-permissions-interface": "^6.1.0"
+    "unimodules-permissions-interface": "^6.1.0",
+    "expo-location": "~13.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0"

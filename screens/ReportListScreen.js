@@ -8,6 +8,9 @@ import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mapper
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import MapView from 'react-native-maps';
+import * as Location from 'expo-location';
+
 import colors from '../config/colors';
 
 const { height, width } = Dimensions.get("screen")
@@ -20,7 +23,8 @@ export class ReportListScreen extends React.Component {
         this.state = {
             notices: [],
             selectedIndex: this.props.selectedIndex ? this.props.selectedIndex : 0,
-            isLoading: true
+            isLoading: true,
+            location: null
         };
     }
 
@@ -133,6 +137,14 @@ export class ReportListScreen extends React.Component {
     }
 
     componentDidMount() {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          alert('Permission to access location was denied');
+          return;
+        }
+        let location = await Location.getCurrentPositionAsync({});
+        this.setState({ location: location })
+        console.log(location)
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getJsonData(global.noticeServiceBaseUrl + '/notices', 
             {
@@ -186,6 +198,18 @@ export class ReportListScreen extends React.Component {
                             renderItem={this.renderItem}
                         />
                     </View>
+                }
+
+                {this.state.selectedIndex == segmentedTabTitles.indexOf(mapTabTitle) &&
+                     
+                    <MapView style={{width: "100%", height: "100%"}}
+                        initialRegion={{
+                        latitude: 37.78825,
+                        longitude: -122.4324,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
+                        }}
+                    />
                 }
             </SafeAreaView>
         )
