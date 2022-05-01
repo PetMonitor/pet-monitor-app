@@ -1,11 +1,13 @@
 import React from 'react';
-
-import { postJsonData } from '../utils/requests.js';
-import { secureStoreSave } from '../utils/store.js';
-
-import { Image, Platform, Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, View } from 'react-native';
+import * as Facebook from 'expo-facebook';
 
 import colors from '../config/colors';
+import * as config from '../config/config';
+
+import { getJsonData, postJsonData } from '../utils/requests.js';
+import { secureStoreSave } from '../utils/store.js';
+import { Image, Platform, Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, View } from 'react-native';
+
 
 export class LoginScreen extends React.Component {
 
@@ -17,11 +19,85 @@ export class LoginScreen extends React.Component {
         password: ''
       };
     }
-    
 
     render() {
   
       const { navigation } = this.props;
+
+      const loginWithFacebook = async () => {
+        try {
+
+          await Facebook.initializeAsync({
+            appId: config.FACEBOOK_APP_ID,
+          });
+          
+          const {type, token} = await Facebook.logInWithReadPermissionsAsync({ permissions:['public_profile', 'email'] });
+
+          if (type == "success") {
+            let response = await fetch(global.facebookGraphBaseUrl + `/me?access_token=${token}`);
+            response = await response.json();
+            console.log('Logged in!', `Hi ${JSON.stringify(response)}!`);
+            let userInfo = await fetch(global.facebookGraphBaseUrl + `/${response.id}?fields=id,name,email&access_token=${token}`);
+            userInfo = await userInfo.json();
+
+            const facebookUsers = await getJsonData(global.noticeServiceBaseUrl + '/users/facebook/' + userInfo.id).catch(err => {
+                alert(err);
+            });
+
+            console.log(`Backend returned users ${JSON.stringify(facebookUsers)}`)
+
+            if (facebookUsers.length == 0) {
+              // If facebook user doesn't exist, create it in the database
+              userInfo = {
+                'username': userInfo.name, 
+                'facebookId': userInfo.id,
+                'name': userInfo.name, 
+                'facebookId': response.id, 
+                'email': userInfo.email
+              }
+
+              console.log(`Creating profile for user ${JSON.stringify(userInfo)}`)
+
+              postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
+                console.log(response);
+                alert('Successfully created facebook user!')
+                // go back to login page
+                let promises = []
+                promises.push(secureStoreSave('userId', response['userId']))
+                promises.push(secureStoreSave('sessionToken', token))
+                Promise.all(promises).then(() => {
+                  // Navigate to UserProfile inside the Home screen navigator.
+                  // Pass userId as parameter to the nested navigators.
+                  navigation.navigate('BottomTabNavigator', {
+                    screen: 'ViewUserDetails'
+                  });
+                });
+              }).catch(err => {
+                alert(err);
+              });
+            }
+
+
+            /*postJsonData(global.noticeServiceBaseUrl + '/users/login', body).then(response => {
+              console.log(response['sessionToken']);
+              let promises = []
+              promises.push(secureStoreSave('userId', response['userId']))
+              promises.push(secureStoreSave('sessionToken', response['sessionToken']))
+              Promise.all(promises).then(() => {
+                // Navigate to UserProfile inside the Home screen navigator.
+                // Pass userId as parameter to the nested navigators.
+                navigation.navigate('BottomTabNavigator', {
+                  screen: 'ViewUserDetails'
+                });
+              });
+            }).catch(err => {
+              alert(err)
+            });*/
+          }
+        } catch ({ message }) {
+          alert(`Facebook Login Error: ${message}`);
+        }
+      }
 
       const handleLoginPress = () => { 
         postJsonData(global.noticeServiceBaseUrl + '/users/login', 
@@ -81,7 +157,7 @@ export class LoginScreen extends React.Component {
             </TouchableOpacity>
             <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', alignSelf: 'center', marginTop: 5}}>¿No sos miembro? <Text style={{textDecorationLine: 'underline'}} onPress={handleRegisterPress}>Registrate</Text></Text>
             
-            <TouchableOpacity style={[styles.button, { backgroundColor: colors.facebook, marginTop: 60 }]} onPress={() => console.log("Facebook login not implemented yet, do we need this?")}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: colors.facebook, marginTop: 60 }]} onPress={loginWithFacebook}>
               <Text style={[styles.buttonFont, { color: colors.white }]}>Continuar con Facebook</Text>
             </TouchableOpacity>            
           </View>

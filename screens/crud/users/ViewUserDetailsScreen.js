@@ -53,7 +53,8 @@ export class ViewUserDetailsScreen extends React.Component {
                     // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
                 }).catch(err => {
                     console.log(err);
-                    alert(err)
+                    alert(err);
+                    this.props.navigation.popToTop();
                 });
             });
         });
