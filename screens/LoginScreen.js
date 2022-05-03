@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Facebook from 'expo-facebook';
+import * as FileSystem from 'expo-file-system';
 
 import colors from '../config/colors';
 import * as config from '../config/config';
@@ -34,17 +35,19 @@ export class LoginScreen extends React.Component {
           const {type, token} = await Facebook.logInWithReadPermissionsAsync({ permissions:['public_profile', 'email'] });
 
           if (type == "success") {
-            let response = await fetch(global.facebookGraphBaseUrl + `/me?access_token=${token}`);
-            response = await response.json();
-            console.log('Logged in!', `Hi ${JSON.stringify(response)}!`);
-            let userInfo = await fetch(global.facebookGraphBaseUrl + `/${response.id}?fields=id,name,email&access_token=${token}`);
+            let facebookLoginResponse = await fetch(global.facebookGraphBaseUrl + `/me?access_token=${token}`);
+            facebookLoginResponse = await facebookLoginResponse.json();
+
+            let userInfo = await fetch(global.facebookGraphBaseUrl + `/${facebookLoginResponse.id}?fields=id,name,email&access_token=${token}`);
             userInfo = await userInfo.json();
+
+            let userProfilePicture = await fetch(global.facebookGraphBaseUrl + `/${facebookLoginResponse.id}/picture?type=large&access_token=${token}`);
+            console.log(`USER PROFILE PIC ${JSON.stringify(userProfilePicture.url)}!`);
 
             const facebookUsers = await getJsonData(global.noticeServiceBaseUrl + '/users/facebook/' + userInfo.id).catch(err => {
                 alert(err);
             });
 
-            console.log(`Backend returned users ${JSON.stringify(facebookUsers)}`)
 
             if (facebookUsers.length == 0) {
               // If facebook user doesn't exist, create it in the database
@@ -52,19 +55,39 @@ export class LoginScreen extends React.Component {
                 'username': userInfo.name, 
                 'facebookId': userInfo.id,
                 'name': userInfo.name, 
-                'facebookId': response.id, 
-                'email': userInfo.email
+                'facebookId': facebookLoginResponse.id, 
+                'email': userInfo.email,
+                'profilePicture': await FileSystem.downloadAsync(
+                  userProfilePicture.url, FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE
+                ).then(img => {
+                  return FileSystem.readAsStringAsync(img.uri, { encoding: 'base64' })
+                }).catch(error => {
+                  console.error(error);
+                  return null;
+                })
               }
 
-              console.log(`Creating profile for user ${JSON.stringify(userInfo)}`)
+              console.log(`Creating profile for user ${userInfo.name}`)
 
-              postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
+              await postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
                 console.log(response);
-                alert('Successfully created facebook user!')
-                // go back to login page
-                let promises = []
+                alert('Successfully registered facebook user!')
+              }).catch(err => {
+                alert(err);
+                return;
+              });
+            }
+
+            const promises = []
+
+            postJsonData(global.noticeServiceBaseUrl + '/users/login', {
+                'facebookId': facebookLoginResponse.id
+            }).then(response => {
+                console.log(response['sessionToken']);
                 promises.push(secureStoreSave('userId', response['userId']))
-                promises.push(secureStoreSave('sessionToken', token))
+                promises.push(secureStoreSave('sessionToken', response['sessionToken']))
+                promises.push(secureStoreSave('facebookToken', token))
+
                 Promise.all(promises).then(() => {
                   // Navigate to UserProfile inside the Home screen navigator.
                   // Pass userId as parameter to the nested navigators.
@@ -72,27 +95,10 @@ export class LoginScreen extends React.Component {
                     screen: 'ViewUserDetails'
                   });
                 });
-              }).catch(err => {
-                alert(err);
-              });
-            }
-
-
-            /*postJsonData(global.noticeServiceBaseUrl + '/users/login', body).then(response => {
-              console.log(response['sessionToken']);
-              let promises = []
-              promises.push(secureStoreSave('userId', response['userId']))
-              promises.push(secureStoreSave('sessionToken', response['sessionToken']))
-              Promise.all(promises).then(() => {
-                // Navigate to UserProfile inside the Home screen navigator.
-                // Pass userId as parameter to the nested navigators.
-                navigation.navigate('BottomTabNavigator', {
-                  screen: 'ViewUserDetails'
-                });
-              });
             }).catch(err => {
-              alert(err)
-            });*/
+                alert(err)
+            });
+            
           }
         } catch ({ message }) {
           alert(`Facebook Login Error: ${message}`);
