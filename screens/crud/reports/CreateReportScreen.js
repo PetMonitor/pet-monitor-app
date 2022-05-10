@@ -1,14 +1,15 @@
 import React from 'react';
 import { Text, View, Modal, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native';
 
-import { getJsonData } from '../../../utils/requests.js';
-import { postJsonData } from '../../../utils/requests.js';
+import { getJsonData, postJsonData, getLocationFromCoordinates } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
 import colors from '../../../config/colors';
 
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Feather';
+import * as Location from 'expo-location';
 
 /** Implements the report creation screen. */
 export class CreateReportScreen extends React.Component {
@@ -17,6 +18,7 @@ export class CreateReportScreen extends React.Component {
         super(props);
         this.state = {
             reportType: 'LOST',
+            country: '',
             province: '',
             city: '',
             location: '',
@@ -29,7 +31,9 @@ export class CreateReportScreen extends React.Component {
             petId: '',
             userId: '',
             isLoading: false,
-            createdNoticeId: ''
+            createdNoticeId: '',
+            location: null,
+            eventMarker: null
         };
     }
 
@@ -66,6 +70,38 @@ export class CreateReportScreen extends React.Component {
         )
     }
 
+    selectedLocation = (locations) => {
+        console.log(locations)
+        let maxConfidence = 0
+        let selected = 0
+        for (let i = 0; i < locations.length; i++) {
+            if (locations[i].confidence > maxConfidence) {
+                maxConfidence = locations[i].confidence
+                selected = i
+            }
+        }
+        console.log(selected)
+        return locations[selected]
+    }
+
+    fillLocationInfo = () => {
+        getLocationFromCoordinates(this.state.eventMarker.latitude, this.state.eventMarker.longitude)
+        .then(response => {
+            console.log(response)
+            let eventLocation = this.selectedLocation(response.data)
+
+            console.log(eventLocation)
+            this.setState({
+                location: eventLocation.street ? eventLocation.street : '',
+                city: eventLocation.neighbourhood ? eventLocation.neighbourhood : '',
+                province: eventLocation.locality ? eventLocation.locality : '',
+                country: eventLocation.country ? eventLocation.country : '',
+            })
+        }).catch(err => {
+            alert(err)
+        })
+    }
+
     navigateToCreatePet = () => {
         this.setState({ petId: '' })
         this.props.navigation.navigate('CreatePet', {creatingNewPetFromReport: true}); 
@@ -82,7 +118,11 @@ export class CreateReportScreen extends React.Component {
                 noticeType: this.state.reportType,
                 description: this.state.description,
                 petId: this.state.petId,
-                eventLocation: { lat: '123', long: '456'},
+                eventLocation: { lat: this.state.eventMarker.latitude, long: this.state.eventMarker.longitude},
+                street: this.state.location,
+                neighbourhood: this.state.city,
+                locality: this.state.province,
+                country: this.state.country,
                 eventTimestamp: timestamp.toISOString(),
             }).then(response => {
                 console.log(response);
@@ -101,6 +141,18 @@ export class CreateReportScreen extends React.Component {
     }
 
     componentDidMount() {
+        Location.requestForegroundPermissionsAsync()
+        .then( response => {
+            if (response.status !== 'granted') {
+                alert('Permission to access location was denied');
+                return;
+            }
+
+            Location.getCurrentPositionAsync({})
+            .then(location => {
+                this.setState({ location: location })
+            });
+        });
         getSecureStoreValueFor('sessionToken').then(sessionToken =>  
             getSecureStoreValueFor("userId").then(userId => {
                 getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
@@ -122,6 +174,7 @@ export class CreateReportScreen extends React.Component {
     }
 
     render() {
+        console.log(process.env.GEOCODING_API_KEY)
         return (
             <View style={styles.container}> 
             <View>
@@ -168,6 +221,22 @@ export class CreateReportScreen extends React.Component {
                     </Picker>
                     {/* Event section */}
                     <Text style={[styles.sectionTitle]}>Evento</Text>
+                    {this.state.location && <>
+                        <Text style={[styles.optionTitle, {paddingTop: 10}]}>Seleccionar la ubicación aproximada</Text>
+                        <MapView style={{height: 300, margin: 10}}
+                            // provider={PROVIDER_GOOGLE}
+                            region={{
+                            latitude: this.state.eventMarker ? this.state.eventMarker.latitude : this.state.location.coords.latitude,
+                            longitude: this.state.eventMarker ? this.state.eventMarker.longitude : this.state.location.coords.longitude,
+                            latitudeDelta: 0.0022,
+                            longitudeDelta: 0.0121,
+                            }}
+                            showsUserLocation={true}
+                            onPress={(e) => this.setState({ eventMarker: e.nativeEvent.coordinate })}>
+                            {this.state.eventMarker &&
+                                <Marker coordinate={this.state.eventMarker} image={require('../../../assets/eventMarker.png')} />}
+                        </MapView></>}
+                    {this.state.eventMarker && this.fillLocationInfo()}
                     <Text style={[styles.optionTitle, {paddingTop: 10}]}>Provincia</Text>
                     {this.showTextInput(text => { this.setState({ province: text })})}
 
