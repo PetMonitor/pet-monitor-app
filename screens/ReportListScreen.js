@@ -131,8 +131,6 @@ export class ReportListScreen extends React.Component {
             let filters = this.props.route.params.filters
             if ((filters && !prevProps.route.params) || (filters != prevProps.route.params.filters)) {
                 let queryParams = ''
-
-                console.log(filters)
                 
                 if (!this.objectIsEmpty(filters)) {
                     queryParams = '?'
