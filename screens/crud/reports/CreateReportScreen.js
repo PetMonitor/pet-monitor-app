@@ -6,7 +6,7 @@ import { getSecureStoreValueFor } from '../../../utils/store';
 import colors from '../../../config/colors';
 
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Feather';
 import * as Location from 'expo-location';
@@ -41,7 +41,7 @@ export class CreateReportScreen extends React.Component {
         this.setState({ operationResultModalVisible: visible });
     }
 
-    showTextInput = (onChangeText, isMultiline = false ) => (
+    showTextInput = (onChangeText, value = '', isMultiline = false ) => (
         <TextInput
             onChangeText = {onChangeText}
             autoCorrect = { false }
@@ -49,6 +49,7 @@ export class CreateReportScreen extends React.Component {
             maxLength = { isMultiline ? 100 : 50 }
             multiline = {isMultiline}
             placeholder = {isMultiline ? "Ingrese descripción" : ""}
+            value = { value ? value : "" }
         />
     )
 
@@ -71,7 +72,6 @@ export class CreateReportScreen extends React.Component {
     }
 
     selectedLocation = (locations) => {
-        console.log(locations)
         let maxConfidence = 0
         let selected = 0
         for (let i = 0; i < locations.length; i++) {
@@ -80,17 +80,14 @@ export class CreateReportScreen extends React.Component {
                 selected = i
             }
         }
-        console.log(selected)
         return locations[selected]
     }
 
-    fillLocationInfo = () => {
-        getLocationFromCoordinates(this.state.eventMarker.latitude, this.state.eventMarker.longitude)
+    fillLocationInfo = (latitude, longitude) => {
+        getLocationFromCoordinates(latitude, longitude)
         .then(response => {
-            console.log(response)
             let eventLocation = this.selectedLocation(response.data)
 
-            console.log(eventLocation)
             this.setState({
                 location: eventLocation.street ? eventLocation.street : '',
                 city: eventLocation.neighbourhood ? eventLocation.neighbourhood : '',
@@ -125,7 +122,6 @@ export class CreateReportScreen extends React.Component {
                 country: this.state.country,
                 eventTimestamp: timestamp.toISOString(),
             }).then(response => {
-                console.log(response);
                 this.setState({ createdNoticeId: response.noticeId })
                 this.setModalVisible(true);
                 // go back to previous page
@@ -174,7 +170,6 @@ export class CreateReportScreen extends React.Component {
     }
 
     render() {
-        console.log(process.env.GEOCODING_API_KEY)
         return (
             <View style={styles.container}> 
             <View>
@@ -232,19 +227,23 @@ export class CreateReportScreen extends React.Component {
                             longitudeDelta: 0.0121,
                             }}
                             showsUserLocation={true}
-                            onPress={(e) => this.setState({ eventMarker: e.nativeEvent.coordinate })}>
+                            onPress={(e) => {
+                                    if (e.nativeEvent.coordinate) {
+                                        this.setState({ eventMarker: e.nativeEvent.coordinate }) 
+                                        this.fillLocationInfo(e.nativeEvent.coordinate.latitude, e.nativeEvent.coordinate.longitude)
+                                    }
+                            }}>
                             {this.state.eventMarker &&
                                 <Marker coordinate={this.state.eventMarker} image={require('../../../assets/eventMarker.png')} />}
                         </MapView></>}
-                    {this.state.eventMarker && this.fillLocationInfo()}
                     <Text style={[styles.optionTitle, {paddingTop: 10}]}>Provincia</Text>
-                    {this.showTextInput(text => { this.setState({ province: text })})}
+                    {this.showTextInput(text => { this.setState({ province: text })}, this.state.province)}
 
                     <Text style={styles.optionTitle}>Ciudad</Text>
-                    {this.showTextInput(text => { this.setState({ city: text })})}
+                    {this.showTextInput(text => { this.setState({ city: text })}, this.state.city)}
 
                     <Text style={styles.optionTitle}>Ubicación aproximada</Text>
-                    {this.showTextInput(text => { this.setState({ location: text })})}
+                    {this.showTextInput(text => { this.setState({ location: text })}, this.state.location)}
 
                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
                         <View style={{flexDirection: 'column', flex: 0.5}}>
@@ -276,7 +275,7 @@ export class CreateReportScreen extends React.Component {
                     </View>
 
                     <Text style={styles.optionTitle}>Descripción del evento</Text>
-                    {this.showTextInput(text => { this.setState({ description: text })}, true)}
+                    {this.showTextInput(text => { this.setState({ description: text })}, '', true)}
 
                     {/* Pet section */}
                     <Text style={[styles.sectionTitle]}>Mascota</Text>

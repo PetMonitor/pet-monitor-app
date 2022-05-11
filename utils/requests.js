@@ -1,3 +1,4 @@
+import { GEOCODING_API_KEY } from "@env"
 
 export async function postJsonData(url = '', data = {}, additionalHeaders = {}) {
     // console.log('POST ' + url + ' ' + JSON.stringify(data));
@@ -69,7 +70,7 @@ export async function putJsonData(url = '', data = {}, additionalHeaders = {}) {
 };
 
 export async function getLocationFromCoordinates(latitude, longitude) {
-    const url = `http://api.positionstack.com/v1/reverse?access_key=${process.env.GEOCODING_API_KEY}&query=${latitude},${longitude}`
+    const url = `http://api.positionstack.com/v1/reverse?access_key=${GEOCODING_API_KEY}&query=${latitude},${longitude}`
     return fetch(url)
     .then(response => {
         if (response.ok) {
@@ -86,7 +87,7 @@ export async function getLocationFromCoordinates(latitude, longitude) {
 };
 
 export async function getCoordinatesFromLocation(location) {
-    const url = `http://api.positionstack.com/v1/forward?access_key=${process.env.GEOCODING_API_KEY}&query=${location}`
+    const url = `http://api.positionstack.com/v1/forward?access_key=${GEOCODING_API_KEY}&query=${location}`
     return fetch(url)
     .then(response => {
         if (response.ok) {

@@ -40,8 +40,8 @@ export class ReportListScreen extends React.Component {
         const filters = this.props.route.params.filters
         var filtersToApply = {}
 
+
         if (!filters || (filters && this.objectIsEmpty(filters))) {
-            console.log("empty")
             return filtersToApply
         }
 
@@ -131,6 +131,8 @@ export class ReportListScreen extends React.Component {
             let filters = this.props.route.params.filters
             if ((filters && !prevProps.route.params) || (filters != prevProps.route.params.filters)) {
                 let queryParams = ''
+
+                console.log(filters)
                 
                 if (!this.objectIsEmpty(filters)) {
                     queryParams = '?'
@@ -140,7 +142,7 @@ export class ReportListScreen extends React.Component {
                     queryParams += filtersToApply.petType ? "petType=" + filtersToApply.petType + "&" : ""
                     queryParams += filtersToApply.breed ? "petBreed=" + filtersToApply.breed + "&" : ""
                     queryParams += filtersToApply.reportType ? "noticeType=" + filtersToApply.reportType + "&" : ""
-                    queryParams += filtersToApply.region ? "noticeRegion=" + filtersToApply.reportRegion + "&" : ""
+                    queryParams += filtersToApply.region ? "noticeRegion=" + filtersToApply.region + "&" : ""
                 }
 
                 getSecureStoreValueFor('sessionToken').then((sessionToken) => {
