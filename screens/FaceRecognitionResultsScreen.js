@@ -22,7 +22,8 @@ export class FaceRecognitionResultsScreen extends React.Component {
             notices: [],
             selectedIndex: 0,
             isLoading: true,
-            checksSettingsModalVisible: false
+            checksSettingsModalVisible: false,
+            searchedNoticeId: props.route.params.noticeId
         };
     }
 
@@ -48,7 +49,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             // TODO: change it to similar-pets request
-            getJsonData(global.noticeServiceBaseUrl + '/notices', 
+            getJsonData(global.noticeServiceBaseUrl + '/similarPets/' + this.state.searchedNoticeId, 
             {
                 'Authorization': 'Basic ' + sessionToken 
             }

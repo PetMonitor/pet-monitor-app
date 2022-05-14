@@ -15,9 +15,11 @@
     "@react-navigation/native": "^6.0.2",
     "@react-navigation/native-stack": "^6.1.0",
     "@types/react": "^17.0.38",
+    "base-64": "^1.0.0",
     "buffer": "^6.0.3",
     "expo": "~43.0.1",
     "expo-facebook": "~12.0.3",
+    "expo-file-system": "~13.0.3",
     "expo-font": "^10.0.4",
     "expo-image-picker": "~11.0.3",
     "expo-images-picker": "2.2.3",
@@ -41,8 +43,7 @@
     "react-native-vector-icons": "^9.0.0",
     "react-native-web": "~0.17.5",
     "styled-components": "^5.3.3",
-    "unimodules-permissions-interface": "^6.1.0",
-    "expo-file-system": "~13.0.3"
+    "unimodules-permissions-interface": "^6.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0"

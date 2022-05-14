@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import * as FileSystem from 'expo-file-system';
 
 import { getJsonData } from '../../../utils/requests';
@@ -10,7 +10,7 @@ import { Text, TouchableOpacity, StyleSheet, SafeAreaView, View, Image, LogBox }
 import { UserReportGridView } from "../reports/UserReportGridView";
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 
-export class ViewUserDetailsScreen extends React.Component {
+export class ViewUserDetailsScreen extends Component {
 
 
     constructor(props) {
