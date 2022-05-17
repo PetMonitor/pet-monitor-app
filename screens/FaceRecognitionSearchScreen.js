@@ -35,7 +35,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
     }
 
     navigateToSearchResults = () => {
-        this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId }); 
+        this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId, userId: this.state.userId }); 
     }
 
     arrayBufferToBase64 = buffer => {

@@ -1,6 +1,6 @@
 
 export async function postJsonData(url = '', data = {}, additionalHeaders = {}) {
-    // console.log('POST ' + url + ' ' + JSON.stringify(data));
+    console.log('POST ' + url + ' ' + JSON.stringify(data));
     reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json'});
 
     return fetch(url, {
