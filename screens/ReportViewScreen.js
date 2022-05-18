@@ -21,9 +21,9 @@ export class ReportViewScreen extends React.Component {
             // TODO: change this for request data
             reportType: '',
             name: '',
-            province: 'Buenos Aires',
-            city: 'CABA',
-            location: 'Av Independencia 400',
+            province: '',
+            city: '',
+            location: '',
             date: new Date(),
             hour: new Date(),
             eventDescription: '',
@@ -107,7 +107,10 @@ export class ReportViewScreen extends React.Component {
             ).then(response => {
                 this.setState({ 
                     reportType: response.noticeType,
-                    eventDescription: response.description 
+                    eventDescription: response.description,
+                    province: response.locality,
+                    city: response.neighbourhood,
+                    location: response.street,
                 });
                 getSecureStoreValueFor('sessionToken').then((sessionToken) => {
                     getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + response.pet.id, 
@@ -124,7 +127,7 @@ export class ReportViewScreen extends React.Component {
                             breed: responsePet.breed,
                             size: responsePet.size,
                             lifeStage: responsePet.lifeStage,
-                            petDescription: responsePet.description
+                            petDescription: responsePet.description,
                         });
                         
                     }).catch(err => {
@@ -232,7 +235,7 @@ export class ReportViewScreen extends React.Component {
                             <>
                                 <Text style={[styles.optionTitle, {paddingTop: 0}]}>Se perdió en</Text>
                                 <Text style={styles.textInput}>{this.state.location}</Text>
-                                <Text style={[styles.textInput, {paddingTop: 5}]}>{this.state.city + ", " + this.state.province}</Text>
+                                <Text style={[styles.textInput, {paddingTop: 5}]}>{(this.state.city != '' ? this.state.city + ", " : "") + this.state.province}</Text>
 
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                     <View style={{flexDirection: 'column', flex: 0.5}}>

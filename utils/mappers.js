@@ -28,6 +28,38 @@ export function mapReportTypeToLabelColor(reportType) {
     }
 };
 
+export function mapReportTypeToMapMarkerColor(reportType) {
+    reportType = reportType.toLowerCase();
+    if (reportType == "lost") {
+        return colors.markerLostColor;
+    }
+    if (reportType == "found") {
+        return colors.markerFoundColor;
+    }
+    if (reportType == "for_adoption") {
+        return colors.markerForAdoptionColor;
+    }
+    if (reportType == "stolen") {
+        return colors.markerStolenColor;
+    }
+};
+
+export function mapReportTypeToMapMarker(reportType) {
+    reportType = reportType.toLowerCase();
+    if (reportType == "lost") {
+        return require('../assets/lostMarker.png');
+    }
+    if (reportType == "found") {
+        return require('../assets/foundMarker.png');
+    }
+    if (reportType == "for_adoption") {
+        return require('../assets/forAdoptionMarker.png');
+    }
+    if (reportType == "stolen") {
+        return require('../assets/stolenMarker.png');
+    }
+};
+
 
 /********************* PET *********************/
 

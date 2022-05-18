@@ -19,8 +19,7 @@ export class ReportListFilterScreen extends React.Component {
             femaleIsSelected: true,
             maleIsSelected: true,
             breed: '',
-            province: '',
-            city: ''
+            region: '',
         };
     }
 
@@ -34,14 +33,11 @@ export class ReportListFilterScreen extends React.Component {
             femaleIsSelected: true,
             maleIsSelected: true,
             breed: '',
-            province: '',
-            city: ''
+            region: '',
         });
     }
 
     saveFilters = () => {
-        // TODO: implement this logic
-        // console.log("Filters should be saved here")
         this.navigateToReportList()
     }
 
@@ -148,13 +144,9 @@ export class ReportListFilterScreen extends React.Component {
                     <Text style={styles.filterTitle}>Raza</Text>
                     {this.showTextInput(text => { this.setState({ breed: text })}, this.state.breed)}
 
-                    {/* Province filter */}
-                    <Text style={styles.filterTitle}>Provincia</Text>
-                    {this.showTextInput(text => { this.setState({ province: text })}, this.state.province)}
-
-                    {/* City filter */}
-                    <Text style={styles.filterTitle}>Ciudad</Text>
-                    {this.showTextInput(text => { this.setState({ city: text })}, this.state.city)}
+                    {/* Region filter */}
+                    <Text style={styles.filterTitle}>Región</Text>
+                    {this.showTextInput(text => { this.setState({ region: text })}, this.state.region)}
 
                     <TouchableOpacity style={styles.button} onPress={() => this.saveFilters()}>
                         <Text style={styles.buttonFont}>Aplicar filtros</Text>

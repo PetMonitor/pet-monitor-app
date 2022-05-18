@@ -4,6 +4,7 @@ import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, ScrollView }
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import Icon from 'react-native-vector-icons/Feather';
+import { encode as btoa } from 'base-64'
 
 import colors from '../config/colors';
 
@@ -13,40 +14,50 @@ export class FaceRecognitionSearchScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            userPets: [],
+            userNotices: [],
             userId: '',
-            petId: ''
+            noticeId: ''
         };
     }
 
-    setSelectedPhoto = (petId) => {
-        this.setState({ petId: petId });
+    setSelectedPhoto = (noticeId) => {
+        this.setState({ noticeId: noticeId });
     }
 
     renderPet = ({item}) =>  {
-        const petId = item.petId
-        const photoId = item.photos[0].photoId
+        const noticeId = item.noticeId
         return (
-            <TouchableOpacity onPress={() => this.setSelectedPhoto(petId)} style={{borderColor: this.state.petId == petId ? colors.secondary : colors.white, borderWidth: 3, borderRadius: 5}}>
-                <Image key={'img_' + photoId} resizeMode="cover" style={{aspectRatio: 1, height: 100, borderRadius: 5, margin: 3}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + photoId }}/>
+            <TouchableOpacity onPress={() => this.setSelectedPhoto(noticeId)} style={{borderColor: this.state.noticeId == noticeId ? colors.secondary : colors.white, borderWidth: 3, borderRadius: 5}}>
+                <Image key={'img_' + noticeId} resizeMode="cover" style={{aspectRatio: 1, height: 100, borderRadius: 5, margin: 3}} source={{ uri:
+                    'data:image/jpeg;base64,' + this.arrayBufferToBase64(item.pet.photo),}}/>
             </TouchableOpacity>
         )
     }
 
     navigateToSearchResults = () => {
-        this.props.navigation.push('FaceRecognitionResults'); 
+        this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId, userId: this.state.userId }); 
     }
+
+    arrayBufferToBase64 = buffer => {
+        let binary = '';
+        let bytes = new Uint8Array(buffer);
+        let len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    };
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then(sessionToken =>  
             getSecureStoreValueFor("userId").then(userId => {
-                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
+                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
                 {
                     'Authorization': 'Basic ' + sessionToken 
                 }
-                ).then(pets => {
+                ).then(notices => {
                     this.setState({ 
-                        userPets: pets,
+                        userNotices: notices,
                         userId: userId
                     });
                     
@@ -68,10 +79,10 @@ export class FaceRecognitionSearchScreen extends React.Component {
                 <Text style={{margin: 20, color: colors.clearBlack, fontSize: 15, marginTop: 30}}>Si perdiste o encontraste a una mascota podés iniciar una búsqueda por  reconocimiento facial para encontrar  mascotas similares.</Text>
                 <Text style={styles.sectionTitle}>Seleccionar mascota</Text>
                 <FlatList 
-                    data={this.state.userPets} 
+                    data={this.state.userNotices} 
                     horizontal={true}
                     keyExtractor={(_, index) => index.toString()}
-                    initialNumToRender={this.state.userPets.length}
+                    initialNumToRender={this.state.userNotices.length}
                     renderItem={this.renderPet}
                     style={{paddingLeft: 15, marginRight: 10, marginTop: 10}}
 

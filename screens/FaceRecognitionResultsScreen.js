@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, Dimensions, Modal } from 'react-native';
-import { getJsonData } from '../utils/requests.js';
+import { getJsonData, postJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
@@ -22,12 +22,27 @@ export class FaceRecognitionResultsScreen extends React.Component {
             notices: [],
             selectedIndex: 0,
             isLoading: true,
-            checksSettingsModalVisible: false
+            checksSettingsModalVisible: false,
+            searchedNoticeId: props.route.params.noticeId,
+            userId: props.route.params.userId
         };
     }
 
-    setModalVisible = (visible) => {
+    setModalVisible = async (visible) => {
         this.setState({ contactInfoModalVisible: visible });
+
+        await postJsonData(global.noticeServiceBaseUrl + '/similarPets/alerts', {
+            noticeId: this.state.searchedNoticeId,
+            userId: this.state.userId
+        }).then(response => {
+            console.log(response);
+            //TODO show modal with full explanation
+            alert('Successfully set alerts for notice!')
+          }).catch(err => {
+            alert(err);
+            return;
+          });
+
     }
 
     navigateToReportView = (userId, noticeId) => {
@@ -47,8 +62,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            // TODO: change it to similar-pets request
-            getJsonData(global.noticeServiceBaseUrl + '/notices', 
+            getJsonData(global.noticeServiceBaseUrl + '/similarPets/' + this.state.searchedNoticeId, 
             {
                 'Authorization': 'Basic ' + sessionToken 
             }

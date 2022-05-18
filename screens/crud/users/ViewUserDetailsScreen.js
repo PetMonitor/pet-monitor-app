@@ -1,4 +1,6 @@
-import React from "react";
+import React, { Component } from "react";
+import * as FileSystem from 'expo-file-system';
+
 import { getJsonData } from '../../../utils/requests';
 import { getSecureStoreValueFor } from '../../../utils/store';
 import colors from '../../../config/colors';
@@ -8,7 +10,7 @@ import { Text, TouchableOpacity, StyleSheet, SafeAreaView, View, Image, LogBox }
 import { UserReportGridView } from "../reports/UserReportGridView";
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 
-export class ViewUserDetailsScreen extends React.Component {
+export class ViewUserDetailsScreen extends Component {
 
 
     constructor(props) {
@@ -17,6 +19,7 @@ export class ViewUserDetailsScreen extends React.Component {
         this.state = {
             petView: true,
             userData: { },
+            userProfilePictureUrl: undefined, //'../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg'
             pets: [],
             reports: [],
             photoByPet: {}
@@ -53,7 +56,8 @@ export class ViewUserDetailsScreen extends React.Component {
                     // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
                 }).catch(err => {
                     console.log(err);
-                    alert(err)
+                    alert(err);
+                    this.props.navigation.popToTop();
                 });
             });
         });
@@ -93,6 +97,16 @@ export class ViewUserDetailsScreen extends React.Component {
                 ).then(response => {
                     this.setState({ userData : response });
                     this.fetchUserPetsDetails();
+
+                    FileSystem.downloadAsync(
+                        global.noticeServiceBaseUrl + '/photos/profile/' + this.state.userData.userId, 
+                        FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE
+                    ).then(response => {
+                        this.setState({ userProfilePictureUrl : FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE });
+                        console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
+
+                    })
+
                 }).catch(err => {
                     console.log(err);
                     alert(err)
@@ -129,21 +143,33 @@ export class ViewUserDetailsScreen extends React.Component {
             navigation.push('EditUserScreen', { userData: this.state.userData , updateUser: this.updateUserData });
         }
 
+        let editButton = <View style={{paddingBottom: 30}} />;
+
+        if (!getSecureStoreValueFor('facebookToken')) {
+            editButton = 
+                <TouchableOpacity 
+                    style={[styles.button]}
+                    onPress={handleEditProfile}
+                >
+                    <Text style={styles.buttonFont}>Editar Perfil</Text>
+                </TouchableOpacity>;
+          
+        }
+
+        let profilePicture = <Image source={require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')} style={{width:130, height:130, borderRadius:130/2}} />
+
+        if (this.state.userProfilePictureUrl) {
+            profilePicture = <Image source={{ uri: `${this.state.userProfilePictureUrl}` }} style={{width:130, height:130, borderRadius:130/2}}/>
+        }
 
         return (
             <SafeAreaView style={styles.container}>   
                 <View style={{flexDirection:'row', alignItems:'stretch', flex: 1, marginTop: 30}}>
                     <View style={{marginLeft: 30, flex: 2}}>
-                        <Image source={require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}  
-                                        style={{width: 130, height: 130, borderRadius: 130/2}} />
+                        {profilePicture}
                     </View>
                     <View style={{flexDirection:'column-reverse', justifyContent:'left', flex: 3, marginLeft: 20}}>
-                        <TouchableOpacity 
-                            style={[styles.button]}
-                            onPress={handleEditProfile}
-                        >
-                            <Text style={styles.buttonFont}>Editar Perfil</Text>
-                        </TouchableOpacity>
+                        {editButton}
                         <Text style={{color: colors.clearBlack, fontSize: 16}}>{this.state.userData.username}</Text>
                         <Text style={{color: colors.clearBlack, fontSize: 24, marginBottom: 5, fontWeight: '500'}}>{this.state.userData.name}</Text>
                     </View>
