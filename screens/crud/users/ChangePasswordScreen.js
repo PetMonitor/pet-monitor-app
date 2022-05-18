@@ -101,14 +101,14 @@ const styles = StyleSheet.create({
         marginLeft: 15,
     },
     textLabel: {
-        color: colors.darkGery,
+        color: colors.darkGrey,
         fontSize: 20,
         marginTop: 10,
         marginBottom: 10,
         marginLeft: '10%',
     },
     textInput: {
-        color: colors.darkGery,
+        color: colors.darkGrey,
         borderRadius: 8, 
         backgroundColor: colors.inputGrey, 
         borderWidth: 1, 

@@ -3,10 +3,13 @@ import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
-import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
+import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapReportTypeToMapMarkerColor, mapReportTypeToMapMarker } from '../utils/mappers';
 
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
 
 import colors from '../config/colors';
 
@@ -20,7 +23,8 @@ export class ReportListScreen extends React.Component {
         this.state = {
             notices: [],
             selectedIndex: this.props.selectedIndex ? this.props.selectedIndex : 0,
-            isLoading: true
+            isLoading: true,
+            location: null,
         };
     }
 
@@ -28,23 +32,32 @@ export class ReportListScreen extends React.Component {
         return Object.keys(object).length === 0
     }
 
+    truncate = (str, maxLength) => {
+        return (str.length > maxLength) ? str.substr(0, maxLength - 1) + '...' : str;
+    };
+
     getFilters = () => {
         const filters = this.props.route.params.filters
         var filtersToApply = {}
 
+
         if (!filters || (filters && this.objectIsEmpty(filters))) {
-            console.log("empty")
             return filtersToApply
         }
-        // TODO: add province/city once locations are resolved
+
         if (filters.breed != '') {
             filtersToApply.breed = filters.breed
+        }
+
+        if (filters.region != '') {
+            filtersToApply.region = filters.region
         }
         
         if (!(filters.lostPetIsSelected && filters.petForAdoptionIsSelected && filters.petFoundIsSelected)) {
             var reportTypes = []
             if (filters.lostPetIsSelected) {
                 reportTypes.push('LOST')
+                reportTypes.push('STOLEN')
             }
             if (filters.petForAdoptionIsSelected) {
                 reportTypes.push('FOR_ADOPTION')
@@ -86,6 +99,18 @@ export class ReportListScreen extends React.Component {
         )
     }
 
+    showBoxItem = (checkBoxTitle, color) => (
+        <>
+            <Icon
+                name={'checkbox-blank'}
+                size={20}
+                color={color}
+                style={{marginLeft: 5}}
+            />
+            <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
+        </>
+    )
+
     handleTabSegmenterIndexChange = index => {
         this.setState({
           selectedIndex: index
@@ -113,7 +138,9 @@ export class ReportListScreen extends React.Component {
                     const filtersToApply = this.getFilters()
                     queryParams += filtersToApply.petSex ? "petSex=" + filtersToApply.petSex + "&" : ""
                     queryParams += filtersToApply.petType ? "petType=" + filtersToApply.petType + "&" : ""
+                    queryParams += filtersToApply.breed ? "petBreed=" + filtersToApply.breed + "&" : ""
                     queryParams += filtersToApply.reportType ? "noticeType=" + filtersToApply.reportType + "&" : ""
+                    queryParams += filtersToApply.region ? "noticeRegion=" + filtersToApply.region + "&" : ""
                 }
 
                 getSecureStoreValueFor('sessionToken').then((sessionToken) => {
@@ -133,6 +160,18 @@ export class ReportListScreen extends React.Component {
     }
 
     componentDidMount() {
+        Location.requestForegroundPermissionsAsync()
+        .then( response => {
+            if (response.status !== 'granted') {
+                alert('Permission to access location was denied');
+                return;
+            }
+
+            Location.getCurrentPositionAsync({})
+            .then(location => {
+                this.setState({ location: location })
+            });
+        });
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getJsonData(global.noticeServiceBaseUrl + '/notices', 
             {
@@ -169,15 +208,15 @@ export class ReportListScreen extends React.Component {
                         activeTabTextStyle={{color: colors.primary, fontWeight: 'bold', fontSize: 14}}
                     />
                 </View>
-                {this.state.selectedIndex == segmentedTabTitles.indexOf(listTabTitle) && 
-                    <View style={{flex:1}}>
-                        <View style={{padding: 10, alignItems:'flex-end', backgroundColor: colors.transparent}}>
+                <View style={{padding: 10, alignItems:'flex-end', backgroundColor: colors.transparent}}>
                             <Icon
                                 name='tune'
                                 size={33}
                                 color={colors.secondary}
                                 onPress={() => this.navigateToFilterSettings()} />
                         </View>
+                {this.state.selectedIndex == segmentedTabTitles.indexOf(listTabTitle) && 
+                    <View style={{flex:1}}>
                         <FlatList 
                             data={this.state.notices} 
                             numColumns={2}
@@ -186,6 +225,55 @@ export class ReportListScreen extends React.Component {
                             renderItem={this.renderItem}
                         />
                     </View>
+                }
+
+                {this.state.selectedIndex == segmentedTabTitles.indexOf(mapTabTitle) && this.state.location &&
+                     
+                    <>
+                    <MapView style={{width: "100%", height: "100%"}}
+                        // provider={PROVIDER_GOOGLE}
+                        region={{
+                        latitude: this.state.location.coords.latitude,
+                        longitude: this.state.location.coords.longitude,
+                        latitudeDelta: 0.0622,
+                        longitudeDelta: 0.0221,
+                        }}
+                        showsUserLocation={true}
+                    >
+                      {this.state.notices && this.state.notices.map(notice => {
+                            return <Marker 
+                                key={'notice_' + notice.noticeId} 
+                                identifier={notice.noticeId} 
+                                coordinate={{latitude: notice.eventLocation.lat, longitude: notice.eventLocation.long}}
+                                onPress={e => console.log(e.nativeEvent)}
+                                image={mapReportTypeToMapMarker(notice.noticeType)}>
+                                <Callout >
+                                    <TouchableOpacity style={styles.bubble} onPress={() => this.navigateToReportView(notice.userId, notice.noticeId)}>
+                                        <Text style={[styles.name, {color: mapReportTypeToLabelColor(notice.noticeType)}]}>{mapReportTypeToLabel(notice.noticeType)}</Text>
+                                        <Text style={{color: colors.clearBlack}}>{this.truncate(notice.description, 50)}</Text>
+                                        <Image style={styles.image}
+                                            source={{uri:`data:image/png;base64,${Buffer.from(notice.pet.photo).toString('base64')}`}} />
+                                    </TouchableOpacity>
+                                </Callout>
+                            </Marker>})}
+                        
+                    </MapView>
+                    <View style={{paddingVertical: 5, backgroundColor: colors.whiteWithOpacity, position: 'absolute', left: 20, bottom: 20}}>
+                        <View  style={styles.alignedContent}>
+                            {this.showBoxItem("Mascotas perdidas", mapReportTypeToMapMarkerColor("lost"))}
+                        </View>
+                        <View  style={styles.alignedContent}>
+                            {this.showBoxItem("Mascotas encontradas", mapReportTypeToMapMarkerColor("found"))}
+                        </View>
+                        <View  style={styles.alignedContent}>
+                            {this.showBoxItem("Mascotas en adopción", mapReportTypeToMapMarkerColor("for_adoption"))}
+                        </View>  
+                        <View  style={styles.alignedContent}>
+                            {this.showBoxItem("Mascotas robadas", mapReportTypeToMapMarkerColor("stolen"))}
+                        </View>  
+                    </View> 
+                    </>
+
                 }
             </SafeAreaView>
         )
@@ -198,5 +286,32 @@ const styles = StyleSheet.create({
       backgroundColor: colors.white,
       flexDirection: 'column', // main axis: vertical
       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    }
+    },
+    alignedContent: {
+        alignItems:'center', 
+        flexDirection: 'row', 
+        margin: 5
+    },
+    checkBoxOptionTitle: {
+        marginLeft: 5, 
+        fontSize: 12,
+    },
+    bubble: {
+        flexDirection: 'column',
+        alignSelf: 'flex-start',
+        backgroundColor: colors.white,
+        borderRadius: 6,
+        width: 200,
+    },
+    name: {
+        fontSize: 16,
+        marginBottom: 5,
+        fontWeight: 'bold',
+    },
+    image: {
+        marginTop: 10,
+        width: "100%",
+        height: 150,
+        borderRadius: 5
+    },
   });
