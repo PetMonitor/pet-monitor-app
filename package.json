@@ -40,6 +40,7 @@
     "react-native-event-listeners": "^1.0.7",
     "react-native-fetch-api": "^3.0.0",
     "react-native-maps": "0.28.1",
+    "react-native-modal": "^13.0.1",
     "react-native-safe-area-context": "~3.3.2",
     "react-native-screens": "~3.8.0",
     "react-native-segmented-control-tab": "^4.0.0",
