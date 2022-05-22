@@ -72,9 +72,6 @@ export class FaceRecognitionSearchScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                 <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 30, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Reconocimiento facial</Text>
-                </View>
                 <ScrollView style={{flex:1, padding: 20}}>
                 <Text style={{margin: 20, color: colors.clearBlack, fontSize: 15, marginTop: 30}}>Si perdiste o encontraste a una mascota podés iniciar una búsqueda por  reconocimiento facial para encontrar  mascotas similares.</Text>
                 <Text style={styles.sectionTitle}>Seleccionar mascota</Text>

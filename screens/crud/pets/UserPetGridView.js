@@ -41,7 +41,9 @@ export class UserPetGridView extends React.PureComponent {
             } else {
                 return (                    
                     <TouchableOpacity onPress={() => handleNavigateToPetProfile(item.id)} >
-                        <Image key={'img_' + item.photoId} resizeMode="cover" style={{aspectRatio: 1, height: (width - 70) / 2, borderRadius: 5, marginHorizontal: 3, marginVertical: 5}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}/>
+                        <Image key={'img_' + item.photoId} resizeMode="cover" 
+                        style={{aspectRatio: 1, height: (width - 70) / 2, borderRadius: 5, marginHorizontal: 3, marginVertical: 5}} 
+                        source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}/>
                         <Text key={'text_' + item.id} style={styles.text}>{item.name}</Text>
                     </TouchableOpacity>
                 )

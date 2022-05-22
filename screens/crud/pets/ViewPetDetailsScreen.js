@@ -1,5 +1,5 @@
 import colors from '../../../config/colors';
-import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, View, ImageBackground, ScrollView } from 'react-native';
 
 
 const ViewPetDetailsScreen = ({ route, navigation }) => {

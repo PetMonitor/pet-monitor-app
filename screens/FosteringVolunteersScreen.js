@@ -84,9 +84,6 @@ export class FosteringVolunteersScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}> 
-                <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 20, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Voluntarios para transitar</Text>
-                </View>
                 <FlatList 
                     data={this.state.volunteers}
                     keyExtractor={(_, index) => index.toString()}

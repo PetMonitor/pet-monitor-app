@@ -20,8 +20,11 @@ import { FosteringVolunteerProfileSettingsScreen } from './screens/FosteringVolu
 import { FaceRecognitionResultsScreen } from './screens/FaceRecognitionResultsScreen';
 import ViewPetDetailsScreen from './screens/crud/pets/ViewPetDetailsScreen.js';
 
+import { LogBox } from 'react-native';
+
 import colors from './config/colors';
 
+LogBox.ignoreAllLogs(true);
 
 const Stack = createNativeStackNavigator();
 

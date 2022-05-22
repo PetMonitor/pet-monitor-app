@@ -197,9 +197,6 @@ export class CreateReportScreen extends React.Component {
                     </View>
                 </Modal>  
                 </View>
-                <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 30, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Crear reporte</Text>
-                </View>
                 <ScrollView style={{flex:1, padding: 20}}>
                     {/* Report type picker */}
                     <Text style={[styles.sectionTitle, {paddingTop: 10}]}>Tipo de reporte</Text>
