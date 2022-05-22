@@ -44,7 +44,7 @@ export class CreatePetScreen extends React.Component {
 
     render() {
         const numberOfLines = 7;
-        const { userInfo, initialSetup, initPetType, creatingNewPetFromReport } = this.props.route.params;
+        const { userInfo, initialSetup, initPetType } = this.props.route.params;
 
         const handleNextPet = () => {
             if (!initialSetup) {
@@ -250,7 +250,7 @@ export class CreatePetScreen extends React.Component {
                         style = { [styles.textInput, {paddingBottom: 90, paddingTop: 10}] }
                         maxLength = { 100 } />
 
-                    {creatingNewPetFromReport ? 
+                    { (!initialSetup) ? 
                     <>
                         <TouchableOpacity  style={styles.alignedContent} 
                             onPress={() => this.setState({ isMyPet: !this.state.isMyPet })}>
@@ -272,7 +272,8 @@ export class CreatePetScreen extends React.Component {
                         <TouchableOpacity onPress={handleFinishInitialSetup} style={[styles.button, {marginBottom: '30%'}]}>
                             <Text style={styles.buttonFont}>Finalizar</Text>
                         </TouchableOpacity>
-                    </>}
+                    </>
+                    }
                 </ScrollView>
             }
             </View>

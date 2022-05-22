@@ -101,7 +101,7 @@ export class CreateReportScreen extends React.Component {
 
     navigateToCreatePet = () => {
         this.setState({ petId: '' })
-        this.props.navigation.navigate('CreatePet', {creatingNewPetFromReport: true}); 
+        this.props.navigation.navigate('CreatePet', { initialSetup: false }); 
     }
 
     createReport = () => {

@@ -17,11 +17,11 @@ export class UserPetGridView extends React.PureComponent {
         const { navigation } = this.props;
 
         const handleNavigateToPetProfile = (petId) => {
-            navigation.push("ViewPet", { userId: this.props.userId, petId: petId });
+            navigation.push('ViewPet', { userId: this.props.userId, petId: petId });
         }
 
         const handleCreateNewPet = () => {
-            navigation.push("CreatePet");
+            navigation.push('CreatePet', { initialSetup: false });
         }
 
         const renderPet = ({item}) => {
