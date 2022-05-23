@@ -35,13 +35,15 @@ export class FaceRecognitionSearchScreen extends React.Component {
     }
 
     navigateToSearchResults = () => {
-        /*if (this.state.userNotices.length == 0) {
+        if (this.state.userNotices.length == 0) {
             alert("Debes tener al menos un reporte abierto!")
+            return;
         }
 
         if (this.state.noticeId.length == 0) {
             alert("Debes seleccionar un reporte!")
-        }*/
+            return;
+        }
         this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId, userId: this.state.userId }); 
     }
 
