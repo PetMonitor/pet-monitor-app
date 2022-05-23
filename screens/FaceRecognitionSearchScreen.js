@@ -40,7 +40,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
         }
 
         if (this.state.noticeId.length == 0) {
-            alert("Debes seleccioner al menos un reporte!")
+            alert("Debes seleccionar un reporte!")
         }*/
         this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId, userId: this.state.userId }); 
     }

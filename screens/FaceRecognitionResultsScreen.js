@@ -3,7 +3,7 @@ import React from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { getJsonData } from '../utils/requests.js';
+import { getJsonData, postJsonData, deleteJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
@@ -17,12 +17,17 @@ import Modal from "react-native-modal";
 
 const { height, width } = Dimensions.get("screen")
 
+const MAX_ALERT_MONTHS = 3
+const DAYS_PER_MONTH = 30
+const MAX_DAYS_ALERT = MAX_ALERT_MONTHS * DAYS_PER_MONTH
+
 /** Implements the Face Recognition results screen. */
 export class FaceRecognitionResultsScreen extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            pressedOK: false,
             notices: [],
             selectedIndex: 0,
             isLoading: true,
@@ -31,27 +36,10 @@ export class FaceRecognitionResultsScreen extends React.Component {
             userId: props.route.params.userId,
             alertsActivated: false,
             alertFrequency: 1,
-            alertLimitDate: null
+            alertLimitDate: new Date()
         };
     }
-
-    setModalVisible = (visible) => {
-       //this.setState({ contactInfoModalVisible: visible });
-
-        /*await postJsonData(global.noticeServiceBaseUrl + '/similarPets/alerts', {
-            noticeId: this.state.searchedNoticeId,
-            userId: this.state.userId
-        }).then(response => {
-            console.log(response);
-            //TODO show modal with full explanation
-            alert('Successfully set alerts for notice!')
-          }).catch(err => {
-            alert(err);
-            return;
-          });*/
-
-    }
-
+    
     navigateToReportView = (userId, noticeId) => {
         this.props.navigation.push('ReportView', { noticeUserId: userId, noticeId: noticeId, isMyReport: false });
     }
@@ -81,21 +69,65 @@ export class FaceRecognitionResultsScreen extends React.Component {
             }).finally(() => this.setState({ isLoading : false }));
         });
     }
+    
+    handleToggleAlerts = () => {
+        this.setState(prevState => ({ alertsActivated: !prevState.alertsActivated }))
+    }
+
+    async componentDidUpdate() {
+        if (this.state.alertsActivated && this.state.pressedOK) {
+            console.log(`Activating alerts for user ${this.state.userId}`);
+
+            await postJsonData(global.noticeServiceBaseUrl + '/similarPets/alerts', {
+                noticeId: this.state.searchedNoticeId,
+                userId: this.state.userId,
+                alertFrequency: this.state.alertFrequency,
+                alertLimitDate: this.state.alertLimitDate.toISOString().split('T')[0]
+            }).then(response => {
+                console.log(response);
+                setTimeout(() => alert("Alerta creada con éxito!", 3000));
+              }).catch(err => {
+                alert(err);
+                return;
+            });
+        }
+
+        if (!this.state.alertsActivated && this.state.pressedOK) {
+            console.log(`Deactivating alerts for user ${this.state.userId}`);
+
+            await deleteJsonData(global.noticeServiceBaseUrl + '/similarPets/alerts', {
+                userId: this.state.userId
+            }).then(response => {
+                console.log(response);
+            }).catch(err => {
+                alert(err);
+                return;
+            });
+
+        }
+    }
+
 
     render() {
 
-        const handleToggleAlerts = () => {
-            this.setState(prevState => ({ alertsActivated: !prevState.alertsActivated }) );
-            console.log(`Alerts activated ${this.state.alertsActivated}`)
-        }
+        const closeModalAndInit = async () => {
+            this.setState({ contactInfoModalVisible: false, pressedOK: true });
+        };
 
-        const closeModal = () => {
+        const closeModal = async () => {
             this.setState({ contactInfoModalVisible: false });
         };
 
         const showModal = () => {
-            this.setState({ contactInfoModalVisible: true, alertsActivated: true });
+            this.setState({ contactInfoModalVisible: true, pressedOK: false });
         };
+
+        const addDaysToToday = (daysToAdd) => {
+            var result = new Date();
+            result.setDate(result.getDate() + daysToAdd);
+            console.log(`MAX DATE ${result}`)
+            return result;
+        }
 
         return (
             <View style={styles.container}>
@@ -127,7 +159,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                                 <Switch 
                                     trackColor={{ false: colors.grey, true: colors.yellow }}
                                     thumbColor={ colors.white }
-                                    onValueChange={handleToggleAlerts}
+                                    onValueChange={this.handleToggleAlerts}
                                     value={this.state.alertsActivated}
                                 />
                             </View>
@@ -149,8 +181,10 @@ export class FaceRecognitionResultsScreen extends React.Component {
                                     </Picker>
                                     <Text style={styles.subtitleText}>Hasta</Text>
                                     <DateTimePicker
+                                        minimumDate={addDaysToToday(1)}
+                                        maximumDate={addDaysToToday(MAX_DAYS_ALERT)}
                                         display="spinner"
-                                        value={new Date()}
+                                        value={this.state.alertLimitDate}
                                         onChange={(event, selectedDate) => {
                                             this.setState({ alertLimitDate: selectedDate })
                                         }}
@@ -159,7 +193,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                                 : <Text>Puedes programar búsquedas para este reporte y te notificaremos cuando encontremos un match!</Text>
                             }
                             <View style={{flexDirection: 'column' }}>
-                                <Button style={styles.titleText} title="OK" onPress={closeModal} />
+                                <Button style={styles.titleText} title="OK" onPress={closeModalAndInit} />
                             </View>
                         </View>
                     </Modal>

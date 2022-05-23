@@ -25,6 +25,24 @@ export async function postJsonData(url = '', data = {}, additionalHeaders = {}) 
     });
 };
 
+export async function deleteJsonData(url = '', data = {}, additionalHeaders = {}) {
+    reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json' });
+
+    return fetch(url, {
+        method: 'DELETE',
+        headers: reqHeaders,
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response;
+        } else {
+            console.log('DELETE ' + url + ' returned ' + response.status);
+            throw Error('Request at DELETE ' + url + ' returned ' + response.status)
+        }
+    });
+};
+
 
 export async function getJsonData(url = '', additionalHeaders = {}) {
     reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json'});
