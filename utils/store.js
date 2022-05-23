@@ -15,5 +15,4 @@ export async function clearStore() {
     await SecureStore.deleteItemAsync('sessionToken');
     await SecureStore.deleteItemAsync('facebookToken');
     console.log(`Cleared store`)
-    return value;
 }

@@ -8,8 +8,8 @@ import { FosteringVolunteersScreen } from './FosteringVolunteersScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Dog, MapPin, PlusCircle, User, UsersThree, SignOut } from 'phosphor-react-native';
 import { TouchableOpacity } from 'react-native';
-import { clearStore } from '../utils/store';
-
+import { getSecureStoreValueFor, clearStore } from '../utils/store';
+import { postJsonData } from '../utils/requests'
 import colors from '../config/colors';
 
 const Tab = createBottomTabNavigator();
@@ -26,8 +26,20 @@ export class BottomTabNavigator extends React.Component {
     }
 
     logout = () => {
-        clearStore();
-        this.props.navigation.popToTop();
+        getSecureStoreValueFor('sessionToken')
+        .then(sessionToken =>  {
+            if (sessionToken != null) {
+                postJsonData(global.noticeServiceBaseUrl + '/users/logout', 
+                    {},
+                    {
+                        'Authorization': 'Basic ' + sessionToken 
+                    }
+                ).then(() =>{
+                    clearStore();
+                    this.props.navigation.popToTop();
+                })
+            }  
+        });
     }
 
     render() {
