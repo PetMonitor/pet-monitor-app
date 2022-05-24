@@ -1,13 +1,15 @@
 import { GEOCODING_API_KEY } from "@env"
 
 export async function postJsonData(url = '', data = {}, additionalHeaders = {}) {
-    console.log('POST ' + url + ' ' + JSON.stringify(data));
-    reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json'});
+    // console.log('POST ' + url + ' ' + JSON.stringify(data));
+    reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json' });
 
     return fetch(url, {
         method: 'POST',
         headers: reqHeaders,
-        body: JSON.stringify(data) 
+        body: JSON.stringify(data),
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
     })
     .then(response => {
         if (response.ok) {
@@ -20,6 +22,24 @@ export async function postJsonData(url = '', data = {}, additionalHeaders = {}) 
     .then(response => response.json())
     .then((response) => {
         return response;
+    });
+};
+
+export async function deleteJsonData(url = '', data = {}, additionalHeaders = {}) {
+    reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json' });
+
+    return fetch(url, {
+        method: 'DELETE',
+        headers: reqHeaders,
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response;
+        } else {
+            console.log('DELETE ' + url + ' returned ' + response.status);
+            throw Error('Request at DELETE ' + url + ' returned ' + response.status)
+        }
     });
 };
 

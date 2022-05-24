@@ -2,11 +2,12 @@ import React from 'react';
 
 import { postJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
+import Loader  from '../../../utils/Loader.js';
 import colors from '../../../config/colors';
 
 import { Picker } from '@react-native-picker/picker';
 import { EventRegister } from 'react-native-event-listeners';
-import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, ScrollView, View, Image, ActivityIndicator } from 'react-native';
+import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, ScrollView, View, Image } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -42,69 +43,92 @@ export class CreatePetScreen extends React.Component {
     }
 
     render() {
-
-        const { userInfo, initialSetup, initPetType, creatingNewPetFromReport } = this.props.route.params;
         const numberOfLines = 7;
+        const { userInfo, initialSetup, initPetType } = this.props.route.params;
 
         const handleNextPet = () => {
             if (!initialSetup) {
                 alert('Method not allowed outside initial setup context!');
             }
 
+            if (this.state.photos.length == 0) {
+                alert('At least one photo is required!');
+                return;
+            }
+
+
+            const newPet = Object.assign({}, this.state) 
+            delete newPet.isLoading
+
             // Add pet to user's list of pets
             userInfo['pets'] = [
                 ...userInfo['pets'],
-                this.state
+                newPet
             ]
 
             console.log('Navigating to create pet screen');
             console.log(JSON.stringify(userInfo));
 
-            this.props.navigation.push('CreatePet', { userInfo: userInfo, initialSetup: true, initPetType: initPetType}); 
+            this.props.navigation.push('CreatePet', { userInfo: userInfo, initialSetup: true, initPetType: initPetType, onGoBack: null }); 
         };
 
         const handleFinishInitialSetup = () => {
+            this.setState({ isLoading: true });
+
             if (!initialSetup) {
                 alert('Method not allowed outside initial setup context!');
             }
 
+            if (this.state.photos.length == 0) {
+                alert('At least one photo is required!');
+                return;
+            }
+
+            const newPet = Object.assign({}, this.state) 
+            delete newPet.isLoading
+
             // Add pet to user's list of pets
             userInfo['pets'] = [
                 ...userInfo['pets'],
-                this.state
+                newPet
             ]
             
-            //console.log('Create user:');
-            //console.log(JSON.stringify(userInfo));  
-
             postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
                 console.log(response);
                 alert('Successfully created user!')
                 // go back to login page
                 this.props.navigation.popToTop();
             }).catch(err => {
-                alert(err)
+                console.error(err);
+                alert(`Failed to create user profile!`);
+                this.props.navigation.popToTop();
             });      
         };
 
         const createPet = () => {
-            this.setState({ isLoading : true });
+            this.setState({ isLoading: true })
+            const petData = {
+                name: this.state.name,
+                type: this.state.type,
+                size: this.state.size,
+                lifeStage: this.state.lifeStage,
+                breed: this.state.breed,
+                sex: this.state.sex,
+                furColor: this.state.furColor,
+                description: this.state.description,
+                photos: this.state.photos,
+                isMyPet: this.state.isMyPet,
+            }
+ 
             getSecureStoreValueFor("userId").then(userId => {
-                postJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', {
-                    name: this.state.name,
-                    type: this.state.type,
-                    size: this.state.size,
-                    lifeStage: this.state.lifeStage,
-                    breed: this.state.breed,
-                    sex: this.state.sex,
-                    furColor: this.state.furColor,
-                    description: this.state.description,
-                    photos: this.state.photos,
-                    isMyPet: this.state.isMyPet,
-                }).then(response => {
+                postJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', petData)
+                .then(response => {
                     console.log(response);
                     alert('Mascota creada!')
                     // go back to previous page
+                    if (this.props.route.params.onGoBack) {
+                        this.props.route.params.onGoBack()
+                    }
                     this.props.navigation.goBack();
                 }).catch(err => {
                     alert(err)
@@ -129,7 +153,7 @@ export class CreatePetScreen extends React.Component {
         );
 
         return (
-            <View style={styles.container}>   
+            <View style={styles.container}> 
                 <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
                     <MaterialIcon
                         name='arrow-left'
@@ -139,6 +163,9 @@ export class CreatePetScreen extends React.Component {
                         onPress={() => this.props.navigation.goBack()} />
                     <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Crear mascota</Text>
                 </View>
+
+            { this.state.isLoading ? 
+                <Loader /> :
                 <ScrollView style={styles.scrollView} >
                     <Text style={styles.optionTitle}>Nombre</Text>
                     <TextInput 
@@ -227,7 +254,7 @@ export class CreatePetScreen extends React.Component {
                         style = { [styles.textInput, {paddingBottom: 90, paddingTop: 10}] }
                         maxLength = { 100 } />
 
-                    {creatingNewPetFromReport ? 
+                    { (!initialSetup) ? 
                     <>
                         <TouchableOpacity  style={styles.alignedContent} 
                             onPress={() => this.setState({ isMyPet: !this.state.isMyPet })}>
@@ -249,13 +276,10 @@ export class CreatePetScreen extends React.Component {
                         <TouchableOpacity onPress={handleFinishInitialSetup} style={[styles.button, {marginBottom: '30%'}]}>
                             <Text style={styles.buttonFont}>Finalizar</Text>
                         </TouchableOpacity>
-                    </>}
+                    </>
+                    }
                 </ScrollView>
-                {this.state.isLoading ? 
-                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
-                        <ActivityIndicator size="large" color={colors.clearBlack}/>
-                    </View>
-                : <></>}
+            }
             </View>
         )
     }

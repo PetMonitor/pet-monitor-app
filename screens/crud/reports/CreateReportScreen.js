@@ -32,7 +32,7 @@ export class CreateReportScreen extends React.Component {
             userId: '',
             isLoading: false,
             createdNoticeId: '',
-            location: null,
+            userLocation: null,
             eventMarker: null
         };
     }
@@ -101,7 +101,7 @@ export class CreateReportScreen extends React.Component {
 
     navigateToCreatePet = () => {
         this.setState({ petId: '' })
-        this.props.navigation.navigate('CreatePet', {creatingNewPetFromReport: true}); 
+        this.props.navigation.navigate('CreatePet', { initialSetup: false }); 
     }
 
     createReport = () => {
@@ -145,8 +145,8 @@ export class CreateReportScreen extends React.Component {
             }
 
             Location.getCurrentPositionAsync({})
-            .then(location => {
-                this.setState({ location: location })
+            .then(userLocation => {
+                this.setState({ userLocation: userLocation })
             });
         });
         getSecureStoreValueFor('sessionToken').then(sessionToken =>  
@@ -197,9 +197,6 @@ export class CreateReportScreen extends React.Component {
                     </View>
                 </Modal>  
                 </View>
-                <View style={{alignItems: 'flex-start', backgroundColor: colors.primary}}>
-                    <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 30, paddingTop: 70, paddingBottom: 20, color: colors.white}}>Crear reporte</Text>
-                </View>
                 <ScrollView style={{flex:1, padding: 20}}>
                     {/* Report type picker */}
                     <Text style={[styles.sectionTitle, {paddingTop: 10}]}>Tipo de reporte</Text>
@@ -216,13 +213,13 @@ export class CreateReportScreen extends React.Component {
                     </Picker>
                     {/* Event section */}
                     <Text style={[styles.sectionTitle]}>Evento</Text>
-                    {this.state.location && <>
+                    {this.state.userLocation && <>
                         <Text style={[styles.optionTitle, {paddingTop: 10}]}>Seleccionar la ubicación aproximada</Text>
                         <MapView style={{height: 300, margin: 10}}
                             // provider={PROVIDER_GOOGLE}
                             region={{
-                            latitude: this.state.eventMarker ? this.state.eventMarker.latitude : this.state.location.coords.latitude,
-                            longitude: this.state.eventMarker ? this.state.eventMarker.longitude : this.state.location.coords.longitude,
+                            latitude: this.state.eventMarker ? this.state.eventMarker.latitude : this.state.userLocation.coords.latitude,
+                            longitude: this.state.eventMarker ? this.state.eventMarker.longitude : this.state.userLocation.coords.longitude,
                             latitudeDelta: 0.0022,
                             longitudeDelta: 0.0121,
                             }}
@@ -275,7 +272,7 @@ export class CreateReportScreen extends React.Component {
                     </View>
 
                     <Text style={styles.optionTitle}>Descripción del evento</Text>
-                    {this.showTextInput(text => { this.setState({ description: text })}, '', true)}
+                    {this.showTextInput(text => { this.setState({ description: text })}, "", true)}
 
                     {/* Pet section */}
                     <Text style={[styles.sectionTitle]}>Mascota</Text>

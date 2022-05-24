@@ -8,6 +8,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { EventRegister } from 'react-native-event-listeners'
 import colors from '../config/colors';
 
+const LOW_RES_PHOTO_DIMENSION = 160
+
 const ImageSelectorScreen = ({ route, navigation }) => {
 
   useEffect(() => {
@@ -78,6 +80,8 @@ const ImageSelectorScreen = ({ route, navigation }) => {
 
   const widgetResize = useMemo(
     () => ({
+        height: LOW_RES_PHOTO_DIMENSION,
+        width: LOW_RES_PHOTO_DIMENSION,
         base64: true,
         saveTo: 'png',
     }),

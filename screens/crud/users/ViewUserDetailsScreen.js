@@ -19,10 +19,11 @@ export class ViewUserDetailsScreen extends Component {
         this.state = {
             petView: true,
             userData: { },
-            userProfilePictureUrl: undefined, //'../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg'
+            userProfilePictureUrl: undefined, 
             pets: [],
             reports: [],
-            photoByPet: {}
+            photoByPet: {},
+            facebookLogin: false
         }
     }
 
@@ -102,9 +103,14 @@ export class ViewUserDetailsScreen extends Component {
                         global.noticeServiceBaseUrl + '/photos/profile/' + this.state.userData.userId, 
                         FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE
                     ).then(response => {
-                        this.setState({ userProfilePictureUrl : FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE });
-                        console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
 
+                        if (response.status == 200) {
+                            this.setState({ userProfilePictureUrl : FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE });
+                            console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
+                        }
+                    
+                    }).catch(error => {
+                        console.log(`No profile picture found ${error}`)
                     })
 
                 }).catch(err => {
@@ -112,6 +118,10 @@ export class ViewUserDetailsScreen extends Component {
                     alert(err)
                 });
             });
+        });
+
+        getSecureStoreValueFor('facebookToken').then(facebookToken => {
+            this.setState({ facebookLogin : facebookToken != null })
         });
         
     }
@@ -143,19 +153,6 @@ export class ViewUserDetailsScreen extends Component {
             navigation.push('EditUserScreen', { userData: this.state.userData , updateUser: this.updateUserData });
         }
 
-        let editButton = <View style={{paddingBottom: 30}} />;
-
-        if (!getSecureStoreValueFor('facebookToken')) {
-            editButton = 
-                <TouchableOpacity 
-                    style={[styles.button]}
-                    onPress={handleEditProfile}
-                >
-                    <Text style={styles.buttonFont}>Editar Perfil</Text>
-                </TouchableOpacity>;
-          
-        }
-
         let profilePicture = <Image source={require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')} style={{width:130, height:130, borderRadius:130/2}} />
 
         if (this.state.userProfilePictureUrl) {
@@ -169,7 +166,12 @@ export class ViewUserDetailsScreen extends Component {
                         {profilePicture}
                     </View>
                     <View style={{flexDirection:'column-reverse', justifyContent:'left', flex: 3, marginLeft: 20}}>
-                        {editButton}
+                        { this.state.facebookLogin ? 
+                            null :
+                            <TouchableOpacity style={[styles.button]} onPress={handleEditProfile}> 
+                            	<Text style={styles.buttonFont}>Editar Perfil</Text> 
+                            </TouchableOpacity>
+                        }
                         <Text style={{color: colors.clearBlack, fontSize: 16}}>{this.state.userData.username}</Text>
                         <Text style={{color: colors.clearBlack, fontSize: 24, marginBottom: 5, fontWeight: '500'}}>{this.state.userData.name}</Text>
                     </View>

@@ -2,7 +2,9 @@ import React from 'react';
 
 import { postJsonData } from '../../../utils/requests.js';
 
-import { Image, Text, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
+import { Text, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
+import { Dog, Cat } from 'phosphor-react-native';
+import colors from '../../../config/colors.js';
 
 export class AskCreatePetScreen extends React.Component {
 
@@ -15,6 +17,8 @@ export class AskCreatePetScreen extends React.Component {
         const { navigation } = this.props;
 
         const { user } = this.props.route.params;
+
+        const tabIconSize = 60;
 
         const styles = StyleSheet.create({
             container: {
@@ -37,7 +41,7 @@ export class AskCreatePetScreen extends React.Component {
             // Pass user info, and indicate that we are coming from the initial setup page,
             // so the whole user info structure will be passed for the user to be created
             // along with an initial set of pets.
-            navigation.push('CreatePet', { userInfo: user, initialSetup: true, initPetType: petType}); 
+            navigation.push('CreatePet', { userInfo: user, initialSetup: true, initPetType: petType, onGoBack: null }); 
         };
 
         const handleSkipStep = () => {
@@ -63,10 +67,10 @@ export class AskCreatePetScreen extends React.Component {
                 </View> 
                 <View style={{flex:2,flexDirection:'row',paddingTop:20, paddingBottom:50}} >
                     <TouchableOpacity onPress={() => handleCreatePet('CAT')}>
-                        <Image source={require('../../../assets/kitten_paw_1.png')} style={{opacity:0.8}}/>
-                    </TouchableOpacity>
+                        <Cat size={tabIconSize} color={colors.yellow} weight='regular' />
+                    </TouchableOpacity>    
                     <TouchableOpacity onPress={() => handleCreatePet('DOG')}>
-                        <Image source={require('../../../assets/dog_paw_1.png')} style={{opacity:0.8}} />
+                        <Dog size={tabIconSize} color={colors.yellow} weight='regular' />
                     </TouchableOpacity>
                 </View>
                 <View style={{flex:1}}>

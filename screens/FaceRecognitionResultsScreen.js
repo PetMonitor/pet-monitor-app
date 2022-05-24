@@ -1,7 +1,9 @@
 import React from 'react';
 
-import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, Dimensions, Modal } from 'react-native';
-import { getJsonData, postJsonData } from '../utils/requests.js';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
+import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { getJsonData, postJsonData, deleteJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { Buffer } from 'buffer'
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
@@ -11,7 +13,13 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import colors from '../config/colors';
 
+import Modal from "react-native-modal";
+
 const { height, width } = Dimensions.get("screen")
+
+const MAX_ALERT_MONTHS = 3
+const DAYS_PER_MONTH = 30
+const MAX_DAYS_ALERT = MAX_ALERT_MONTHS * DAYS_PER_MONTH
 
 /** Implements the Face Recognition results screen. */
 export class FaceRecognitionResultsScreen extends React.Component {
@@ -19,32 +27,19 @@ export class FaceRecognitionResultsScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            pressedOK: false,
             notices: [],
             selectedIndex: 0,
             isLoading: true,
-            checksSettingsModalVisible: false,
+            contactInfoModalVisible: false,
             searchedNoticeId: props.route.params.noticeId,
-            userId: props.route.params.userId
+            userId: props.route.params.userId,
+            alertsActivated: false,
+            alertFrequency: 1,
+            alertLimitDate: new Date()
         };
     }
-
-    setModalVisible = async (visible) => {
-        this.setState({ contactInfoModalVisible: visible });
-
-        await postJsonData(global.noticeServiceBaseUrl + '/similarPets/alerts', {
-            noticeId: this.state.searchedNoticeId,
-            userId: this.state.userId
-        }).then(response => {
-            console.log(response);
-            //TODO show modal with full explanation
-            alert('Successfully set alerts for notice!')
-          }).catch(err => {
-            alert(err);
-            return;
-          });
-
-    }
-
+    
     navigateToReportView = (userId, noticeId) => {
         this.props.navigation.push('ReportView', { noticeUserId: userId, noticeId: noticeId, isMyReport: false });
     }
@@ -74,36 +69,68 @@ export class FaceRecognitionResultsScreen extends React.Component {
             }).finally(() => this.setState({ isLoading : false }));
         });
     }
+    
+    handleToggleAlerts = () => {
+        this.setState(prevState => ({ alertsActivated: !prevState.alertsActivated }))
+    }
+
+    async componentDidUpdate() {
+        if (this.state.alertsActivated && this.state.pressedOK) {
+            console.log(`Activating alerts for user ${this.state.userId}`);
+
+            await postJsonData(global.noticeServiceBaseUrl + '/similarPets/alerts', {
+                noticeId: this.state.searchedNoticeId,
+                userId: this.state.userId,
+                alertFrequency: this.state.alertFrequency,
+                alertLimitDate: this.state.alertLimitDate.toISOString().split('T')[0]
+            }).then(response => {
+                console.log(response);
+                setTimeout(() => alert("Alerta creada con éxito!", 3000));
+              }).catch(err => {
+                alert(err);
+                return;
+            });
+        }
+
+        if (!this.state.alertsActivated && this.state.pressedOK) {
+            console.log(`Deactivating alerts for user ${this.state.userId}`);
+
+            await deleteJsonData(global.noticeServiceBaseUrl + '/similarPets/alerts', {
+                userId: this.state.userId
+            }).then(response => {
+                console.log(response);
+            }).catch(err => {
+                alert(err);
+                return;
+            });
+
+        }
+    }
+
 
     render() {
+
+        const closeModalAndInit = async () => {
+            this.setState({ contactInfoModalVisible: false, pressedOK: true });
+        };
+
+        const closeModal = async () => {
+            this.setState({ contactInfoModalVisible: false });
+        };
+
+        const showModal = () => {
+            this.setState({ contactInfoModalVisible: true, pressedOK: false });
+        };
+
+        const addDaysToToday = (daysToAdd) => {
+            var result = new Date();
+            result.setDate(result.getDate() + daysToAdd);
+            console.log(`MAX DATE ${result}`)
+            return result;
+        }
+
         return (
             <View style={styles.container}>
-                <View>
-                <Modal 
-                    animationType="slide"
-                    transparent={true}
-                    visible={this.state.checksSettingsModalVisible}
-                    onRequestClose={() => {
-                        Alert.alert("Modal has been closed.");
-                        this.setModalVisible(!modalVisible);
-                    }}>
-                    <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
-                        <View style={styles.modalView}>
-                            <Text style={styles.modalTitle}>Chequeos</Text>
-                            {/* {this.state.contactInfo.name ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Nombre: </Text>{this.state.contactInfo.name}</Text> : <></>}
-                            {this.state.contactInfo.email ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>e-mail: </Text>{this.state.contactInfo.email}</Text> : <></>}
-                            {this.state.contactInfo.phoneNumber ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Teléfono: </Text>{this.state.contactInfo.phoneNumber}</Text> : <></>} */}
-                            <TouchableOpacity
-                                style={[styles.button, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
-                                onPress={() => {
-                                    this.setModalVisible(!this.state.checksSettingsModalVisible);
-                                }}>
-                                <Text>Ok</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>  
-                </View>
                 <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
                     <Icon
                         name='arrow-left'
@@ -113,11 +140,64 @@ export class FaceRecognitionResultsScreen extends React.Component {
                         onPress={() => this.props.navigation.goBack()} />
                     <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Resultados</Text>
                 </View>
+                
                 <View style={styles.alignedContent}>
                     <Text style={styles.titleText}>Mascotas similares</Text>
-                    <MaterialIcon name='notifications' size={24} color={colors.secondary} style={{marginLeft: 5}} onPress={() => this.setModalVisible(true)}/>
+                    <MaterialIcon name='notifications' size={24} color={colors.secondary} style={{marginLeft: 5}} onPress={showModal}/>
                 </View>
 
+                <View style={styles.modalView}>
+                    <Modal 
+                        hideModalContentWhileAnimating={true}
+                        isVisible={this.state.contactInfoModalVisible}
+                        transparent={false}
+                        onBackdropPress={closeModal}
+                        >
+                        <View style={{ backgroundColor: colors.white, padding: 15, borderRadius: 20 }}>
+                            <View style={{flexDirection: 'row'}}>
+                                <Text style={styles.modalTitle}>Búsquedas Programadas</Text>
+                                <Switch 
+                                    trackColor={{ false: colors.grey, true: colors.yellow }}
+                                    thumbColor={ colors.white }
+                                    onValueChange={this.handleToggleAlerts}
+                                    value={this.state.alertsActivated}
+                                />
+                            </View>
+                            { this.state.alertsActivated ? 
+                                <View>
+                                    <Text>Serás notificado cada vez que encontremos un match para esta búsqueda!</Text>
+                                    <Text style={styles.subtitleText}>Frecuencia de Búsqueda</Text>
+                                    <Picker selectedValue={this.state.alertFrequency}
+                                        style={{ width: 150, marginLeft: '25%', marginRight: 30 }}
+                                        itemStyle={{height: 88, fontSize: 16}}
+                                        onValueChange={(itemValue, itemIndex) => this.setState({ alertFrequency: itemValue })}
+                                        enabled={this.state.alertsActivated}
+                                        >
+                                        <Picker.Item label="Cada 1 hs" value={1} />
+                                        <Picker.Item label="Cada 2 hs" value={2} />
+                                        <Picker.Item label="Cada 4 hs" value={4} />
+                                        <Picker.Item label="Cada 8 hs" value={8} />
+                                        <Picker.Item label="Cada 12 hs" value={12} />
+                                    </Picker>
+                                    <Text style={styles.subtitleText}>Hasta</Text>
+                                    <DateTimePicker
+                                        minimumDate={addDaysToToday(1)}
+                                        maximumDate={addDaysToToday(MAX_DAYS_ALERT)}
+                                        display="spinner"
+                                        value={this.state.alertLimitDate}
+                                        onChange={(event, selectedDate) => {
+                                            this.setState({ alertLimitDate: selectedDate })
+                                        }}
+                                    />
+                                </View> 
+                                : <Text>Puedes programar búsquedas para este reporte y te notificaremos cuando encontremos un match!</Text>
+                            }
+                            <View style={{flexDirection: 'column' }}>
+                                <Button style={styles.titleText} title="OK" onPress={closeModalAndInit} />
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
                 <FlatList 
                     data={this.state.notices} 
                     numColumns={2}
@@ -145,27 +225,27 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         marginLeft: 20
     },
+    subtitleText: {
+        color: colors.clearBlack, 
+        fontSize: 15,
+        fontWeight: 'bold',
+        padding: 10,
+    },
     alignedContent: {
         alignItems:'center', 
         flexDirection: 'row', 
         marginTop: 10
     },
     modalView: {
+        flex: 1,
         margin: 20,
-        backgroundColor: colors.white,
-        borderRadius: 20,
         padding: 35,
-        shadowColor: colors.clearBlack,
-        shadowOffset: {
-        width: 0,
-        height: 2
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5
+        width: '90%',
     },
     modalTitle: {
+        marginTop: 10,
         marginBottom: 15,
+        marginRight: 20,
         color: colors.secondary,
         fontWeight: 'bold',
         fontSize: 18,
@@ -174,5 +254,5 @@ const styles = StyleSheet.create({
     modalText: {
       marginBottom: 15,
       color: colors.clearBlack
-    }
+    },
 });

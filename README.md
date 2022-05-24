@@ -8,6 +8,8 @@ The official Pet Monitor mobile application
     - Expo
         npm i -g explo-cli
 
+    Suggested node version 16.13.2
+
 ## To test in an ioS simulator:
 
     - A computer with ioS operating system.
@@ -17,9 +19,9 @@ The official Pet Monitor mobile application
 
     - Android Studio with required dependencies for emulator.
 
-## To test this in a mobile device 
+## To test this in a mobile device
 
-  You will need to install the Expo client app in your mobile device.
+You will need to install the Expo client app in your mobile device.
 
 # Locally run the application
 
@@ -27,11 +29,7 @@ In the root directory of this project run:
 
     - npm start
 
-The browser will open in Metro Bundler, and from here you can chose to:
-    - Attach the app to a simulator,
-    - Scan the QR code using the Expo client app in your phone, to test it there.
-    - Publish the application to a unique URL accessible from any phone with Expo Client.
-
+The browser will open in Metro Bundler, and from here you can chose to: - Attach the app to a simulator, - Scan the QR code using the Expo client app in your phone, to test it there. - Publish the application to a unique URL accessible from any phone with Expo Client.
 
 ## Debug the application
 
@@ -63,3 +61,11 @@ Run the application and open developer console in the emulator:
     - Set the desired breakpoints in VSCode.
     - In the app simulator open the developer console (Cmd + D) and hit Reload.
     - After you're done debugging remember to disconnect the debugger.
+
+### Troubleshooting
+
+- If icons show up as question marks:
+  > react-native link react-native-vector-icons
+
+- Getting error `fontFamily "material-community" is not a system font and has not been loaded through Font.loadAsync.`
+  > rm -rf ./node_modules/expo/node_modules/expo-font/
