@@ -19,10 +19,6 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.petmonitor.app",
-      "config": {
-          "googleMapsApiKey": "AIzaSyAX124RmQ8fo-AVr9YJ9iZNi1pxYmgdjiU"
-      }
     },
     "android": {
       "adaptiveIcon": {
