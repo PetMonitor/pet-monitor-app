@@ -69,7 +69,7 @@ export class CreatePetScreen extends React.Component {
             console.log('Navigating to create pet screen');
             console.log(JSON.stringify(userInfo));
 
-            this.props.navigation.push('CreatePet', { userInfo: userInfo, initialSetup: true, initPetType: initPetType}); 
+            this.props.navigation.push('CreatePet', { userInfo: userInfo, initialSetup: true, initPetType: initPetType, onGoBack: null }); 
         };
 
         const handleFinishInitialSetup = () => {
@@ -106,6 +106,7 @@ export class CreatePetScreen extends React.Component {
         };
 
         const createPet = () => {
+            this.setState({ isLoading: true })
             const petData = {
                 name: this.state.name,
                 type: this.state.type,
@@ -125,6 +126,9 @@ export class CreatePetScreen extends React.Component {
                     console.log(response);
                     alert('Mascota creada!')
                     // go back to previous page
+                    if (this.props.route.params.onGoBack) {
+                        this.props.route.params.onGoBack()
+                    }
                     this.props.navigation.goBack();
                 }).catch(err => {
                     alert(err)

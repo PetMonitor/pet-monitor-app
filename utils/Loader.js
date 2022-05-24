@@ -3,6 +3,8 @@ import { StyleSheet, Text } from 'react-native';
 import AnimatedLoader from 'react-native-animated-loader';
 import colors from '../config/colors';
 
+const PATH_ANIMATION = "../assets/18549-paws-animation.json";
+
 export default class Loader extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +23,7 @@ export default class Loader extends React.Component {
       <AnimatedLoader
         visible={visible}
         overlayColor={colors.yellow}
-        source={require("../assets/38258-paw-shape-line-art.json")}
+        source={require(PATH_ANIMATION)}
         animationStyle={styles.lottie}
         speed={2}
       >
