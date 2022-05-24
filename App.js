@@ -18,7 +18,7 @@ import { ReportViewScreen } from './screens/ReportViewScreen';
 import { FosteringVolunteerProfileScreen } from './screens/FosteringVolunteerProfileScreen';
 import { FosteringVolunteerProfileSettingsScreen } from './screens/FosteringVolunteerProfileSettingsScreen';
 import { FaceRecognitionResultsScreen } from './screens/FaceRecognitionResultsScreen';
-import ViewPetDetailsScreen from './screens/crud/pets/ViewPetDetailsScreen.js';
+import { ViewPetDetailsScreen } from './screens/crud/pets/ViewPetDetailsScreen.js';
 
 import colors from './config/colors';
 
@@ -37,7 +37,7 @@ export default class App extends React.Component {
               <Stack.Screen name="ChangeUserPasswordScreen" component={ChangePasswordScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor: colors.primary}}} />
               <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: '', headerShown: false }} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
-              <Stack.Screen name="ViewPet" component={ViewPetDetailsScreen} options={{title: 'Create Pet', headerStyle: {backgroundColor: colors.primary, color: colors.white, fontWeight: 'bold'}}} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
+              <Stack.Screen name="ViewPet" component={ViewPetDetailsScreen} options={{ headerShown: false }} />
               <Stack.Screen name="ImageSelectorScreen" component={ImageSelectorScreen} options={{ headerShown: false}} />
               <Stack.Screen name="FosteringVolunteerProfile" component={FosteringVolunteerProfileScreen} options={{headerShown: false}} />
               <Stack.Screen name="FosteringVolunteerProfileSettings" component={FosteringVolunteerProfileSettingsScreen} options={{headerShown: false}} />

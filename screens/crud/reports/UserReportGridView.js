@@ -17,8 +17,8 @@ export class UserReportGridView extends React.PureComponent {
 
         const { navigation } = this.props;
 
-        const handleNavigateToReportView = (petId) => {
-            navigation.push("ReportView", { noticeUserId: userId, noticeId: noticeId, isMyReport: true });
+        const handleNavigateToReportView = (noticeId) => {
+            navigation.push("ReportView", { noticeUserId: this.props.userId, noticeId: noticeId, isMyReport: true });
         }
 
         const handleCreateNewReport = () => {
