@@ -133,7 +133,7 @@ export class CreateReportScreen extends React.Component {
     }
 
     navigateToReport = () => {
-        this.props.navigation.push('ReportView', { noticeUserId: this.state.userId, noticeId: this.state.createdNoticeId, isMyReport: true, goToUserProfile: true }); 
+        this.props.navigation.push('ReportView', { noticeUserId: this.state.userId, noticeId: this.state.createdNoticeId, goToUserProfile: true }); 
     }
 
     componentDidMount() {

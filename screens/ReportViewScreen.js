@@ -6,7 +6,7 @@ import { getSecureStoreValueFor } from '../utils/store';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 
-import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../utils/mappers';
+import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
 
 import colors from '../config/colors';
 
@@ -37,7 +37,9 @@ export class ReportViewScreen extends React.Component {
             petDescription: '',
             contactInfo: {},
             selectedIndex: 0,
-            contactInfoModalVisible: false
+            contactInfoModalVisible: false,
+            isMyReport: false,
+            isInEditMode: false,
         };
     }
 
@@ -71,6 +73,17 @@ export class ReportViewScreen extends React.Component {
 
     changeToEditMode = () => {
         // TODO: edit event/pet page or history depending on the index
+        this.setState({ isInEditMode: true });
+    }
+
+    saveChanges = () => {
+        // TODO: edit event/pet page or history depending on the index
+        this.setState({ isInEditMode: false });
+    }
+
+    discardChanges = () => {
+        // TODO: edit event/pet page or history depending on the index
+        this.setState({ isInEditMode: false });
     }
 
     navigateToReports = () => {
@@ -85,7 +98,7 @@ export class ReportViewScreen extends React.Component {
 
     showHeader = () => (
         <>
-            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 40, marginBottom: 20}}>
+            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 20, marginBottom: 10}}>
                 <MaterialIcon
                     name='arrow-left'
                     size={33}
@@ -112,28 +125,26 @@ export class ReportViewScreen extends React.Component {
                     city: response.neighbourhood,
                     location: response.street,
                 });
-                getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-                    getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + response.pet.id, 
-                    {
-                        'Authorization': 'Basic ' + sessionToken 
-                    }
-                    ).then(responsePet => {
-                        this.setState({ 
-                            name : responsePet.name,
-                            petPhotos: responsePet.photos,
-                            sex: responsePet.sex,
-                            petType: responsePet.type,
-                            furColor: responsePet.furColor,
-                            breed: responsePet.breed,
-                            size: responsePet.size,
-                            lifeStage: responsePet.lifeStage,
-                            petDescription: responsePet.description,
-                        });
-                        
-                    }).catch(err => {
-                        console.log(err);
-                        alert(err)
+                getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + response.pet.id, 
+                {
+                    'Authorization': 'Basic ' + sessionToken 
+                }
+                ).then(responsePet => {
+                    this.setState({ 
+                        name : responsePet.name,
+                        petPhotos: responsePet.photos,
+                        sex: responsePet.sex,
+                        petType: responsePet.type,
+                        furColor: responsePet.furColor,
+                        breed: responsePet.breed,
+                        size: responsePet.size,
+                        lifeStage: responsePet.lifeStage,
+                        petDescription: responsePet.description,
                     });
+                    
+                }).catch(err => {
+                    console.log(err);
+                    alert(err)
                 });
             }).catch(err => {
                 console.log(err);
@@ -158,14 +169,20 @@ export class ReportViewScreen extends React.Component {
                 alert(err)
             }).finally(() => this.setState({ isLoading : false }));
         });
+        getSecureStoreValueFor("userId").then(userId => this.setState({ isMyReport: userId === this.props.route.params.noticeUserId}));
     }
 
     render() {
-        console.log(this.state.reportType)
         const infoTitle = "Información";
         const historyTitle = "Historial";
         const segmentedTabTitles = [infoTitle, historyTitle];
 
+        const dividerLine = <View style={{
+            marginTop: 10,
+            borderBottomColor: colors.secondary,
+            borderBottomWidth: 1,
+        }} />;
+        
         return (
             <SafeAreaView style={styles.container}>
                 <View>
@@ -209,9 +226,9 @@ export class ReportViewScreen extends React.Component {
                 </View>
                 <View style={{flex: 2}}>
                     <View style={{alignItems: 'flex-start'}}>
-                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 35, paddingTop: 20, paddingBottom: 10, color: mapReportTypeToLabelColor(this.state.reportType)}}>{mapReportTypeToLabel(this.state.reportType)}</Text>
-                            {this.props.isMyReport ? 
+                        <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 20, paddingBottom: 10}}>
+                            <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 35, color: mapReportTypeToLabelColor(this.state.reportType)}}>{mapReportTypeToReportLabel(this.state.reportType)}</Text>
+                            {this.state.isMyReport ? 
                                 <TouchableOpacity onPress={() => this.changeToEditMode()}>
                                     <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
                                 </TouchableOpacity> : <></>}
@@ -233,7 +250,7 @@ export class ReportViewScreen extends React.Component {
                         { this.state.selectedIndex == segmentedTabTitles.indexOf(infoTitle) ?
                             // Show information tab data: event and pet details
                             <>
-                                <Text style={[styles.optionTitle, {paddingTop: 0}]}>Se perdió en</Text>
+                                <Text style={[styles.optionTitle, {paddingTop: 0}]}>{mapReportTypeToPetLocationTitle(this.state.reportType)}</Text>
                                 <Text style={styles.textInput}>{this.state.location}</Text>
                                 <Text style={[styles.textInput, {paddingTop: 5}]}>{(this.state.city != '' ? this.state.city + ", " : "") + this.state.province}</Text>
 
@@ -250,7 +267,8 @@ export class ReportViewScreen extends React.Component {
 
                                 <Text style={styles.optionTitle}>Descripción</Text>
                                 <Text style={styles.textInput}>{this.state.eventDescription}</Text>
-                                <Text style={[styles.optionTitle, {fontSize: 20, fontWeight: 'bold', paddingTop: 25}]}>Mascota</Text>
+                                <Text style={[styles.optionTitle, {fontSize: 20, fontWeight: 'bold', paddingTop: 25, color: colors.secondary}]}>Mascota</Text>
+                                {dividerLine}
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                     <View style={{flexDirection: 'column', flex: 0.5}}>
                                         <Text style={styles.optionTitle}>Tipo</Text>
@@ -274,7 +292,17 @@ export class ReportViewScreen extends React.Component {
                                 <Text style={styles.optionTitle}>Descripción de la mascota</Text>
                                 <Text style={styles.textInput}>{this.state.petDescription}</Text>
 
-                                {this.state.isMyReport ? 
+                                {this.state.isInEditMode && 
+                                <>
+                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.saveChanges()}>
+                                    <Text style={styles.buttonFont}>Guardar cambios</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.grey, marginTop: 15, marginBottom: 60}]} onPress={() => this.discardChanges()}>
+                                    <Text style={styles.buttonFont}>Descartar cambios</Text>
+                                </TouchableOpacity>
+                                </> }
+
+                                {this.state.isMyReport && !this.state.isInEditMode && 
                                 <>
                                 <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.resolveReport()}>
                                     <Text style={styles.buttonFont}>Resolver reporte</Text>
@@ -282,11 +310,12 @@ export class ReportViewScreen extends React.Component {
                                 <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.pink, marginTop: 15, marginBottom: 60}]} onPress={() => this.suspendReport()}>
                                     <Text style={styles.buttonFont}>Suspender reporte</Text>
                                 </TouchableOpacity>
-                                </> :
+                                </> }
+
+                                {!this.state.isMyReport && 
                                 <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.secondary, marginTop: 40, marginBottom: 60}]} onPress={() => this.showContactInfo()}>
                                     <Text style={styles.buttonFont}>Contacto</Text>
-                                </TouchableOpacity>   
-                                }
+                                </TouchableOpacity> }
                             </> :
                             // Show history tab data: places where the pet has been fostered
                             <>

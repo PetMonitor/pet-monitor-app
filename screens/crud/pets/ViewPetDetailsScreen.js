@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions } from 'react-native';
+import { Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { getJsonData } from '../../../utils/requests.js';
@@ -25,6 +25,8 @@ export class ViewPetDetailsScreen extends React.Component {
             size: '',
             lifeStage: '',
             petDescription: '',
+            isMyPet: false,
+            isInEditMode: false,
         };
     }
 
@@ -36,7 +38,7 @@ export class ViewPetDetailsScreen extends React.Component {
 
     showHeader = () => (
         <>
-            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 70, marginBottom: 20}}>
+            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 20, marginBottom: 10}}>
                 <MaterialIcon
                     name='arrow-left'
                     size={33}
@@ -49,19 +51,24 @@ export class ViewPetDetailsScreen extends React.Component {
         </>
     )
 
-    // fetchPetsDetails = (petId) => {
-    //     getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-    //         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.userId + '/pets/' + petId, 
-    //         {
-    //             'Authorization': 'Basic ' + sessionToken 
-    //         }).then(response => {
-    //             this.setState({ petData : response });
-    //         }).catch(err => {
-    //             console.log(err);
-    //             alert(err)
-    //         });
-    //     });
-    // };
+    changeToEditMode = () => {
+        // TODO: edit event/pet page or history depending on the index
+        this.setState({ isInEditMode: true });
+    }
+
+    saveChanges = () => {
+        // TODO: add logic
+        this.setState({ isInEditMode: false });
+    }
+
+    discardChanges = () => {
+        // TODO: add logic
+        this.setState({ isInEditMode: false });
+    }
+
+    deletePet = () => {
+        // TODO: add logic
+    }
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
@@ -70,7 +77,6 @@ export class ViewPetDetailsScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(responsePet => {
-                console.log(responsePet)
                 this.setState({ 
                     name : responsePet.name,
                     petPhotos: responsePet.photos,
@@ -88,11 +94,18 @@ export class ViewPetDetailsScreen extends React.Component {
                 alert(err)
             });
         });
+        getSecureStoreValueFor("userId").then(userId => this.setState({ isMyPet: userId === this.props.route.params.userId}));
     }
 
     render() {
+        const dividerLine = <View style={{
+            marginTop: 10,
+            borderBottomColor: colors.secondary,
+            borderBottomWidth: 1,
+        }} />;
+
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 {this.showHeader()}
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
@@ -107,8 +120,17 @@ export class ViewPetDetailsScreen extends React.Component {
                     </View>    
                 </View>
                 <View style={{flex: 2}}>
-                    <ScrollView style={{flex:1, paddingLeft: 35, paddingRight: 35}}>
-                        <Text style={[styles.optionTitle, {fontSize: 20, fontWeight: 'bold', paddingTop: 25}]}>Información</Text>
+                    <View style={{paddingHorizontal: 35}}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 20 }}>
+                            <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.clearBlack}}>Información</Text>
+                            {this.state.isMyPet ? 
+                                    <TouchableOpacity onPress={() => this.changeToEditMode()}>
+                                        <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
+                                    </TouchableOpacity> : <></>}
+                        </View>
+                        {dividerLine}
+                        </View>
+                    <ScrollView style={{flex:1, paddingHorizontal: 35}}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <View style={{flexDirection: 'column', flex: 0.5}}>
                                 <Text style={styles.optionTitle}>Tipo</Text>
@@ -131,9 +153,24 @@ export class ViewPetDetailsScreen extends React.Component {
 
                         <Text style={styles.optionTitle}>Descripción</Text>
                         <Text style={styles.textInput}>{this.state.petDescription}</Text>
+
+                        {this.state.isInEditMode && 
+                                <>
+                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.saveChanges()}>
+                                    <Text style={styles.buttonFont}>Guardar cambios</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.grey, marginTop: 15, marginBottom: 60}]} onPress={() => this.discardChanges()}>
+                                    <Text style={styles.buttonFont}>Descartar cambios</Text>
+                                </TouchableOpacity>
+                                </> }
+
+                        {this.state.isMyPet && !this.state.isInEditMode &&
+                        <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.pink, marginTop: 15, marginTop: 40, marginBottom: 60}]} onPress={() => this.deletePet()}>
+                            <Text style={styles.buttonFont}>Eliminar mascota</Text>
+                        </TouchableOpacity>}
                     </ScrollView>
                 </View>
-            </View>
+            </SafeAreaView>
         )
     }
 }
@@ -155,5 +192,17 @@ const styles = StyleSheet.create({
         paddingTop: 10, 
         color: colors.clearBlack, 
         fontSize: 16, 
+    },
+    button: {
+        backgroundColor: colors.secondary,
+        marginTop: 10,
+        padding: 18, 
+        borderRadius: 7, 
+    },
+    buttonFont: {
+        fontSize: 16, 
+        fontWeight: '500', 
+        alignSelf: 'center',
+        color: colors.white
     },
   });

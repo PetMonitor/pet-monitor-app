@@ -159,9 +159,15 @@ export class ViewUserDetailsScreen extends Component {
             profilePicture = <Image source={{ uri: `${this.state.userProfilePictureUrl}` }} style={{width:130, height:130, borderRadius:130/2}}/>
         }
 
+        const dividerLine = <View style={{
+            marginTop: 25,
+            borderBottomColor: colors.lightGrey,
+            borderBottomWidth: 1,
+        }} />;
+        
         return (
             <SafeAreaView style={styles.container}>   
-                <View style={{flexDirection:'row', alignItems:'stretch', flex: 1, marginTop: 30}}>
+                <View style={{flexDirection:'row', alignItems:'stretch', flex: 1, marginTop: 15}}>
                     <View style={{marginLeft: 30, flex: 2}}>
                         {profilePicture}
                     </View>
@@ -169,20 +175,21 @@ export class ViewUserDetailsScreen extends Component {
                         { this.state.facebookLogin ? 
                             null :
                             <TouchableOpacity style={[styles.button]} onPress={handleEditProfile}> 
-                            	<Text style={styles.buttonFont}>Editar Perfil</Text> 
+                            	<Text style={styles.buttonFont}>Editar perfil</Text> 
                             </TouchableOpacity>
                         }
                         <Text style={{color: colors.clearBlack, fontSize: 16}}>{this.state.userData.username}</Text>
                         <Text style={{color: colors.clearBlack, fontSize: 24, marginBottom: 5, fontWeight: '500'}}>{this.state.userData.name}</Text>
                     </View>
                 </View>
+                {dividerLine}
                 <View style={styles.bottomContainer}>
                     <View style={styles.toggleButtonContainer}>
                         <TouchableOpacity style={ this.state.petView ? styles.pressedToggleButton : styles.unpressedToggleButton} onPress={handleToggleViewToPets}>
-                            <Text style={ this.state.petView ? styles.pressedToggleButtonText : styles.unpressedToggleButtonText }>Mis Mascotas</Text>
+                            <Text style={ this.state.petView ? styles.pressedToggleButtonText : styles.unpressedToggleButtonText }>Mis mascotas</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={ this.state.petView ? styles.unpressedToggleButton : styles.pressedToggleButton } onPress={handleToggleViewToReports}>
-                            <Text style={ this.state.petView ? styles.unpressedToggleButtonText : styles.pressedToggleButtonText }>Mis Reportes</Text>
+                            <Text style={ this.state.petView ? styles.unpressedToggleButtonText : styles.pressedToggleButtonText }>Mis reportes</Text>
                         </TouchableOpacity>
                     </View>
                     { this.state.petView 
@@ -217,7 +224,6 @@ const styles = StyleSheet.create({
     },
     bottomContainer: {
         flex: 4, 
-        paddingTop: 20, 
         marginTop: 20, 
         marginLeft: 30, 
         marginRight: 30,

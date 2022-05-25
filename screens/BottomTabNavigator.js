@@ -42,6 +42,23 @@ export class BottomTabNavigator extends React.Component {
         });
     }
 
+    signOutButton = (color) => {
+        return <TouchableOpacity onPress={() => this.logout()} style={{paddingRight:10}}>
+            <SignOut 
+                size={25} 
+                color={color}
+                weight={'bold'}
+            />
+        </TouchableOpacity>
+    };
+
+    getHeaderStyle = (backgroundColor) => {
+        return {
+            backgroundColor: backgroundColor,
+            height: 110,
+        };
+    }
+
     render() {
         const tabIconSize = 30;
 
@@ -51,13 +68,9 @@ export class BottomTabNavigator extends React.Component {
             color: colors.white
         }
 
-        const signOutButton = <TouchableOpacity onPress={() => this.logout()} style={{paddingRight:10}}>
-            <SignOut 
-                size={25} 
-                color={colors.white}
-                weight={'bold'}
-            />
-        </TouchableOpacity>;
+        const headerTitleContainerStyle = {
+            paddingLeft: 10
+        }
 
         return (
             <Tab.Navigator screenOptions={{tabBarStyle: { height: 70 }}}>
@@ -66,14 +79,15 @@ export class BottomTabNavigator extends React.Component {
                     tabBarActiveTintColor: colors.primary, 
                     tabBarInactiveTintColor: colors.grey,
                     tabBarShowLabel: false,
-                    title: 'Mapa',
-                    headerStyle: {
-                        backgroundColor: colors.primary,
-                    },
+                    title: 'Reportes',
+                    headerStyle: this.getHeaderStyle(colors.white),
+                    headerTitleAlign: 'left',
+                    headerTitleContainerStyle: headerTitleContainerStyle,
                     headerTitleStyle: {
-                        ...headerTitlesStyle
+                        ...headerTitlesStyle,
+                        color: colors.primary,
                     },
-                    headerRight: () => ( signOutButton ),
+                    headerRight: () => this.signOutButton(colors.primary),
                     tabBarIcon: ({ color, focused }) => (
                         <MapPin size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                     )}}/>
@@ -82,13 +96,13 @@ export class BottomTabNavigator extends React.Component {
                     tabBarInactiveTintColor: colors.grey, 
                     tabBarShowLabel: false,
                     title: 'Reconocimiento facial',
-                    headerStyle: {
-                        backgroundColor: colors.primary,
-                    },
+                    headerStyle: this.getHeaderStyle(colors.primary),
+                    headerTitleAlign: 'left',
+                    headerTitleContainerStyle: headerTitleContainerStyle,
                     headerTitleStyle: {
                         ...headerTitlesStyle
                     },
-                    headerRight: () => ( signOutButton ),
+                    headerRight: () => this.signOutButton(colors.white),
                     tabBarIcon: ({ color, focused }) => (
                         <Dog size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>
@@ -96,14 +110,14 @@ export class BottomTabNavigator extends React.Component {
                     tabBarActiveTintColor: colors.primary, 
                     tabBarInactiveTintColor: colors.grey, 
                     tabBarShowLabel: false,
-                    title: 'Crear Reporte',
-                    headerStyle: {
-                        backgroundColor: colors.primary,
-                    },
+                    title: 'Crear reporte',
+                    headerStyle: this.getHeaderStyle(colors.primary),
+                    headerTitleAlign: 'left',
+                    headerTitleContainerStyle: headerTitleContainerStyle,
                     headerTitleStyle: {
                         ...headerTitlesStyle
                     },
-                    headerRight: () => ( signOutButton ),
+                    headerRight: () => this.signOutButton(colors.white),
                     tabBarIcon: ({ color, focused }) => (
                         <PlusCircle size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>
@@ -112,13 +126,13 @@ export class BottomTabNavigator extends React.Component {
                     tabBarInactiveTintColor: colors.grey, 
                     tabBarShowLabel: false,
                     title: 'Voluntarios para transitar',
-                    headerStyle: {
-                        backgroundColor: colors.primary,
-                    },
+                    headerStyle: this.getHeaderStyle(colors.primary),
+                    headerTitleAlign: 'left',
+                    headerTitleContainerStyle: headerTitleContainerStyle,
                     headerTitleStyle: {
                         ...headerTitlesStyle
                     },
-                    headerRight: () => ( signOutButton ),
+                    headerRight: () => this.signOutButton(colors.white),
                     tabBarIcon: ({ color, focused }) => (
                         <UsersThree size={tabIconSize} color={color} weight={this.defineWeight(focused)} />
                 )}}/>  
@@ -129,14 +143,15 @@ export class BottomTabNavigator extends React.Component {
                         tabBarIcon: ({ color, focused }) => (
                             <User size={tabIconSize} color={color} weight={this.defineWeight(focused)} />  
                         ),
-                        title: 'Mi Perfil',
-                        headerStyle: {
-                            backgroundColor: colors.primary,
-                        },
+                        title: 'Mi perfil',
+                        headerStyle: this.getHeaderStyle(colors.white),
+                        headerTitleAlign: 'left',
+                        headerTitleContainerStyle: headerTitleContainerStyle,
                         headerTitleStyle: {
-                            ...headerTitlesStyle
+                            ...headerTitlesStyle,
+                            color: colors.primary
                         },
-                        headerRight: () => ( signOutButton ),
+                        headerRight: () => this.signOutButton(colors.primary),
                     }}/>             
             </Tab.Navigator>
         )

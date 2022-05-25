@@ -15,6 +15,22 @@ export function mapReportTypeToLabel(reportType) {
     }
 };
 
+export function mapReportTypeToReportLabel(reportType) {
+    reportType = reportType.toLowerCase();
+    if (reportType == "lost") {
+        return "Mascota perdida";
+    }
+    if (reportType == "stolen") {
+        return "Mascota robada";
+    }
+    if (reportType == "found") {
+        return "Mascota encontrada";
+    }
+    if (reportType == "for_adoption") {
+        return "Mascota en adopción";
+    }
+};
+
 export function mapReportTypeToLabelColor(reportType) {
     reportType = reportType.toLowerCase();
     if (reportType == "lost" || reportType == "stolen") {
@@ -25,6 +41,22 @@ export function mapReportTypeToLabelColor(reportType) {
     }
     if (reportType == "for_adoption") {
         return colors.secondary;
+    }
+};
+
+export function mapReportTypeToPetLocationTitle(reportType) {
+    reportType = reportType.toLowerCase();
+    if (reportType == "lost") {
+        return "Se perdió en";
+    }
+    if (reportType == "stolen") {
+        return "Fue robado en";
+    }
+    if (reportType == "found") {
+        return "Se encontró en";
+    }
+    if (reportType == "for_adoption") {
+        return "Se encuentra en";
     }
 };
 

@@ -198,7 +198,7 @@ export class ReportListScreen extends React.Component {
                         values={segmentedTabTitles}
                         selectedIndex={this.state.selectedIndex}
                         onTabPress={this.handleTabSegmenterIndexChange}
-                        tabsContainerStyle={{margin: 5}}
+                        tabsContainerStyle={{marginHorizontal: 3, marginVertical: 2}}
                         tabTextStyle={{color: colors.grey, fontWeight: 'bold', fontSize: 14, paddingVertical: 8}}
                         tabStyle={{backgroundColor: colors.transparent, borderColor: colors.transparent}}
                         activeTabStyle={{borderRadius: 5, backgroundColor: colors.white, shadowOpacity:0.2, shadowOffset: {width: 1, height: 1}}}

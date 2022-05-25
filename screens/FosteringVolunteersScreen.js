@@ -56,17 +56,17 @@ export class FosteringVolunteersScreen extends React.Component {
     }
 
     showVolunteerData = ({item}) => {
+        const dividerLine = <View style={{
+            marginTop: 10,
+            marginLeft: 10,
+            marginRight: 10,
+            borderBottomColor: colors.secondary,
+            borderBottomWidth: 2,
+        }} />;
         return (
             <TouchableOpacity style={styles.volunteerBox} onPress={() => this.navigateToVolunteerProfileView(item)}>
                 <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, marginLeft: 10}}><Text style={[styles.text, {fontWeight: 'bold'}]}>{item.name}</Text>{this.renderRating(item.stars)}</View>
-                <View style={{
-                    marginTop: 10,
-                    marginLeft: 10, 
-                    marginRight: 10,
-                    borderBottomColor: colors.secondary,
-                    borderBottomWidth: 2,
-                }}
-                />
+                {dividerLine}
                 <Text style={[styles.text, {marginTop: 10, marginLeft: 10}]}>Puede transitar <Text style={{fontWeight: 'bold'}}>{this.petFosteringMapper(item.canFoster)}</Text></Text>
                 <View style={{flexDirection: 'row', marginTop: 10, marginLeft: 10, marginBottom: 15}}><MaterialIcon name='location-on' size={20} color={colors.secondary}/><Text style={[styles.text, {fontWeight: 'bold'}]}>{item.location}</Text></View>
             </TouchableOpacity>
