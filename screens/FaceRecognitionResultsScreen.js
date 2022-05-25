@@ -41,7 +41,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
     }
     
     navigateToReportView = (userId, noticeId) => {
-        this.props.navigation.push('ReportView', { noticeUserId: userId, noticeId: noticeId, isMyReport: false });
+        this.props.navigation.push('ReportView', { noticeUserId: userId, noticeId: noticeId });
     }
 
     renderItem = ({item}) =>  {

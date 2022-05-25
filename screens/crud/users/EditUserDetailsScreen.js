@@ -80,6 +80,12 @@ export class EditUserDetailsScreen extends React.Component {
         }
 
 
+        const dividerLine = <View style={{
+            marginTop: 20,
+            borderBottomColor: colors.inputGrey,
+            borderBottomWidth: 1,
+        }} />;
+        
         return (
             <SafeAreaView style={styles.container}>   
                 <ScrollView>
@@ -97,14 +103,7 @@ export class EditUserDetailsScreen extends React.Component {
                                         color={colors.white}/>
                                 </View>
                         </ImageBackground>
-                        <View style={{
-                            marginTop: 20,
-                            marginLeft: 30, 
-                            marginRight: 30,
-                            borderBottomColor: colors.inputGrey,
-                            borderBottomWidth: 1,
-                        }}
-                        />
+                        {dividerLine}
                         <Text style={{color: colors.primary, fontWeight: 'bold', fontSize: 20, marginLeft: 30, marginTop: 10, marginBottom: 10, alignSelf: 'flex-start'}}>Información básica</Text>
                         
                     </View>
@@ -192,7 +191,7 @@ export class EditUserDetailsScreen extends React.Component {
                         </View> : null}
                         
                     </View>
-                    <View style={{flex: 1, alignItems: 'center', marginTop: 30, marginBottom: 40}}>
+                    <View style={{flex: 1, alignItems: 'center', marginTop: 10, marginBottom: 40}}>
                         <TouchableOpacity 
                             style={[styles.button]}
                             onPress={handleEditProfile}>
