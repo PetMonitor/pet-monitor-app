@@ -3,6 +3,7 @@ import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions } from '
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
+import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 
 const { height, width } = Dimensions.get("screen")
@@ -83,7 +84,7 @@ export class FosteringVolunteersScreen extends React.Component {
 
     render() {
         return (
-            <View style={styles.container}> 
+            <View style={commonStyles.container}> 
                 <FlatList 
                     data={this.state.volunteers}
                     keyExtractor={(_, index) => index.toString()}
@@ -101,12 +102,6 @@ export class FosteringVolunteersScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
     text: {
         color: colors.clearBlack, 
         fontSize: 16

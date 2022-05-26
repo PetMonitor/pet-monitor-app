@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, TextInput, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
+import { TouchableOpacity, Text, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 
+import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
 
 export class CreateUserScreen extends React.Component {
@@ -49,12 +50,8 @@ export class CreateUserScreen extends React.Component {
 
         const styles = StyleSheet.create({
             container: {
-                flex: 1,
-                backgroundColor: 'white',
-                flexDirection: 'column', // main axis: vertical
                 alignItems: 'center', // align items across secondary axis (horizontal)
                 justifyContent: 'center', // justify along main axis (vertical)
-                paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
             },
             textInput: {
                 borderRadius: 8, 
@@ -84,7 +81,7 @@ export class CreateUserScreen extends React.Component {
         });
 
         return (
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={[commonStyles.container, styles.container]}>
                 <Text style={{ fontSize: 24, padding: 20 }}>Crear cuenta</Text>            
                 <TextInput 
                     placeholder = 'Usuario'

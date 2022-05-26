@@ -6,6 +6,7 @@ import { MediaType } from 'expo-media-library';
 import PageContainer from '../utils/PageContainer';
 import * as ImagePicker from 'expo-image-picker';
 import { EventRegister } from 'react-native-event-listeners'
+
 import colors from '../config/colors';
 
 const LOW_RES_PHOTO_DIMENSION = 160
@@ -125,11 +126,6 @@ const ImageSelectorScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-    flexDirection: 'column', // main axis: vertical
-  },
   textStyle: {
     color: colors.white,
   },

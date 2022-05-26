@@ -1,13 +1,17 @@
 import React, { Component } from "react";
+
+import { Text, TouchableOpacity, StyleSheet, SafeAreaView, View, Image, LogBox } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+
+import { UserPetGridView } from '../pets/UserPetGridView';
+import { UserReportGridView } from "../reports/UserReportGridView";
 
 import { getJsonData } from '../../../utils/requests';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import colors from '../../../config/colors';
-import { UserPetGridView } from '../pets/UserPetGridView';
 
-import { Text, TouchableOpacity, StyleSheet, SafeAreaView, View, Image, LogBox } from 'react-native';
-import { UserReportGridView } from "../reports/UserReportGridView";
+import commonStyles from '../../../utils/styles';
+import colors from '../../../config/colors';
+
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 
 export class ViewUserDetailsScreen extends Component {
@@ -166,7 +170,7 @@ export class ViewUserDetailsScreen extends Component {
         }} />;
         
         return (
-            <SafeAreaView style={styles.container}>   
+            <SafeAreaView style={commonStyles.container}>   
                 <View style={{flexDirection:'row', alignItems:'stretch', flex: 1, marginTop: 15}}>
                     <View style={{marginLeft: 30, flex: 2}}>
                         {profilePicture}
@@ -203,11 +207,6 @@ export class ViewUserDetailsScreen extends Component {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.white,
-        flexDirection: "column", // main axis: vertical
-    },
     buttonFont: {
         fontSize: 16, 
         fontWeight: '500', 

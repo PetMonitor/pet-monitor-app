@@ -2,18 +2,18 @@ import React from 'react';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions, SafeAreaView } from 'react-native';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import Modal from "react-native-modal";
+import { Buffer } from 'buffer'
+
 import { getJsonData, postJsonData, deleteJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
-import { Buffer } from 'buffer'
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
+import { showHeader } from '../utils/headers';
 
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-
+import commonStyles from '../utils/styles';
 import colors from '../config/colors';
-
-import Modal from "react-native-modal";
 
 const { height, width } = Dimensions.get("screen")
 
@@ -129,17 +129,14 @@ export class FaceRecognitionResultsScreen extends React.Component {
             return result;
         }
 
-        return (
-            <View style={styles.container}>
-                <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
-                    <Icon
-                        name='arrow-left'
-                        size={30}
-                        color={colors.white}
-                        style={{marginLeft: 10}}
-                        onPress={() => this.props.navigation.goBack()} />
-                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Resultados</Text>
-                </View>
+        return (<>
+            <SafeAreaView
+                edges={["top"]}
+                style={{ flex: 0, backgroundColor: colors.primary }}/>
+            <SafeAreaView
+                edges={["left", "right", "bottom"]}
+                style={commonStyles.container} >
+                {showHeader("Resultados", colors.white, colors.primary, colors.white, () => this.props.navigation.goBack())}
                 
                 <View style={styles.alignedContent}>
                     <Text style={styles.titleText}>Mascotas similares</Text>
@@ -206,18 +203,14 @@ export class FaceRecognitionResultsScreen extends React.Component {
                     renderItem={this.renderItem}
                     style={{margin: 20}}
                 />
-            </View>
+                </SafeAreaView>
+                </>
+            // </View>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
     titleText: {
         color: colors.clearBlack, 
         fontSize: 24,
@@ -232,8 +225,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     alignedContent: {
-        alignItems:'center', 
-        flexDirection: 'row', 
+        ...commonStyles.alignedContent,
         marginTop: 10
     },
     modalView: {

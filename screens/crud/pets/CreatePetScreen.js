@@ -1,15 +1,18 @@
 import React from 'react';
 
-import { postJsonData } from '../../../utils/requests.js';
-import { getSecureStoreValueFor } from '../../../utils/store';
-import Loader  from '../../../utils/Loader.js';
-import colors from '../../../config/colors';
-
-import { Picker } from '@react-native-picker/picker';
 import { EventRegister } from 'react-native-event-listeners';
-import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, ScrollView, View, Image } from 'react-native';
+import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, ScrollView, View, Image, SafeAreaView } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import { postJsonData } from '../../../utils/requests.js';
+import { getSecureStoreValueFor } from '../../../utils/store';
+import { getLifeStageItems, getPetTypeItems, getSexTypeItems, getSizeTypeItems, getPickerOnValue } from '../../../utils/editionHelper';
+import Loader  from '../../../utils/Loader.js';
+import { showHeader } from '../../../utils/headers';
+
+import commonStyles from '../../../utils/styles';
+import colors from '../../../config/colors';
 
 export class CreatePetScreen extends React.Component {
 
@@ -152,18 +155,14 @@ export class CreatePetScreen extends React.Component {
             </>
         );
 
-        return (
-            <View style={styles.container}> 
-                <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
-                    <MaterialIcon
-                        name='arrow-left'
-                        size={30}
-                        color={colors.white}
-                        style={{marginLeft: 10}}
-                        onPress={() => this.props.navigation.goBack()} />
-                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Crear mascota</Text>
-                </View>
-
+        return (<>
+            <SafeAreaView
+                edges={["top"]}
+                style={{ flex: 0, backgroundColor: colors.primary }}/>
+            <SafeAreaView
+                edges={["left", "right", "bottom"]}
+                style={commonStyles.container} >
+                {showHeader("Crear mascota", colors.white, colors.primary, colors.white, () => this.props.navigation.goBack())}
             { this.state.isLoading ? 
                 <Loader /> :
                 <ScrollView style={styles.scrollView} >
@@ -177,42 +176,15 @@ export class CreatePetScreen extends React.Component {
                     <View style={{flex:1, flexDirection: 'row'}}>
                         <View style={{flex:1, flexDirection: 'column'}}>
                             <Text style={styles.optionTitle}>Tipo</Text>
-                            <Picker
-                                selectedValue={this.state.type}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ type: itemValue })}>
-                                    <Picker.Item label="Gato" value="CAT" />
-                                    <Picker.Item label="Perro" value="DOG" />
-                            </Picker>
+                            {getPickerOnValue(this.state.type, (itemValue) => this.setState({ type: itemValue }), getPetTypeItems)}
                             <Text style={styles.optionTitle}>Sexo</Text>
-                            <Picker
-                                selectedValue={this.state.sex}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ sex: itemValue })}>
-                                    <Picker.Item label="Macho" value="MALE" />
-                                    <Picker.Item label="Hembra" value="FEMALE" />
-                            </Picker>
-                            
+                            {getPickerOnValue(this.state.sex, (itemValue) => this.setState({ sex: itemValue }), getSexTypeItems)}
                         </View>
                         <View style={{flex:1, flexDirection: 'column'}}>
                             <Text style={styles.optionTitle}>Etapa de la vida</Text>
-                            <Picker
-                                selectedValue={this.state.lifeStage}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ lifeStage: itemValue }) }>
-                                    <Picker.Item label="Bebé" value="BABY" />
-                                    <Picker.Item label="Adulto" value="ADULT" />
-                                    <Picker.Item label="Mayor" value="SENIOR" />
-                            </Picker>
+                            {getPickerOnValue(this.state.lifeStage, (itemValue) => this.setState({ lifeStage: itemValue }), getLifeStageItems)}
                             <Text style={styles.optionTitle}>Tamaño</Text>
-                            <Picker
-                                selectedValue={this.state.size}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ size: itemValue }) }>
-                                    <Picker.Item label="Pequeño" value="SMALL" />
-                                    <Picker.Item label="Mediano" value="MEDIUM" />
-                                    <Picker.Item label="Grande" value="LARGE" />
-                            </Picker>
+                            {getPickerOnValue(this.state.size, (itemValue) => this.setState({ size: itemValue }), getSizeTypeItems)}
                         </View>
                     </View>
                     <Text style={styles.optionTitle}>Raza</Text>
@@ -231,7 +203,7 @@ export class CreatePetScreen extends React.Component {
                         maxLength = { 100 } />
 
                     <Text style={styles.optionTitle}>Fotos</Text>
-                    <TouchableOpacity style={[styles.buttonUpload, {flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}]} onPress={handleImagePickerPress} >
+                    <TouchableOpacity style={[styles.buttonUpload, {...commonStyles.alignedContent, justifyContent: 'center'}]} onPress={handleImagePickerPress} >
                         <FeatherIcon name={'upload'} size={20} color={colors.white} style={{marginRight: 10}} />
                         <Text style={styles.buttonFont}>Subir fotos</Text>
                     </TouchableOpacity>
@@ -280,25 +252,19 @@ export class CreatePetScreen extends React.Component {
                     }
                 </ScrollView>
             }
-            </View>
+            </SafeAreaView>
+            </>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
-    },
     scrollView: {
         flex: 1,
         marginHorizontal: 20,
     },
     alignedContent: {
-        alignItems:'center', 
-        flexDirection: 'row', 
+        ...commonStyles.alignedContent,
         marginTop: 10
     },
     checkBoxOptionTitle: {
@@ -374,5 +340,5 @@ const styles = StyleSheet.create({
     modalText: {
       marginBottom: 15,
       textAlign: "center",
-    }
+    },
 });
