@@ -1,9 +1,12 @@
 import React from "react";
-import colors from '../../../config/colors';
-import Icon from 'react-native-vector-icons/AntDesign';
 
 import { Text, TouchableOpacity, View, Image, StyleSheet, FlatList, Dimensions } from 'react-native';
+import Icon from 'react-native-vector-icons/AntDesign';
+
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../../../utils/mappers';
+
+import commonStyles from '../../../utils/styles';
+import colors from '../../../config/colors';
 
 const { height, width } = Dimensions.get("screen")
 
@@ -52,7 +55,8 @@ export class UserReportGridView extends React.PureComponent {
         }
         
         return(
-            <View style={styles.container}>
+            <View style={commonStyles.container}>
+                {this.props.reports.length == 0 ? <Text style={{fontSize: 15, fontWeight: '500', color: colors.secondary, marginTop: 20}}>Podés crear un reporte en caso de encontrar o perder una mascota.</Text> : null}
                 <FlatList 
                     data={[...this.props.reports, {action: "add-report"}]} 
                     numColumns={2}
@@ -74,10 +78,4 @@ const styles = StyleSheet.create({
         paddingLeft: 7, 
         paddingBottom: 20
     },
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    }
 });

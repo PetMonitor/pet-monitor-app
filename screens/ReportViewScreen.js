@@ -1,16 +1,25 @@
 import React from 'react';
 
-import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
-import { getJsonData } from '../utils/requests.js';
-import { getSecureStoreValueFor } from '../utils/store';
+import { Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 
+import { getJsonData } from '../utils/requests.js';
+import { getSecureStoreValueFor } from '../utils/store';
+import { OptionTitle } from '../utils/editionHelper.js';
 import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
+import { HeaderWithBackArrow } from '../utils/headers';
+import { PetImagesHeader } from '../utils/images.js';
+import { AppButton } from '../utils/buttons.js';
 
+import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 
 const { height, width } = Dimensions.get("screen")
+
+const infoTitle = "Información";
+const historyTitle = "Historial";
+const segmentedTabTitles = [infoTitle, historyTitle];
 
 /** Implements the screen that shows a pet's report. */
 export class ReportViewScreen extends React.Component {
@@ -18,7 +27,6 @@ export class ReportViewScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            // TODO: change this for request data
             reportType: '',
             name: '',
             province: '',
@@ -35,7 +43,11 @@ export class ReportViewScreen extends React.Component {
             size: '',
             lifeStage: '',
             petDescription: '',
-            contactInfo: {},
+            contactInfo: {
+                name: '',
+                email: '',
+                phoneNumber: ''
+            },
             selectedIndex: 0,
             contactInfoModalVisible: false,
             isMyReport: false,
@@ -96,246 +108,153 @@ export class ReportViewScreen extends React.Component {
         }
     }
 
-    showHeader = () => (
-        <>
-            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 20, marginBottom: 10}}>
-                <MaterialIcon
-                    name='arrow-left'
-                    size={33}
-                    color={colors.secondary}
-                    style={{marginLeft: 10}}
-                    onPress={() => this.navigateToReports()} />
-                <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Reporte</Text>
-            </View>
-            <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
-        </>
-    )
-
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.props.route.params.noticeId, 
-            {
-                'Authorization': 'Basic ' + sessionToken 
-            }
-            ).then(response => {
-                this.setState({ 
-                    reportType: response.noticeType,
-                    eventDescription: response.description,
-                    province: response.locality,
-                    city: response.neighbourhood,
-                    location: response.street,
-                });
-                getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + response.pet.id, 
-                {
-                    'Authorization': 'Basic ' + sessionToken 
-                }
-                ).then(responsePet => {
-                    this.setState({ 
-                        name : responsePet.name,
-                        petPhotos: responsePet.photos,
-                        sex: responsePet.sex,
-                        petType: responsePet.type,
-                        furColor: responsePet.furColor,
-                        breed: responsePet.breed,
-                        size: responsePet.size,
-                        lifeStage: responsePet.lifeStage,
-                        petDescription: responsePet.description,
-                    });
-                    
-                }).catch(err => {
-                    console.log(err);
-                    alert(err)
-                });
-            }).catch(err => {
-                console.log(err);
-                alert(err)
-            }).finally(() => this.setState({ isLoading : false }));
-        });
-        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId, 
-            {
-                'Authorization': 'Basic ' + sessionToken 
-            }
-            ).then(response => {
-                this.setState({ 
-                    contactInfo: {
-                        name: response.name,
-                        email: response.email,
-                        phoneNumber: response.phoneNumber,
-                    }
-                });
-            }).catch(err => {
-                console.log(err);
-                alert(err)
-            }).finally(() => this.setState({ isLoading : false }));
+            this.getReportInfo(sessionToken);
+            this.getContactInfo(sessionToken);
         });
         getSecureStoreValueFor("userId").then(userId => this.setState({ isMyReport: userId === this.props.route.params.noticeUserId}));
     }
 
-    render() {
-        const infoTitle = "Información";
-        const historyTitle = "Historial";
-        const segmentedTabTitles = [infoTitle, historyTitle];
+    getReportInfo(sessionToken) {
+        getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.props.route.params.noticeId,
+            {
+                'Authorization': 'Basic ' + sessionToken
+            }
+        ).then(notice => {
+            this.setState({
+                reportType: notice.noticeType,
+                eventDescription: notice.description,
+                province: notice.locality,
+                city: notice.neighbourhood,
+                location: notice.street,
+            });
+            this.getPetInfo(notice, sessionToken);
+        }).catch(err => {
+            console.log(err);
+            alert(err);
+        });
+    }
 
-        const dividerLine = <View style={{
-            marginTop: 10,
-            borderBottomColor: colors.secondary,
-            borderBottomWidth: 1,
-        }} />;
+    getPetInfo(notice, sessionToken) {
+        getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + notice.pet.id,
+            {
+                'Authorization': 'Basic ' + sessionToken
+            }
+        ).then(pet => {
+            this.setState({
+                name: pet.name,
+                petPhotos: pet.photos,
+                sex: pet.sex,
+                petType: pet.type,
+                furColor: pet.furColor,
+                breed: pet.breed,
+                size: pet.size,
+                lifeStage: pet.lifeStage,
+                petDescription: pet.description,
+            });
+
+        }).catch(err => {
+            console.log(err);
+            alert(err);
+        });
+    }
+
+    getContactInfo(sessionToken) {
+        getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId,
+            {
+                'Authorization': 'Basic ' + sessionToken
+            }
+        ).then(user => {
+            this.setState({
+                contactInfo: {
+                    name: user.name,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                }
+            });
+        }).catch(err => {
+            console.log(err);
+            alert(err);
+        });
+    }
+
+    render() {
+        
+        const reportTypeText = mapReportTypeToReportLabel(this.state.reportType);
+        const reportTypeLabel = mapReportTypeToLabelColor(this.state.reportType);
+        const isFoundPet = mapReportTypeToLabel(this.state.reportType) == 'Encontrado';
+        const changeModalVisibility = () => this.setModalVisible(!this.state.contactInfoModalVisible);
         
         return (
-            <SafeAreaView style={styles.container}>
-                <View>
-                <Modal 
-                    animationType="slide"
-                    transparent={true}
-                    visible={this.state.contactInfoModalVisible}
-                    onRequestClose={() => {
-                        Alert.alert("Modal has been closed.");
-                        this.setModalVisible(!modalVisible);
-                    }}>
-                    <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
-                        <View style={styles.modalView}>
-                            <Text style={styles.modalTitle}>Datos de contacto</Text>
-                            {this.state.contactInfo.name ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Nombre: </Text>{this.state.contactInfo.name}</Text> : <></>}
-                            {this.state.contactInfo.email ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>e-mail: </Text>{this.state.contactInfo.email}</Text> : <></>}
-                            {this.state.contactInfo.phoneNumber ? <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>Teléfono: </Text>{this.state.contactInfo.phoneNumber}</Text> : <></>}
-                            <TouchableOpacity
-                                style={[styles.button, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
-                                onPress={() => {
-                                    this.setModalVisible(!this.state.contactInfoModalVisible);
-                                }}>
-                                <Text>Ok</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>  
-                </View>
-                {this.showHeader()}
-                <View style={{flex: 1, justifyContent: 'flex-end'}}>
-                    <FlatList 
-                        data={this.state.petPhotos} 
-                        horizontal={true}
-                        keyExtractor={(_, index) => index.toString()}
-                        initialNumToRender={this.state.petPhotos.length}
-                        renderItem={this.renderPet}
-                    />
-                    <View style={{width: width, backgroundColor: colors.semiTransparent, position: 'absolute', height: 30, justifyContent: 'center'}}>
-                        <Text style={{paddingLeft: 35, fontSize: 24, fontWeight: 'bold', color: colors.clearBlack}}>{this.state.name}</Text>
-                    </View>    
-                </View>
+            <SafeAreaView style={commonStyles.container}>
+                <ContactInfoModal 
+                    isVisible={this.state.contactInfoModalVisible}
+                    onModalClose={changeModalVisibility}
+                    name={this.state.contactInfo.name}
+                    email={this.state.contactInfo.email}
+                    phoneNumber={this.state.contactInfo.phoneNumber}
+                    onContactInfoOk={changeModalVisibility}/> 
+                <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
+                <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
+
                 <View style={{flex: 2}}>
-                    <View style={{alignItems: 'flex-start'}}>
-                        <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 20, paddingBottom: 10}}>
-                            <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 35, color: mapReportTypeToLabelColor(this.state.reportType)}}>{mapReportTypeToReportLabel(this.state.reportType)}</Text>
-                            {this.state.isMyReport ? 
-                                <TouchableOpacity onPress={() => this.changeToEditMode()}>
-                                    <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
-                                </TouchableOpacity> : <></>}
-                        </View> 
-                        {mapReportTypeToLabel(this.state.reportType) == 'Encontrado' ?
-                            <SegmentedControlTab 
-                                values={segmentedTabTitles}
-                                selectedIndex={this.state.selectedIndex}
-                                onTabPress={this.handleTabSegmenterIndexChange}
-                                tabsContainerStyle={{marginLeft: 35, marginRight: 35, marginBottom: 10}}
-                                tabTextStyle={{color: colors.grey, fontWeight: 'bold', fontSize: 14, paddingVertical: 8}}
-                                tabStyle={{backgroundColor: colors.inputGrey, borderColor: colors.transparent}}
-                                activeTabStyle={{borderRadius: 5, backgroundColor: colors.white, shadowOpacity:0.2, shadowOffset: {width: 1, height: 1}}}
-                                activeTabTextStyle={{color: colors.primary, fontWeight: 'bold', fontSize: 14}}
-                            />
-                            : <></>}
+                    <View style={{alignItems: 'flex-start', paddingHorizontal: 35}}>
+                        <Title 
+                            text={reportTypeText} 
+                            textColor={reportTypeLabel}
+                            isMyReport={this.state.isMyReport}
+                            onEditModePress={this.changeToEditMode}/>
+                        <FosteringHistoryTabSeletor 
+                            segmentedTabTitles={segmentedTabTitles} 
+                            selectedIndex={this.state.selectedIndex} 
+                            onSelectedTabPress={this.handleTabSegmenterIndexChange}
+                            isFoundPet={isFoundPet}/>
                     </View>
-                    <ScrollView style={{flex:1, paddingLeft: 35, paddingRight: 35}}>
-                        { this.state.selectedIndex == segmentedTabTitles.indexOf(infoTitle) ?
-                            // Show information tab data: event and pet details
-                            <>
-                                <Text style={[styles.optionTitle, {paddingTop: 0}]}>{mapReportTypeToPetLocationTitle(this.state.reportType)}</Text>
-                                <Text style={styles.textInput}>{this.state.location}</Text>
-                                <Text style={[styles.textInput, {paddingTop: 5}]}>{(this.state.city != '' ? this.state.city + ", " : "") + this.state.province}</Text>
-
-                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                    <View style={{flexDirection: 'column', flex: 0.5}}>
-                                        <Text style={styles.optionTitle}>Fecha</Text>
-                                        <Text style={styles.textInput}>{this.state.date.getDate() + '/' + parseInt(this.state.date.getMonth() + 1) + '/' + this.state.date.getFullYear()}</Text>
-                                    </View>
-                                    <View style={{flexDirection: 'column', flex: 0.5}}>
-                                        <Text style={styles.optionTitle}>Hora</Text>
-                                        <Text style={styles.textInput}>{("0" + this.state.hour.getHours()).slice(-2) + ':' + ("0" + this.state.hour.getMinutes()).slice(-2)}</Text>
-                                    </View>
-                                </View>
-
-                                <Text style={styles.optionTitle}>Descripción</Text>
-                                <Text style={styles.textInput}>{this.state.eventDescription}</Text>
-                                <Text style={[styles.optionTitle, {fontSize: 20, fontWeight: 'bold', paddingTop: 25, color: colors.secondary}]}>Mascota</Text>
-                                {dividerLine}
-                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                    <View style={{flexDirection: 'column', flex: 0.5}}>
-                                        <Text style={styles.optionTitle}>Tipo</Text>
-                                        <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text>
-                                        <Text style={styles.optionTitle}>Sexo</Text>
-                                        <Text style={styles.textInput}>{mapPetSexToLabel(this.state.sex)}</Text>
-                                        <Text style={styles.optionTitle}>Tamaño</Text>
-                                        <Text style={styles.textInput}>{mapPetSizeToLabel(this.state.size)}</Text>
-                                
-                                    </View>
-                                    <View style={{flexDirection: 'column', flex: 0.5}}>
-                                        <Text style={styles.optionTitle}>Raza</Text>
-                                        <Text style={styles.textInput}>{this.state.breed}</Text>
-                                        <Text style={styles.optionTitle}>Color pelaje</Text>
-                                        <Text style={styles.textInput}>{this.state.furColor}</Text>
-                                        <Text style={styles.optionTitle}>Etapa</Text>
-                                        <Text style={styles.textInput}>{mapPetLifeStageToLabel(this.state.lifeStage)}</Text>
-                                    </View>
-                                </View>
-
-                                <Text style={styles.optionTitle}>Descripción de la mascota</Text>
-                                <Text style={styles.textInput}>{this.state.petDescription}</Text>
-
-                                {this.state.isInEditMode && 
-                                <>
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.saveChanges()}>
-                                    <Text style={styles.buttonFont}>Guardar cambios</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.grey, marginTop: 15, marginBottom: 60}]} onPress={() => this.discardChanges()}>
-                                    <Text style={styles.buttonFont}>Descartar cambios</Text>
-                                </TouchableOpacity>
-                                </> }
-
-                                {this.state.isMyReport && !this.state.isInEditMode && 
-                                <>
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.resolveReport()}>
-                                    <Text style={styles.buttonFont}>Resolver reporte</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.pink, marginTop: 15, marginBottom: 60}]} onPress={() => this.suspendReport()}>
-                                    <Text style={styles.buttonFont}>Suspender reporte</Text>
-                                </TouchableOpacity>
-                                </> }
-
-                                {!this.state.isMyReport && 
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.secondary, marginTop: 40, marginBottom: 60}]} onPress={() => this.showContactInfo()}>
-                                    <Text style={styles.buttonFont}>Contacto</Text>
-                                </TouchableOpacity> }
-                            </> :
-                            // Show history tab data: places where the pet has been fostered
-                            <>
-                                <Text style={{fontSize: 18, color: colors.secondary, paddingBottom: 5, fontWeight: 'bold'}}>Hogares en los que estuvo la mascota</Text>
-                                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-                                    <View style={{flexDirection: 'column', flex: 1, alignSelf: 'stretch'}}>
-                                        <Text style={styles.optionTitle}>Desde</Text>
-                                        <Text style={[styles.textInput, {fontSize: 14}]}>{this.state.date.getDate() + '/' + parseInt(this.state.date.getMonth() + 1) + '/' + this.state.date.getFullYear()}</Text>
-                                    </View>
-                                    <View style={{flexDirection: 'column', flex: 1, alignSelf: 'stretch'}}>
-                                        <Text style={styles.optionTitle}>Hasta</Text>
-                                        <Text style={[styles.textInput, {fontSize: 14}]}>20/11/2023</Text>
-                                    </View>
-                                    <View style={{flexDirection: 'column', flex: 2.3, alignSelf: 'stretch'}}>
-                                        <Text style={styles.optionTitle}>Contacto</Text>
-                                        <Text style={[styles.textInput, {fontSize: 14}]}>email_example@gmail.com</Text>
-                                    </View>
-                                </View>
-                            </>
-                        }
+                    <ScrollView style={{flex:1, paddingHorizontal: 35}}>
+                        <ReportContent
+                            selectedIndex={this.state.selectedIndex}
+                            reportInfo={{
+                                eventInfo: {
+                                    locationTitle: mapReportTypeToPetLocationTitle(this.state.reportType),
+                                    location: this.state.location,
+                                    city: this.state.city,
+                                    province: this.state.province,
+                                    date: this.state.date,
+                                    hour: this.state.hour,
+                                    description: this.state.eventDescription
+                                },
+                                petInfo: {
+                                    type: this.state.petType,
+                                    sex: this.state.sex,
+                                    breed: this.state.breed,
+                                    furColor: this.state.furColor,
+                                    size: this.state.size,
+                                    lifeStage: this.state.lifeStage,
+                                    description: this.state.petDescription
+                                }
+                            }}
+                            fosterInfo={{
+                                // TODO: change this
+                                sinceDate: this.state.date,
+                                untilDate: this.state.date,
+                                contactEmail: this.state.contactInfo.email
+                            }}/>
+                        <ActionButtons 
+                            selectedIndex={this.state.selectedIndex}
+                            isMyReport={this.state.isMyReport}
+                            isInEditMode={this.state.isInEditMode}
+                            guestButtonHandler={{
+                                showContactInfo: this.showContactInfo
+                            }}
+                            myReportButtonHandler={{
+                                resolveReport: this.resolveReport,
+                                suspendReport: this.suspendReport
+                            }}
+                            editModeButtonHandler={{
+                                saveChanges: this.saveChanges,
+                                discardChanges: this.discardChanges
+                            }}/>
                     </ScrollView>
                 </View>
             </SafeAreaView>
@@ -343,16 +262,198 @@ export class ReportViewScreen extends React.Component {
     }
 }
 
+const EditModePencil = ({isMyReport, onEditModePress}) => {
+    return isMyReport && (
+        <TouchableOpacity onPress={onEditModePress}>
+            <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{ paddingLeft: 10 }} />
+        </TouchableOpacity>
+    );
+}
+
+const Title = ({text, textColor, isMyReport, onEditModePress}) => {
+    return (
+        <View style={{ ...commonStyles.alignedContent, paddingTop: 20, paddingBottom: 10 }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: textColor }}>{text}</Text>
+            <EditModePencil isMyReport={isMyReport} onEditModePress={onEditModePress}/>
+        </View>
+    );
+}
+
+const FosteringHistoryTabSeletor = ({segmentedTabTitles, selectedIndex, onSelectedTabPress, isFoundPet}) => {
+    return isFoundPet && (
+        <SegmentedControlTab
+            values={segmentedTabTitles}
+            selectedIndex={selectedIndex}
+            onTabPress={onSelectedTabPress}
+            tabsContainerStyle={{ marginBottom: 10 }}
+            tabTextStyle={{ color: colors.grey, fontWeight: 'bold', fontSize: 14, paddingVertical: 8 }}
+            tabStyle={{ backgroundColor: colors.inputGrey, borderColor: colors.transparent }}
+            activeTabStyle={{ borderRadius: 5, backgroundColor: colors.white, shadowOpacity: 0.2, shadowOffset: { width: 1, height: 1 } }}
+            activeTabTextStyle={{ color: colors.primary, fontWeight: 'bold', fontSize: 14 }} />
+    );
+}
+
+const ConditionalContactText = ({textValue, label}) => {
+    return textValue ? <Text style={styles.modalText}><Text style={{ fontWeight: 'bold' }}>{label}</Text>{textValue}</Text> : null;
+}
+
+const ContactInfo = ({name, email, phoneNumber, onContactInfoOk}) => {
+    return (
+        <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Datos de contacto</Text>
+            <ConditionalContactText textValue={name} label="Nombre: "/>
+            <ConditionalContactText textValue={email} label="Email: "/>
+            <ConditionalContactText textValue={phoneNumber} label="Teléfono: "/>
+            <AppButton buttonText={"Ok"} onPress={onContactInfoOk} additionalButtonStyles={{ alignItems: 'center', alignSelf: 'center', width: '50%', backgroundColor: colors.secondary }}/>
+        </View>
+    );
+}
+
+const ContactInfoModal = ({isVisible, onModalClose, name, email, phoneNumber, onContactInfoOk}) => {
+    return (
+        <View>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isVisible}
+                onRequestClose={onModalClose}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}>
+                   <ContactInfo name={name} email={email} phoneNumber={phoneNumber} onContactInfoOk={onContactInfoOk}/>
+                </View>
+            </Modal>
+        </View>
+    );
+}
+
+const FosteringInfo = ({sinceDate, untilDate, contactEmail}) => {
+    return (<>
+        <Text style={{fontSize: 16, color: colors.secondary, paddingTop: 10, fontWeight: 'bold'}}>Información de tránsito</Text>
+        <View style={[commonStyles.alignedContent]}>
+            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
+                <OptionTitle text={"Desde"} additionalStyle={styles.optionTitle} />
+                <Text style={[styles.textInput, { fontSize: 13 }]}>{sinceDate.getDate() + '/' + parseInt(sinceDate.getMonth() + 1) + '/' + sinceDate.getFullYear()}</Text>
+            </View>
+            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
+                <OptionTitle text={"Hasta"} additionalStyle={styles.optionTitle} />
+                <Text style={[styles.textInput, { fontSize: 13 }]}>20/11/2023</Text>
+            </View>
+            <View style={{ flexDirection: 'column', flex: 2.3, alignSelf: 'stretch' }}>
+                <OptionTitle text={"Contacto"} additionalStyle={styles.optionTitle} />
+                <Text style={[styles.textInput, { fontSize: 13 }]}>email_example@gmail.com</Text>
+            </View>
+        </View>
+    </>);
+}
+
+const EventInfo = ({petLocationTitle, eventLocation, eventCity, eventProvince, eventDate, eventHour, eventDescription}) => {
+    return (<>
+        <OptionTitle text={petLocationTitle} additionalStyle={{ ...styles.optionTitle, paddingTop: 0 }} />
+        <Text style={styles.textInput}>{eventLocation}</Text>
+        <Text style={[styles.textInput, { paddingTop: 5 }]}>{(eventCity != '' ? eventCity + ", " : "") + eventProvince}</Text>
+
+        <View style={[commonStyles.alignedContent, {justifyContent: 'center'}]}>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Fecha"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{eventDate.getDate() + '/' + parseInt(eventDate.getMonth() + 1) + '/' + eventDate.getFullYear()}</Text>
+            </View>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Hora"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{("0" + eventHour.getHours()).slice(-2) + ':' + ("0" + eventHour.getMinutes()).slice(-2)}</Text>
+            </View>
+        </View>
+
+        <OptionTitle text={"Descripción"} additionalStyle={styles.optionTitle} />
+        <Text style={styles.textInput}>{eventDescription}</Text>
+    </>);
+}
+
+
+const PetInfo = ({petType, sex, size, breed, furColor, lifeStage, petDescription}) => {
+    return (<>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', paddingTop: 25, color: colors.secondary }}>Mascota</Text>
+        <View style={{ marginTop: 10, borderBottomColor: colors.secondary, borderBottomWidth: 1}} />
+        <View style={commonStyles.alignedContent}>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Tipo"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetTypeToLabel(petType)}</Text>
+                <OptionTitle text={"Sexo"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetSexToLabel(sex)}</Text>
+                <OptionTitle text={"Tamaño"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetSizeToLabel(size)}</Text>
+
+            </View>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Raza"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{breed}</Text>
+                <OptionTitle text={"Color de pelaje"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{furColor}</Text>
+                <OptionTitle text={"Etapa de la vida"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetLifeStageToLabel(lifeStage)}</Text>
+            </View>
+        </View>
+        <OptionTitle text={"Descripción de la mascota"} additionalStyle={styles.optionTitle} />
+        <Text style={styles.textInput}>{petDescription}</Text>
+    </>);
+}
+
+const ReportInfo = ({eventInfo, petInfo}) => {
+    return (<>
+        <EventInfo petLocationTitle={eventInfo.locationTitle} eventLocation={eventInfo.location} eventCity={eventInfo.city} eventProvince={eventInfo.province} eventDate={eventInfo.date} eventHour={eventInfo.hour} eventDescription={eventInfo.description}/>
+        <PetInfo petType={petInfo.type} sex={petInfo.sex} size={petInfo.size} breed={petInfo.breed} furColor={petInfo.furColor} lifeStage={petInfo.lifeStage} petDescription={petInfo.description}/>
+    </>);
+}
+
+const ReportContent = ({selectedIndex, reportInfo, fosterInfo}) => {
+    if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
+        // Show information tab data: event and pet details
+        return <ReportInfo eventInfo={reportInfo.eventInfo} petInfo={reportInfo.petInfo} />;
+    } else if (selectedIndex == segmentedTabTitles.indexOf(historyTitle)) {
+        // Show history tab data: places where the pet has been fostered
+        return <FosteringInfo sinceDate={fosterInfo.sinceDate} untilDate={fosterInfo.untilDate} contactEmail={fosterInfo.contactEmail}/>;
+    }
+    return null;
+}
+
+const ContactButton = ({showContactInfo}) => {
+    return <AppButton buttonText={"Contacto"} onPress={showContactInfo} additionalButtonStyles={{ ...styles.button, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>;
+}
+
+const MyReportButtons = ({resolveReport, suspendReport}) => {
+    return (<>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
+        <AppButton buttonText={"Suspender reporte"} onPress={suspendReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, margin: 0, marginBottom: 60 }}/>
+    </>);
+}
+
+const EditModeButtons = ({saveChanges, discardChanges}) => {
+    return (<>
+        <AppButton buttonText={"Guardar cambios"} onPress={saveChanges} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
+        <AppButton buttonText={"Descartar cambios"} onPress={discardChanges} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.grey, margin: 0, marginBottom: 60 }}/>
+    </>);
+}
+
+const ReportButtons = ({isMyReport, isInEditMode, guestButtonHandler, editModeButtonHandler, myReportButtonHandler}) => {
+    if (!isMyReport) {
+        return <ContactButton showContactInfo={guestButtonHandler.showContactInfo}/>;
+    } else {
+        if (!isInEditMode) {
+            return <MyReportButtons resolveReport={myReportButtonHandler.resolveReport} suspendReport={myReportButtonHandler.suspendReport} />
+        }
+        if (isInEditMode) {
+            return <EditModeButtons saveChanges={editModeButtonHandler.saveChanges} discardChanges={editModeButtonHandler.discardChanges} />
+        }
+    }
+}
+
+const ActionButtons = ({selectedIndex, isMyReport, isInEditMode, guestButtonHandler, editModeButtonHandler, myReportButtonHandler}) => {
+    if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
+        return <ReportButtons isMyReport={isMyReport} isInEditMode={isInEditMode} guestButtonHandler={guestButtonHandler} editModeButtonHandler={editModeButtonHandler} myReportButtonHandler={myReportButtonHandler}/>
+    }
+    return null;
+}
+
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.white,
-      flexDirection: 'column', // main axis: vertical
-      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
     optionTitle: {
-        fontSize: 16, 
-        color: colors.clearBlack,
         paddingTop: 20, 
         fontWeight: 'bold'
     },
@@ -363,15 +464,7 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: colors.secondary,
-        marginTop: 10,
-        padding: 18, 
-        borderRadius: 7, 
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
+        alignSelf: 'stretch',
     },
     modalView: {
         margin: 20,
@@ -398,4 +491,4 @@ const styles = StyleSheet.create({
       marginBottom: 15,
       color: colors.clearBlack
     }
-  });
+});

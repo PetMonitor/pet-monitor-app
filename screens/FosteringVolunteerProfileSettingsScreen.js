@@ -1,11 +1,14 @@
 import React from 'react';
 
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Switch, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Switch, ScrollView, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Dog, Cat } from 'phosphor-react-native';
 
-import colors from '../config/colors';
+import { HeaderWithBackArrow } from '../utils/headers';
+import { AppButton } from '../utils/buttons';
 
+import commonStyles from '../utils/styles';
+import colors from '../config/colors';
 
 /** Implements the screen that shows the settings of a given pet fostering volunteer. */
 export class FosteringVolunteerProfileSettingsScreen extends React.Component {
@@ -91,17 +94,14 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
     )
 
     render() {
-        return (
-            <View style={styles.container}> 
-                <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
-                    <Icon
-                        name='arrow-left'
-                        size={30}
-                        color={colors.white}
-                        style={{marginLeft: 10}}
-                        onPress={() => this.props.navigation.goBack()} />
-                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Información voluntariado</Text>
-                </View>
+        return ( <>
+            <SafeAreaView
+                edges={["top"]}
+                style={{ flex: 0, backgroundColor: colors.primary }}/>
+            <SafeAreaView
+                edges={["left", "right", "bottom"]}
+                style={commonStyles.container} >
+                <HeaderWithBackArrow headerText={"Información voluntariado"} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()}/>
                
                 <ScrollView style={{marginLeft: 20, marginRight: 20}}>
                     <Text style={[styles.titleText, {marginTop: 15}]}>Puedo transitar</Text>
@@ -146,22 +146,19 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
                         value={this.state.available}
                         style={{ transform: [{ scaleX: .8 }, { scaleY: .8 }] }}
                     />
-                    <TouchableOpacity style={[styles.button, {marginBottom: 30, marginTop: 30}]} onPress={() => this.saveSettings()}>
-                        <Text style={styles.buttonFont}>Guardar Información</Text>
-                    </TouchableOpacity>
+
+                    <AppButton
+                        buttonText={"Guardar Información"} 
+                        onPress={this.saveSettings} 
+                        additionalButtonStyles={{alignSelf: 'center', marginBottom: 30, marginTop: 30}} />
                 </ScrollView>               
-            </View>
+            </SafeAreaView>
+            </>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
     titleText: {
         color: colors.clearBlack, 
         fontSize: 18,
@@ -173,22 +170,8 @@ const styles = StyleSheet.create({
         color: colors.clearBlack, 
         fontSize: 16
     },
-    button: {
-        backgroundColor: colors.secondary,
-        marginTop: 10,
-        padding: 18, 
-        borderRadius: 7, 
-        alignSelf: 'center'
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
-    },
     alignedContent: {
-        alignItems:'center', 
-        flexDirection: 'row', 
+        ...commonStyles.alignedContent,
         marginTop: 10
     },
     textInput: {

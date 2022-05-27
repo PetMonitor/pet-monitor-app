@@ -4,6 +4,8 @@ import { postJsonData } from '../../../utils/requests.js';
 
 import { Text, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
 import { Dog, Cat } from 'phosphor-react-native';
+
+import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors.js';
 
 export class AskCreatePetScreen extends React.Component {
@@ -22,17 +24,21 @@ export class AskCreatePetScreen extends React.Component {
 
         const styles = StyleSheet.create({
             container: {
-                flex: 1,
-                backgroundColor: 'white',
-                flexDirection: 'column', // main axis: vertical
-                alignItems: 'center', // align items across secondary axis (horizontal)
                 justifyContent: 'center', // justify along main axis (vertical)
-                paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
             },
             title: {
-                fontWeight: 'bold',
-                color: '#72b1a1',
-                fontSize: 24
+                fontWeight: '500',
+                color: colors.primary,
+                fontSize: 24,
+                alignSelf: 'center'
+            },
+            text: {
+                paddingTop:20,
+                paddingBottom:20, 
+                fontSize: 16, 
+                color: colors.clearBlack,
+                marginHorizontal: 20,
+                alignSelf: 'center'
             }
         });
 
@@ -57,24 +63,26 @@ export class AskCreatePetScreen extends React.Component {
         };
 
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={{flex:2, paddingTop:50, paddingBottom:50}}>  
+            <SafeAreaView style={[commonStyles.container, styles.container]}>
+                <View style={{flex:2, paddingTop:50, paddingBottom:30}}>  
                     <Text style={styles.title}>Presentanos a tus mascotas!</Text>  
                 </View> 
                 <View style={{flex:1, alignItems: 'center'}}> 
-                    <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>Recomendamos registrar a todas tus mascotas.</Text>
-                    <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>¿Empezamos con la primera?</Text>  
+                    <Text style={styles.text}>Recomendamos registrar a todas tus mascotas.</Text>
+                    <Text style={styles.text}>¿Empezamos con la primera?</Text>  
                 </View> 
-                <View style={{flex:2,flexDirection:'row',paddingTop:20, paddingBottom:50}} >
-                    <TouchableOpacity onPress={() => handleCreatePet('CAT')}>
-                        <Cat size={tabIconSize} color={colors.yellow} weight='regular' />
-                    </TouchableOpacity>    
-                    <TouchableOpacity onPress={() => handleCreatePet('DOG')}>
-                        <Dog size={tabIconSize} color={colors.yellow} weight='regular' />
-                    </TouchableOpacity>
+                <View style={{flex:2, paddingTop:30, paddingBottom:50, marginHorizontal: 20}}>
+                    <View style={[commonStyles.alignedContent, {justifyContent: 'space-evenly'}]} >
+                        <TouchableOpacity onPress={() => handleCreatePet('CAT')}>
+                            <Cat size={tabIconSize} color={colors.pink} weight='regular' />
+                        </TouchableOpacity>    
+                        <TouchableOpacity onPress={() => handleCreatePet('DOG')}>
+                            <Dog size={tabIconSize} color={colors.secondary} weight='regular' />
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 <View style={{flex:1}}>
-                    <Text style={{textDecorationLine: 'underline', paddingBottom:20, fontSize: 16}} onPress={handleSkipStep}>Saltear este paso</Text>
+                    <Text style={{textDecorationLine: 'underline', paddingBottom:20, fontSize: 16, color: colors.clearBlack, alignSelf: 'center'}} onPress={handleSkipStep}>Saltear este paso</Text>
                 </View>
             </SafeAreaView>
         )
