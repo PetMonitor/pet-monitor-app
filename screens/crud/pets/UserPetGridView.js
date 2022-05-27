@@ -99,6 +99,7 @@ export class UserPetGridView extends React.Component {
         
         return(
             <View style={commonStyles.container}>
+                {this.state.pets.length == 0 ? <Text style={{fontSize: 15, fontWeight: '500', color: colors.secondary, marginTop: 20}}>Podés crear un perfil para tus mascotas.</Text> : null}
                 <FlatList 
                     data={[...this.state.pets, {action: "add-pet"}]} 
                     numColumns={2}

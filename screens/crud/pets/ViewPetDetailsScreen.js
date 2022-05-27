@@ -5,11 +5,12 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { getJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import { showHeader } from '../../../utils/headers';
-import { mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../../../utils/mappers';
+import { HeaderWithBackArrow } from '../../../utils/headers';
+import { mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapPetTypeToLabel } from '../../../utils/mappers';
 
 import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
+import { AppButton } from "../../../utils/buttons.js";
 
 const { height, width } = Dimensions.get("screen")
 
@@ -105,7 +106,7 @@ export class ViewPetDetailsScreen extends React.Component {
 
         return (
             <SafeAreaView style={commonStyles.container}>
-                {showHeader("Mascota", colors.secondary, colors.white, colors.secondary, () => this.props.navigation.goBack())}
+                <HeaderWithBackArrow headerText={"Mascota"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} />
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
                         data={this.state.petPhotos} 
@@ -133,9 +134,7 @@ export class ViewPetDetailsScreen extends React.Component {
                         <View style={commonStyles.alignedContent}>
                             <View style={{flexDirection: 'column', flex: 0.5}}>
                                 <Text style={styles.optionTitle}>Tipo</Text>
-                                {/* <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text> */}
-                                {/* <TextInput value={mapPetTypeToLabel(this.state.petType)}/> */}
-                                {this.showTextInput(text => { this.setState({ petType: text })}, this.state.petType)}
+                                <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text>
                                 <Text style={styles.optionTitle}>Sexo</Text>
                                 <Text style={styles.textInput}>{mapPetSexToLabel(this.state.sex)}</Text>
                                 <Text style={styles.optionTitle}>Tamaño</Text>
@@ -157,18 +156,21 @@ export class ViewPetDetailsScreen extends React.Component {
 
                         {this.state.isInEditMode && 
                                 <>
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.saveChanges()}>
-                                    <Text style={styles.buttonFont}>Guardar cambios</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.grey, marginTop: 15, marginBottom: 60}]} onPress={() => this.discardChanges()}>
-                                    <Text style={styles.buttonFont}>Descartar cambios</Text>
-                                </TouchableOpacity>
+                                <AppButton
+                                    buttonText={"Guardar cambios"} 
+                                    onPress={this.saveChanges} 
+                                    additionalButtonStyles={[styles.button, {backgroundColor: colors.primary, marginTop: 40}]} />
+                                <AppButton
+                                    buttonText={"Descartar cambios"} 
+                                    onPress={this.discardChanges} 
+                                    additionalButtonStyles={[styles.button, {backgroundColor: colors.grey, marginBottom: 60}]} />
                                 </> }
 
                         {this.state.isMyPet && !this.state.isInEditMode &&
-                        <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.pink, marginTop: 15, marginTop: 40, marginBottom: 60}]} onPress={() => this.deletePet()}>
-                            <Text style={styles.buttonFont}>Eliminar mascota</Text>
-                        </TouchableOpacity>}
+                            <AppButton
+                                buttonText={"Eliminar mascota"} 
+                                onPress={this.deletePet} 
+                                additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 15, marginTop: 40, marginBottom: 60}]} /> }
                     </ScrollView>
                 </View>
             </SafeAreaView>
@@ -190,15 +192,9 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: colors.secondary,
+        margin: 0,
         marginTop: 10,
-        padding: 18, 
-        borderRadius: 7, 
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
+        alignSelf: 'stretch',
     },
     editableTextInput: {
         borderRadius: 8, 

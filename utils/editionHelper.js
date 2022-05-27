@@ -11,13 +11,13 @@ import colors from '../config/colors';
 
 /********************* REPORTS *********************/
 
-export function getReportTypeItems() {
-    return [ 
-        <Picker.Item label="Mascota perdida" value="LOST" />,
-        <Picker.Item label="Mascota encontrada" value="FOUND" />,
-        <Picker.Item label="Mascota en adopción" value="FOR_ADOPTION" />,
-        <Picker.Item label="Mascota robada" value="STOLEN" /> 
-    ]
+export function getReportTypePickerItems() {
+    return [
+        <Picker.Item label="Mascota perdida" value="LOST" key="lost" />,
+        <Picker.Item label="Mascota encontrada" value="FOUND" key="found" />,
+        <Picker.Item label="Mascota en adopción" value="FOR_ADOPTION" key="adoption" />,
+        <Picker.Item label="Mascota robada" value="STOLEN" key="stolen" /> 
+    ];
 }
 
 export function getDatePicker(value, onValueChange) {
@@ -29,7 +29,6 @@ export function getDatePicker(value, onValueChange) {
         display="default"
         maximumDate={Date.now()}
         onChange={(event, selectedDate) => onValueChange(selectedDate)}
-        // style={{marginLeft: 10, paddingTop: 50}}
         style={{paddingTop: 50, marginRight: 10}}
     />
 }
@@ -43,48 +42,53 @@ export function getTimePicker(value, onValueChange) {
         display='default'
         onChange={(event, selectedDate) => onValueChange(selectedDate)}
         style={{paddingTop: 50}}
-        // style={{paddingTop: 50, marginRight: 10, marginLeft: 10}}
     />
 }
 
 /********************* PET *********************/
 
-export function getPetTypeItems() {
-    return [ <Picker.Item label="Gato" value="CAT" />, <Picker.Item label="Perro" value="DOG" /> ]
+export function getPetTypePickerItems() {
+    return [
+        <Picker.Item label="Gato" value="CAT" key="cat" />,
+        <Picker.Item label="Perro" value="DOG" key="dog" />
+    ];
 }
 
-export function getSexTypeItems() {
-    return [ <Picker.Item label="Macho" value="MALE" />, <Picker.Item label="Hembra" value="FEMALE" /> ]
+export function getSexTypePickerItems() {
+    return [
+        <Picker.Item label="Macho" value="MALE" key="male" />, 
+        <Picker.Item label="Hembra" value="FEMALE" key="female" />
+    ];
 }
 
-export function getLifeStageItems() {
-    return [ 
-        <Picker.Item label="Bebé" value="BABY" />, 
-        <Picker.Item label="Adulto" value="ADULT" />, 
-        <Picker.Item label="Mayor" value="SENIOR" /> 
-    ]
+export function getLifeStagePickerItems() {
+    return [
+        <Picker.Item label="Bebé" value="BABY" key="baby" />,
+        <Picker.Item label="Adulto" value="ADULT" key="adult" />,
+        <Picker.Item label="Mayor" value="SENIOR" key="senior" /> 
+    ];
 }
 
-export function getSizeTypeItems() {
-    return [ 
-        <Picker.Item label="Pequeño" value="SMALL" />, 
-        <Picker.Item label="Mediano" value="MEDIUM" />, 
-        <Picker.Item label="Grande" value="LARGE" /> 
-    ]
+export function getSizeTypePickerItems() {
+    return [
+        <Picker.Item label="Pequeño" value="SMALL" key="small" />,
+        <Picker.Item label="Mediano" value="MEDIUM" key="medium" />,
+        <Picker.Item label="Grande" value="LARGE" key="large" /> 
+    ];
 }
 
 /********************* GENERAL *********************/
 
-export function getPickerOnValue(value, onValueChange, getPickerItems) {
+export const PickerOnValue = ({value, onValueChange, pickerItems}) => {
     return <Picker
         selectedValue={value}
         itemStyle={editionStyles.picker}
         onValueChange={(itemValue, itemIndex) => onValueChange(itemValue)}>
-        {getPickerItems()}
+        {pickerItems()}
     </Picker>;
 }
 
-export function showTextInput(onChangeText, value = '', isMultiline = false ) {
+export const OptionTextInput = ({onChangeText, value = '', isMultiline = false }) => {
     return <TextInput
         onChangeText = {onChangeText}
         autoCorrect = { false }
@@ -96,8 +100,8 @@ export function showTextInput(onChangeText, value = '', isMultiline = false ) {
     />
 }
 
-export function showCheckBoxItem(optionIsSelected, checkBoxTitle, onPress) {
-    return <TouchableOpacity style={[styles.alignedContent, {marginTop: 10}]} 
+export const CheckBoxItem = ({optionIsSelected, checkBoxTitle, onPress, additionalStyle = {}}) => {
+    return <TouchableOpacity style={[styles.alignedContent, {marginTop: 10}, additionalStyle]} 
         onPress={onPress}>
         <MaterialIcon
             name={optionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
@@ -109,7 +113,7 @@ export function showCheckBoxItem(optionIsSelected, checkBoxTitle, onPress) {
     </TouchableOpacity>
 }
 
-export function showDogCatSelector(onPressDog, onPressCat, dogIsSelected, catIsSelected) {
+export const DogCatSelector = ({onPressDog, onPressCat, dogIsSelected, catIsSelected}) => {
     return <View style={[styles.alignedContent, {justifyContent:'space-evenly'}]}>
         <TouchableOpacity onPress={onPressDog}>
             <Dog color={dogIsSelected ? colors.secondary : colors.inputGrey} weight='regular' size={68} />
@@ -120,8 +124,8 @@ export function showDogCatSelector(onPressDog, onPressCat, dogIsSelected, catIsS
     </View>
 }
 
-export function showOptionTitle(optionTitle, additionalStyle = {}) {
-    return <Text style={[editionStyles.optionTitle, additionalStyle]}>{optionTitle}</Text>
+export const OptionTitle = ({text, additionalStyle = {}}) => {
+    return <Text style={[editionStyles.optionTitle, additionalStyle]}>{text}</Text>
 }
 
 export function showSectionTitle(sectionTitle) {
@@ -136,7 +140,6 @@ const editionStyles = StyleSheet.create({
     sectionTitle: {
         fontSize: 20, 
         color: colors.primary,
-        // paddingLeft: 10, 
         paddingTop: 25, 
         paddingBottom: 5, 
         fontWeight: 'bold',
@@ -144,7 +147,6 @@ const editionStyles = StyleSheet.create({
     optionTitle: {
         fontSize: 16, 
         color: colors.clearBlack,
-        // paddingLeft: 10, 
         paddingTop: 15, 
         fontWeight: '500'
     },
@@ -156,9 +158,7 @@ const editionStyles = StyleSheet.create({
         borderColor: colors.inputGrey, 
         fontSize: 16, 
         fontWeight: '500',
-        // marginLeft: 10, 
         marginTop: 10, 
-        // marginRight: 10
     },
     picker: { 
         height: 88, 

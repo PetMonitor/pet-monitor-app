@@ -1,14 +1,18 @@
 import React from 'react';
 
-import { StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
 
+import commonStyles from './styles'
 import colors from '../config/colors';
 
-
-export function showButton(buttonText, onPress, additionalButtonStyles = {}, additionalTextStyles = {}) {
-    return <TouchableOpacity style={[styles.button, additionalButtonStyles]} onPress={onPress}>
-        <Text style={[styles.buttonFont, additionalTextStyles]}>{buttonText}</Text>
-    </TouchableOpacity>;  
+export const AppButton = ({buttonText, onPress, additionalButtonStyles = {}, additionalTextStyles = {}, additionalElement = <></>, additionalContainerStyle = { justifyContent: 'center'}, isDisabled = false}) => {
+    return (<TouchableOpacity style={[styles.button, additionalButtonStyles, isDisabled ? {backgroundColor: colors.inputGrey} : {}]} onPress={onPress} disabled={isDisabled}> 
+        <View style={[commonStyles.alignedContent, additionalContainerStyle]}>
+            {additionalElement}
+            <Text style={[styles.buttonFont, additionalTextStyles]}>{buttonText}</Text>
+        </View>
+    </TouchableOpacity>
+    );  
 }
 
 const styles = StyleSheet.create({

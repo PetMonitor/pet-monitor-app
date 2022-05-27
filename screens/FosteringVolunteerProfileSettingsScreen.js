@@ -4,7 +4,8 @@ import { Text, StyleSheet, View, TextInput, TouchableOpacity, Switch, ScrollView
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Dog, Cat } from 'phosphor-react-native';
 
-import { showHeader } from '../utils/headers';
+import { HeaderWithBackArrow } from '../utils/headers';
+import { AppButton } from '../utils/buttons';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
@@ -100,7 +101,7 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
             <SafeAreaView
                 edges={["left", "right", "bottom"]}
                 style={commonStyles.container} >
-                {showHeader("Información voluntariado", colors.white, colors.primary, colors.white, () => this.props.navigation.goBack())}
+                <HeaderWithBackArrow headerText={"Información voluntariado"} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()}/>
                
                 <ScrollView style={{marginLeft: 20, marginRight: 20}}>
                     <Text style={[styles.titleText, {marginTop: 15}]}>Puedo transitar</Text>
@@ -145,9 +146,11 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
                         value={this.state.available}
                         style={{ transform: [{ scaleX: .8 }, { scaleY: .8 }] }}
                     />
-                    <TouchableOpacity style={[styles.button, {marginBottom: 30, marginTop: 30}]} onPress={() => this.saveSettings()}>
-                        <Text style={styles.buttonFont}>Guardar Información</Text>
-                    </TouchableOpacity>
+
+                    <AppButton
+                        buttonText={"Guardar Información"} 
+                        onPress={this.saveSettings} 
+                        additionalButtonStyles={{alignSelf: 'center', marginBottom: 30, marginTop: 30}} />
                 </ScrollView>               
             </SafeAreaView>
             </>
@@ -166,19 +169,6 @@ const styles = StyleSheet.create({
     text: {
         color: colors.clearBlack, 
         fontSize: 16
-    },
-    button: {
-        backgroundColor: colors.secondary,
-        marginTop: 10,
-        padding: 18, 
-        borderRadius: 7, 
-        alignSelf: 'center'
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
     },
     alignedContent: {
         ...commonStyles.alignedContent,

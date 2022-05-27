@@ -1,20 +1,23 @@
 import React from 'react';
-import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
-import { getJsonData } from '../utils/requests.js';
-import { getSecureStoreValueFor } from '../utils/store';
-import { Buffer } from 'buffer'
-import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapReportTypeToMapMarkerColor, mapReportTypeToMapMarker } from '../utils/mappers';
 
+import { Text, SafeAreaView, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { Buffer } from 'buffer'
+
+import { ReportImagesList } from '../utils/images.js';
+import { getJsonData } from '../utils/requests.js';
+import { getSecureStoreValueFor } from '../utils/store';
+import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapReportTypeToMapMarkerColor, mapReportTypeToMapMarker } from '../utils/mappers';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 
-const { height, width } = Dimensions.get("screen")
+const mapTabTitle = "Mapa";
+const listTabTitle = "Lista";
+const segmentedTabTitles = [mapTabTitle, listTabTitle];
 
 /** Implements the screen that lists all the pets' reports. */
 export class ReportListScreen extends React.Component {
@@ -32,33 +35,6 @@ export class ReportListScreen extends React.Component {
     objectIsEmpty = (object) => {
         return Object.keys(object).length === 0
     }
-
-    truncate = (str, maxLength) => {
-        return (str.length > maxLength) ? str.substr(0, maxLength - 1) + '...' : str;
-    };
-
-    renderItem = ({item}) =>  {
-        return (
-            <TouchableOpacity onPress={() => this.navigateToReportView(item.userId, item.noticeId)}>
-                <Image style={{height: (width - 20) / 2, width:  (width - 20) / 2, borderRadius: 5, margin: 5}}
-                        source={{uri:`data:image/png;base64,${Buffer.from(item.pet.photo).toString('base64')}`}}
-                />
-                <Text style={{fontSize: 16, fontWeight: 'bold', color: mapReportTypeToLabelColor(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{mapReportTypeToLabel(item.noticeType)}</Text> 
-            </TouchableOpacity>
-        )
-    }
-
-    showBoxItem = (checkBoxTitle, color) => (
-        <>
-            <Icon
-                name={'checkbox-blank'}
-                size={20}
-                color={color}
-                style={{marginLeft: 5}}
-            />
-            <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
-        </>
-    )
 
     handleTabSegmenterIndexChange = index => {
         this.setState({
@@ -118,9 +94,6 @@ export class ReportListScreen extends React.Component {
     }
 
     render() {
-        const mapTabTitle = "Mapa";
-        const listTabTitle = "Lista";
-        const segmentedTabTitles = [mapTabTitle, listTabTitle];
 
         return (
             <SafeAreaView style={commonStyles.container}>
@@ -136,72 +109,21 @@ export class ReportListScreen extends React.Component {
                         activeTabTextStyle={{color: colors.primary, fontWeight: 'bold', fontSize: 14}}
                     />
                 </View>
-                <View style={{padding: 10, alignItems:'flex-end', backgroundColor: colors.transparent}}>
-                            <Icon
-                                name='tune'
-                                size={33}
-                                color={colors.secondary}
-                                onPress={() => this.navigateToFilterSettings()} />
-                        </View>
+                <FilterBar onFilterPress={this.navigateToFilterSettings} />
                 {this.state.selectedIndex == segmentedTabTitles.indexOf(listTabTitle) && 
-                    <View style={{flex:1}}>
-                        <FlatList 
-                            data={this.state.notices} 
-                            numColumns={2}
-                            keyExtractor={(_, index) => index.toString()}
-                            initialNumToRender={this.state.notices.length}
-                            renderItem={this.renderItem}
-                        />
-                    </View>
+                    <ReportImagesList 
+                        notices={this.state.notices}
+                        onItemPress={(item) => this.navigateToReportView(item.userId, item.noticeId)}
+                        withLabel={true}/>
                 }
 
                 {this.state.selectedIndex == segmentedTabTitles.indexOf(mapTabTitle) && this.state.location &&
-                     
-                    <>
-                    <MapView style={{width: "100%", height: "100%"}}
-                        // provider={PROVIDER_GOOGLE}
-                        region={{
-                        latitude: this.state.location.coords.latitude,
-                        longitude: this.state.location.coords.longitude,
-                        latitudeDelta: 0.0622,
-                        longitudeDelta: 0.0221,
-                        }}
-                        showsUserLocation={true}
-                    >
-                      {this.state.notices && this.state.notices.map(notice => {
-                            return <Marker 
-                                key={'notice_' + notice.noticeId} 
-                                identifier={notice.noticeId} 
-                                coordinate={{latitude: notice.eventLocation.lat, longitude: notice.eventLocation.long}}
-                                onPress={e => console.log(e.nativeEvent)}
-                                image={mapReportTypeToMapMarker(notice.noticeType)}>
-                                <Callout >
-                                    <TouchableOpacity style={styles.bubble} onPress={() => this.navigateToReportView(notice.userId, notice.noticeId)}>
-                                        <Text style={[styles.name, {color: mapReportTypeToLabelColor(notice.noticeType)}]}>{mapReportTypeToLabel(notice.noticeType)}</Text>
-                                        <Text style={{color: colors.clearBlack}}>{this.truncate(notice.description, 50)}</Text>
-                                        <Image style={styles.image}
-                                            source={{uri:`data:image/png;base64,${Buffer.from(notice.pet.photo).toString('base64')}`}} />
-                                    </TouchableOpacity>
-                                </Callout>
-                            </Marker>})}
-                        
-                    </MapView>
-                    <View style={{paddingVertical: 5, backgroundColor: colors.whiteWithOpacity, position: 'absolute', left: 20, bottom: 20}}>
-                        <View  style={styles.alignedContent}>
-                            {this.showBoxItem("Mascotas perdidas", mapReportTypeToMapMarkerColor("lost"))}
-                        </View>
-                        <View  style={styles.alignedContent}>
-                            {this.showBoxItem("Mascotas encontradas", mapReportTypeToMapMarkerColor("found"))}
-                        </View>
-                        <View  style={styles.alignedContent}>
-                            {this.showBoxItem("Mascotas en adopción", mapReportTypeToMapMarkerColor("for_adoption"))}
-                        </View>  
-                        <View  style={styles.alignedContent}>
-                            {this.showBoxItem("Mascotas robadas", mapReportTypeToMapMarkerColor("stolen"))}
-                        </View>  
-                    </View> 
-                    </>
-
+                     <ReportsMap 
+                        userLatitude={this.state.location.coords.latitude}
+                        userLongitude={this.state.location.coords.longitude}
+                        notices={this.state.notices}
+                        onMarkerPreviewPress={(notice) => this.navigateToReportView(notice.userId, notice.noticeId)}
+                        />
                 }
             </SafeAreaView>
         )
@@ -286,6 +208,99 @@ export class ReportListScreen extends React.Component {
         }
     }
 }
+
+const FilterBar = ({onFilterPress}) => {
+    return (
+        <View style={{padding: 10, alignItems:'flex-end', backgroundColor: colors.transparent}}>
+            <Icon
+                name='tune'
+                size={33}
+                color={colors.secondary}
+                onPress={onFilterPress} />
+        </View>
+    );
+}
+
+const ReportMarker = ({notice, onMarkerPreviewPress}) => {
+    const markerAsset = mapReportTypeToMapMarker(notice.noticeType);
+    const markerColor = mapReportTypeToLabelColor(notice.noticeType);
+    const markerLabel = mapReportTypeToLabel(notice.noticeType);
+
+    return (
+        <Marker 
+            key={'notice_' + notice.noticeId} 
+            identifier={notice.noticeId} 
+            coordinate={{latitude: notice.eventLocation.lat, longitude: notice.eventLocation.long}}
+            image={markerAsset}>
+            <Callout >
+                <TouchableOpacity style={styles.bubble} onPress={() => onMarkerPreviewPress(notice)}>
+                    <Text style={[styles.name, {color: markerColor}]}>{markerLabel}</Text>
+                    <Text style={{color: colors.clearBlack}}>{truncate(notice.description, 50)}</Text>
+                    <Image style={styles.image}
+                        source={{uri:`data:image/png;base64,${Buffer.from(notice.pet.photo).toString('base64')}`}} />
+                </TouchableOpacity>
+            </Callout>
+        </Marker>
+    );
+}
+
+const ReportMarkers = ({notices, onMarkerPreviewPress}) => {
+    return notices ? 
+        notices.map(notice => <ReportMarker notice={notice} onMarkerPreviewPress={onMarkerPreviewPress} />) : null;
+}
+
+const ReportsMap = ({userLatitude, userLongitude, notices, onMarkerPreviewPress}) => {
+    return (<>
+        <MapView style={{width: "100%", height: "100%"}}
+            // provider={PROVIDER_GOOGLE}
+            region={{
+            latitude: userLatitude,
+            longitude: userLongitude,
+            latitudeDelta: 0.0622,
+            longitudeDelta: 0.0221,
+            }}
+            showsUserLocation={true}
+        >
+            <ReportMarkers notices={notices} onMarkerPreviewPress={onMarkerPreviewPress} />
+        </MapView>
+        <MarkerReferenceBox />
+    </>);
+}
+
+const MarkerReferenceBox = () => {
+    return (
+        <View style={{paddingVertical: 5, backgroundColor: colors.whiteWithOpacity, position: 'absolute', left: 20, bottom: 20}}>
+            <View  style={styles.alignedContent}>
+                <ReportMarkerReference checkBoxTitle={"Mascotas perdidas"} color={mapReportTypeToMapMarkerColor("lost")} />
+            </View>
+            <View  style={styles.alignedContent}>
+                <ReportMarkerReference checkBoxTitle={"Mascotas encontradas"} color={mapReportTypeToMapMarkerColor("found")} />
+            </View>
+            <View  style={styles.alignedContent}>
+                <ReportMarkerReference checkBoxTitle={"Mascotas en adopción"} color={mapReportTypeToMapMarkerColor("for_adoption")} />
+            </View>  
+            <View  style={styles.alignedContent}>
+                <ReportMarkerReference checkBoxTitle={"Mascotas robadas"} color={mapReportTypeToMapMarkerColor("stolen")} />
+            </View>  
+        </View>
+    );
+}
+
+const ReportMarkerReference = ({checkBoxTitle, color}) => {
+    return (<>
+        <Icon
+            name={'checkbox-blank'}
+            size={20}
+            color={color}
+            style={{marginLeft: 5}}
+        />
+        <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
+    </>);
+}
+
+function truncate(str, maxLength) {
+    return (str.length > maxLength) ? str.substr(0, maxLength - 1) + '...' : str;
+};
 
 const styles = StyleSheet.create({
     alignedContent: {

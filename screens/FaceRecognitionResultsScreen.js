@@ -10,7 +10,7 @@ import { Buffer } from 'buffer'
 import { getJsonData, postJsonData, deleteJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
-import { showHeader } from '../utils/headers';
+import { HeaderWithBackArrow } from '../utils/headers';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
@@ -136,7 +136,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
             <SafeAreaView
                 edges={["left", "right", "bottom"]}
                 style={commonStyles.container} >
-                {showHeader("Resultados", colors.white, colors.primary, colors.white, () => this.props.navigation.goBack())}
+                <HeaderWithBackArrow headerText={"Resultados"} headerTextColor={colors.white} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()}/>
                 
                 <View style={styles.alignedContent}>
                     <Text style={styles.titleText}>Mascotas similares</Text>
@@ -152,7 +152,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                         >
                         <View style={{ backgroundColor: colors.white, padding: 15, borderRadius: 20 }}>
                             <View style={{flexDirection: 'row'}}>
-                                <Text style={styles.modalTitle}>Búsquedas Programadas</Text>
+                                <Text style={styles.modalTitle}>Búsquedas programadas</Text>
                                 <Switch 
                                     trackColor={{ false: colors.grey, true: colors.yellow }}
                                     thumbColor={ colors.white }
@@ -163,7 +163,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                             { this.state.alertsActivated ? 
                                 <View>
                                     <Text>Serás notificado cada vez que encontremos un match para esta búsqueda!</Text>
-                                    <Text style={styles.subtitleText}>Frecuencia de Búsqueda</Text>
+                                    <Text style={styles.subtitleText}>Frecuencia de búsqueda</Text>
                                     <Picker selectedValue={this.state.alertFrequency}
                                         style={{ width: 150, marginLeft: '25%', marginRight: 30 }}
                                         itemStyle={{height: 88, fontSize: 16}}
@@ -190,7 +190,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                                 : <Text>Puedes programar búsquedas para este reporte y te notificaremos cuando encontremos un match!</Text>
                             }
                             <View style={{flexDirection: 'column' }}>
-                                <Button style={styles.titleText} title="OK" onPress={closeModalAndInit} />
+                                <Button style={styles.titleText} color={colors.secondary} title="OK" onPress={closeModalAndInit} />
                             </View>
                         </View>
                     </Modal>
@@ -205,7 +205,6 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 />
                 </SafeAreaView>
                 </>
-            // </View>
         )
     }
 }
@@ -223,6 +222,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: 'bold',
         padding: 10,
+        marginTop: 10,
     },
     alignedContent: {
         ...commonStyles.alignedContent,

@@ -8,7 +8,8 @@ import * as config from '../config/config';
 
 import { getJsonData, postJsonData } from '../utils/requests.js';
 import { secureStoreSave } from '../utils/store.js';
-import { Image, Text, TextInput, TouchableOpacity, StyleSheet, View } from 'react-native';
+import { Image, Text, TextInput, StyleSheet, View } from 'react-native';
+import { AppButton } from '../utils/buttons';
 
 
 export class LoginScreen extends React.Component {
@@ -137,10 +138,10 @@ export class LoginScreen extends React.Component {
           <View style={styles.loginUpperContainer}>
             <Image style={{height: "60%", width: "60%", resizeMode: 'contain', position: 'absolute', bottom: "15%"}} source={require('../assets/complete_logo.png')} />
           </View>
-          <View>
-            <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', left: "15%", marginTop: "5%"}}>Inicia sesión para continuar</Text>
+          <View style={{left: "15%"}}>
+            <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500',  marginTop: "5%"}}>Inicia sesión para continuar</Text>
             
-            <View style={{left: "15%", width: "70%"}}>
+            <View style={{ width: "70%"}}>
               <TextInput
                 placeholder = 'Usuario'
                 onChangeText = {text => { this.setState({ username:text })}}
@@ -159,14 +160,15 @@ export class LoginScreen extends React.Component {
                 secureTextEntry = { true } 
               />
             </View>
-            <TouchableOpacity style={[styles.button, { marginTop: 40 }]} onPress={handleLoginPress}>
-              <Text style={[styles.buttonFont, { color: colors.white }]}>Iniciar sesión</Text>
-            </TouchableOpacity>
-            <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', alignSelf: 'center', marginTop: 5}}>¿No sos miembro? <Text style={{textDecorationLine: 'underline'}} onPress={handleRegisterPress}>Registrate</Text></Text>
-            
-            <TouchableOpacity style={[styles.button, { backgroundColor: colors.facebook, marginTop: 60 }]} onPress={loginWithFacebook}>
-              <Text style={[styles.buttonFont, { color: colors.white }]}>Continuar con Facebook</Text>
-            </TouchableOpacity>            
+            <AppButton
+              buttonText={"Iniciar sesión"} 
+              onPress={handleLoginPress} 
+              additionalButtonStyles={[styles.button, { marginTop: 40 }]} />
+            <Text style={{left: "-15%", color:colors.clearBlack, fontSize: 16, fontWeight: '500', alignSelf: 'center', marginTop: 5}}>¿No sos miembro? <Text style={{textDecorationLine: 'underline'}} onPress={handleRegisterPress}>Registrate</Text></Text>
+            <AppButton
+              buttonText={"Continuar con Facebook"} 
+              onPress={loginWithFacebook} 
+              additionalButtonStyles={[styles.button, { backgroundColor: colors.facebook, marginTop: 60 }]} />
           </View>
         </View>
       )
@@ -177,16 +179,8 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
     marginTop: "5%", 
-    padding: 18, 
-    borderRadius: 7, 
-    left: "15%", 
-    width: "70%", 
-    alignSelf: 'flex-start'
-  },
-  buttonFont: {
-    fontSize: 16, 
-    fontWeight: '500', 
-    alignSelf: 'center'
+    width: "70%",
+    marginHorizontal: 0
   },
   loginUpperContainer: {
     height: "30%",

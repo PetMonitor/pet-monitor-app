@@ -6,16 +6,20 @@ import SegmentedControlTab from "react-native-segmented-control-tab";
 
 import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
-import { showOptionTitle } from '../utils/editionHelper.js';
+import { OptionTitle } from '../utils/editionHelper.js';
 import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
-import { showHeader } from '../utils/headers';
-import { showPetImagesHeader } from '../utils/images.js';
-import { showButton } from '../utils/buttons.js';
+import { HeaderWithBackArrow } from '../utils/headers';
+import { PetImagesHeader } from '../utils/images.js';
+import { AppButton } from '../utils/buttons.js';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 
 const { height, width } = Dimensions.get("screen")
+
+const infoTitle = "Información";
+const historyTitle = "Historial";
+const segmentedTabTitles = [infoTitle, historyTitle];
 
 /** Implements the screen that shows a pet's report. */
 export class ReportViewScreen extends React.Component {
@@ -39,7 +43,11 @@ export class ReportViewScreen extends React.Component {
             size: '',
             lifeStage: '',
             petDescription: '',
-            contactInfo: {},
+            contactInfo: {
+                name: '',
+                email: '',
+                phoneNumber: ''
+            },
             selectedIndex: 0,
             contactInfoModalVisible: false,
             isMyReport: false,
@@ -172,195 +180,276 @@ export class ReportViewScreen extends React.Component {
     }
 
     render() {
-        const infoTitle = "Información";
-        const historyTitle = "Historial";
-        const segmentedTabTitles = [infoTitle, historyTitle];
+        
+        const reportTypeText = mapReportTypeToReportLabel(this.state.reportType);
+        const reportTypeLabel = mapReportTypeToLabelColor(this.state.reportType);
+        const isFoundPet = mapReportTypeToLabel(this.state.reportType) == 'Encontrado';
+        const changeModalVisibility = () => this.setModalVisible(!this.state.contactInfoModalVisible);
         
         return (
             <SafeAreaView style={commonStyles.container}>
-                {this.showContactInfoModal()}  
-                {showHeader("Reporte", colors.secondary, colors.white, colors.secondary, () => this.navigateToReports())}
-                {showPetImagesHeader(this.state.petPhotos, this.state.name)}
+                <ContactInfoModal 
+                    isVisible={this.state.contactInfoModalVisible}
+                    onModalClose={changeModalVisibility}
+                    name={this.state.contactInfo.name}
+                    email={this.state.contactInfo.email}
+                    phoneNumber={this.state.contactInfo.phoneNumber}
+                    onContactInfoOk={changeModalVisibility}/> 
+                <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
+                <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
 
                 <View style={{flex: 2}}>
                     <View style={{alignItems: 'flex-start', paddingHorizontal: 35}}>
-                        {this.showTitle()} 
-                        {mapReportTypeToLabel(this.state.reportType) == 'Encontrado' && 
-                            this.showFosteringHistoryTabSelector(segmentedTabTitles) }
+                        <Title 
+                            text={reportTypeText} 
+                            textColor={reportTypeLabel}
+                            isMyReport={this.state.isMyReport}
+                            onEditModePress={this.changeToEditMode}/>
+                        <FosteringHistoryTabSeletor 
+                            segmentedTabTitles={segmentedTabTitles} 
+                            selectedIndex={this.state.selectedIndex} 
+                            onSelectedTabPress={this.handleTabSegmenterIndexChange}
+                            isFoundPet={isFoundPet}/>
                     </View>
                     <ScrollView style={{flex:1, paddingHorizontal: 35}}>
-                        { this.state.selectedIndex == segmentedTabTitles.indexOf(infoTitle) ?
-                            // Show information tab data: event and pet details
-                            this.showReportInfo() :
-                            // Show history tab data: places where the pet has been fostered
-                            this.showFosterInfo()   
-                        }
+                        <ReportContent
+                            selectedIndex={this.state.selectedIndex}
+                            reportInfo={{
+                                eventInfo: {
+                                    locationTitle: mapReportTypeToPetLocationTitle(this.state.reportType),
+                                    location: this.state.location,
+                                    city: this.state.city,
+                                    province: this.state.province,
+                                    date: this.state.date,
+                                    hour: this.state.hour,
+                                    description: this.state.eventDescription
+                                },
+                                petInfo: {
+                                    type: this.state.petType,
+                                    sex: this.state.sex,
+                                    breed: this.state.breed,
+                                    furColor: this.state.furColor,
+                                    size: this.state.size,
+                                    lifeStage: this.state.lifeStage,
+                                    description: this.state.petDescription
+                                }
+                            }}
+                            fosterInfo={{
+                                // TODO: change this
+                                sinceDate: this.state.date,
+                                untilDate: this.state.date,
+                                contactEmail: this.state.contactInfo.email
+                            }}/>
+                        <ActionButtons 
+                            selectedIndex={this.state.selectedIndex}
+                            isMyReport={this.state.isMyReport}
+                            isInEditMode={this.state.isInEditMode}
+                            guestButtonHandler={{
+                                showContactInfo: this.showContactInfo
+                            }}
+                            myReportButtonHandler={{
+                                resolveReport: this.resolveReport,
+                                suspendReport: this.suspendReport
+                            }}
+                            editModeButtonHandler={{
+                                saveChanges: this.saveChanges,
+                                discardChanges: this.discardChanges
+                            }}/>
                     </ScrollView>
                 </View>
             </SafeAreaView>
         )
     }
+}
 
-    showReportInfo() {
-        const dividerLine = <View style={{
-            marginTop: 10,
-            borderBottomColor: colors.secondary,
-            borderBottomWidth: 1,
-        }} />;
-        
-        return [
-            this.showEventInfo(),
-            <Text style={{ fontSize: 20, fontWeight: 'bold', paddingTop: 25, color: colors.secondary }}>Mascota</Text>,
-            dividerLine,
-            this.showPetInfo(),
-            this.showActionButtons()
-        ];
-    }
+const EditModePencil = ({isMyReport, onEditModePress}) => {
+    return isMyReport && (
+        <TouchableOpacity onPress={onEditModePress}>
+            <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{ paddingLeft: 10 }} />
+        </TouchableOpacity>
+    );
+}
 
-    showFosterInfo() {
-        return <>
-        <Text style={{fontSize: 16, color: colors.secondary, paddingTop: 10, fontWeight: 'bold'}}>Información de tránsito</Text>
-        <View style={[commonStyles.alignedContent]}>
-            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
-                {showOptionTitle("Desde", styles.optionTitle)}
-                <Text style={[styles.textInput, { fontSize: 13 }]}>{this.state.date.getDate() + '/' + parseInt(this.state.date.getMonth() + 1) + '/' + this.state.date.getFullYear()}</Text>
-            </View>
-            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
-                {showOptionTitle("Hasta", styles.optionTitle)}
-                <Text style={[styles.textInput, { fontSize: 13 }]}>20/11/2023</Text>
-            </View>
-            <View style={{ flexDirection: 'column', flex: 2.3, alignSelf: 'stretch' }}>
-                {showOptionTitle("Contacto", styles.optionTitle)}
-                <Text style={[styles.textInput, { fontSize: 13 }]}>email_example@gmail.com</Text>
-            </View>
+const Title = ({text, textColor, isMyReport, onEditModePress}) => {
+    return (
+        <View style={{ ...commonStyles.alignedContent, paddingTop: 20, paddingBottom: 10 }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: textColor }}>{text}</Text>
+            <EditModePencil isMyReport={isMyReport} onEditModePress={onEditModePress}/>
         </View>
-        </>;
-    }
+    );
+}
 
-    showActionButtons() {
-        if (!this.state.isMyReport) {
-            return this.showGuestButton();
-        } else {
-            if (!this.state.isInEditMode) {
-                return this.showMyReportButtons();
-            }
-
-            if (this.state.isInEditMode) {
-                return this.showEditModeButtons();
-            }
-        }
-    }
-
-    showGuestButton() {
-        return showButton("Contacto", () => this.showContactInfo(), { ...styles.button, marginHorizontal: 0, marginTop: 40, marginBottom: 60 });
-    }
-
-    showMyReportButtons() {
-        return [
-            showButton("Resolver reporte", () => this.resolveReport(), { ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }),
-            showButton("Suspender reporte", () => this.suspendReport(), { ...styles.button, backgroundColor: colors.pink, margin: 0, marginBottom: 60 })
-        ];
-    }
-
-    showEditModeButtons() {
-        return [
-            showButton("Guardar cambios", () => this.saveChanges(), { ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }),
-            showButton("Descartar cambios", () => this.discardChanges(), { ...styles.button, backgroundColor: colors.grey, margin: 0, marginBottom: 60 })
-        ];
-    }
-
-    showPetInfo() {
-        return <>
-            <View style={commonStyles.alignedContent}>
-                <View style={{ flexDirection: 'column', flex: 0.5 }}>
-                    {showOptionTitle("Tipo", styles.optionTitle)}
-                    <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text>
-                    {showOptionTitle("Sexo", styles.optionTitle)}
-                    <Text style={styles.textInput}>{mapPetSexToLabel(this.state.sex)}</Text>
-                    {showOptionTitle("Tamaño", styles.optionTitle)}
-                    <Text style={styles.textInput}>{mapPetSizeToLabel(this.state.size)}</Text>
-
-                </View>
-                <View style={{ flexDirection: 'column', flex: 0.5 }}>
-                    {showOptionTitle("Raza", styles.optionTitle)}
-                    <Text style={styles.textInput}>{this.state.breed}</Text>
-                    {showOptionTitle("Color de pelaje", styles.optionTitle)}
-                    <Text style={styles.textInput}>{this.state.furColor}</Text>
-                    {showOptionTitle("Etapa de la vida", styles.optionTitle)}
-                    <Text style={styles.textInput}>{mapPetLifeStageToLabel(this.state.lifeStage)}</Text>
-                </View>
-            </View>
-            {showOptionTitle("Descripción de la mascota", styles.optionTitle)}
-            <Text style={styles.textInput}>{this.state.petDescription}</Text>
-        </>;
-    }
-
-    showEventInfo() {
-        return <>
-            {showOptionTitle(mapReportTypeToPetLocationTitle(this.state.reportType), { ...styles.optionTitle, paddingTop: 0 })}
-            <Text style={styles.textInput}>{this.state.location}</Text>
-            <Text style={[styles.textInput, { paddingTop: 5 }]}>{(this.state.city != '' ? this.state.city + ", " : "") + this.state.province}</Text>
-
-            <View style={[commonStyles.alignedContent, {justifyContent: 'center'}]}>
-                <View style={{ flexDirection: 'column', flex: 0.5 }}>
-                    {showOptionTitle("Fecha", styles.optionTitle)}
-                    <Text style={styles.textInput}>{this.state.date.getDate() + '/' + parseInt(this.state.date.getMonth() + 1) + '/' + this.state.date.getFullYear()}</Text>
-                </View>
-                <View style={{ flexDirection: 'column', flex: 0.5 }}>
-                    {showOptionTitle("Hora", styles.optionTitle)}
-                    <Text style={styles.textInput}>{("0" + this.state.hour.getHours()).slice(-2) + ':' + ("0" + this.state.hour.getMinutes()).slice(-2)}</Text>
-                </View>
-            </View>
-
-            {showOptionTitle("Descripción", styles.optionTitle)}
-            <Text style={styles.textInput}>{this.state.eventDescription}</Text>
-        </>;
-    }
-
-    showFosteringHistoryTabSelector(segmentedTabTitles) {
-        return <SegmentedControlTab
+const FosteringHistoryTabSeletor = ({segmentedTabTitles, selectedIndex, onSelectedTabPress, isFoundPet}) => {
+    return isFoundPet && (
+        <SegmentedControlTab
             values={segmentedTabTitles}
-            selectedIndex={this.state.selectedIndex}
-            onTabPress={this.handleTabSegmenterIndexChange}
+            selectedIndex={selectedIndex}
+            onTabPress={onSelectedTabPress}
             tabsContainerStyle={{ marginBottom: 10 }}
             tabTextStyle={{ color: colors.grey, fontWeight: 'bold', fontSize: 14, paddingVertical: 8 }}
             tabStyle={{ backgroundColor: colors.inputGrey, borderColor: colors.transparent }}
             activeTabStyle={{ borderRadius: 5, backgroundColor: colors.white, shadowOpacity: 0.2, shadowOffset: { width: 1, height: 1 } }}
-            activeTabTextStyle={{ color: colors.primary, fontWeight: 'bold', fontSize: 14 }} />;
-    }
+            activeTabTextStyle={{ color: colors.primary, fontWeight: 'bold', fontSize: 14 }} />
+    );
+}
 
-    showTitle() {
-        return <View style={{ ...commonStyles.alignedContent, paddingTop: 20, paddingBottom: 10 }}>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', color: mapReportTypeToLabelColor(this.state.reportType) }}>{mapReportTypeToReportLabel(this.state.reportType)}</Text>
-            {this.state.isMyReport &&
-                <TouchableOpacity onPress={() => this.changeToEditMode()}>
-                    <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{ paddingLeft: 10 }} />
-                </TouchableOpacity>}
-        </View>;
-    }
+const ConditionalContactText = ({textValue, label}) => {
+    return textValue ? <Text style={styles.modalText}><Text style={{ fontWeight: 'bold' }}>{label}</Text>{textValue}</Text> : null;
+}
 
-    showContactInfoModal() {
-        return <View>
+const ContactInfo = ({name, email, phoneNumber, onContactInfoOk}) => {
+    return (
+        <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Datos de contacto</Text>
+            <ConditionalContactText textValue={name} label="Nombre: "/>
+            <ConditionalContactText textValue={email} label="Email: "/>
+            <ConditionalContactText textValue={phoneNumber} label="Teléfono: "/>
+            <AppButton buttonText={"Ok"} onPress={onContactInfoOk} additionalButtonStyles={{ alignItems: 'center', alignSelf: 'center', width: '50%', backgroundColor: colors.secondary }}/>
+        </View>
+    );
+}
+
+const ContactInfoModal = ({isVisible, onModalClose, name, email, phoneNumber, onContactInfoOk}) => {
+    return (
+        <View>
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={this.state.contactInfoModalVisible}
-                onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
-                    this.setModalVisible(!modalVisible);
-                } }>
+                visible={isVisible}
+                onRequestClose={onModalClose}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}>
-                    <View style={styles.modalView}>
-                        <Text style={styles.modalTitle}>Datos de contacto</Text>
-                        {this.state.contactInfo.name ? <Text style={styles.modalText}><Text style={{ fontWeight: 'bold' }}>Nombre: </Text>{this.state.contactInfo.name}</Text> : <></>}
-                        {this.state.contactInfo.email ? <Text style={styles.modalText}><Text style={{ fontWeight: 'bold' }}>e-mail: </Text>{this.state.contactInfo.email}</Text> : <></>}
-                        {this.state.contactInfo.phoneNumber ? <Text style={styles.modalText}><Text style={{ fontWeight: 'bold' }}>Teléfono: </Text>{this.state.contactInfo.phoneNumber}</Text> : <></>}
-                        {showButton("Ok", () => this.setModalVisible(!this.state.contactInfoModalVisible), { alignItems: 'center', alignSelf: 'center', width: '50%', backgroundColor: colors.secondary })}
-                    </View>
+                   <ContactInfo name={name} email={email} phoneNumber={phoneNumber} onContactInfoOk={onContactInfoOk}/>
                 </View>
             </Modal>
-        </View>;
+        </View>
+    );
+}
+
+const FosteringInfo = ({sinceDate, untilDate, contactEmail}) => {
+    return (<>
+        <Text style={{fontSize: 16, color: colors.secondary, paddingTop: 10, fontWeight: 'bold'}}>Información de tránsito</Text>
+        <View style={[commonStyles.alignedContent]}>
+            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
+                <OptionTitle text={"Desde"} additionalStyle={styles.optionTitle} />
+                <Text style={[styles.textInput, { fontSize: 13 }]}>{sinceDate.getDate() + '/' + parseInt(sinceDate.getMonth() + 1) + '/' + sinceDate.getFullYear()}</Text>
+            </View>
+            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
+                <OptionTitle text={"Hasta"} additionalStyle={styles.optionTitle} />
+                <Text style={[styles.textInput, { fontSize: 13 }]}>20/11/2023</Text>
+            </View>
+            <View style={{ flexDirection: 'column', flex: 2.3, alignSelf: 'stretch' }}>
+                <OptionTitle text={"Contacto"} additionalStyle={styles.optionTitle} />
+                <Text style={[styles.textInput, { fontSize: 13 }]}>email_example@gmail.com</Text>
+            </View>
+        </View>
+    </>);
+}
+
+const EventInfo = ({petLocationTitle, eventLocation, eventCity, eventProvince, eventDate, eventHour, eventDescription}) => {
+    return (<>
+        <OptionTitle text={petLocationTitle} additionalStyle={{ ...styles.optionTitle, paddingTop: 0 }} />
+        <Text style={styles.textInput}>{eventLocation}</Text>
+        <Text style={[styles.textInput, { paddingTop: 5 }]}>{(eventCity != '' ? eventCity + ", " : "") + eventProvince}</Text>
+
+        <View style={[commonStyles.alignedContent, {justifyContent: 'center'}]}>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Fecha"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{eventDate.getDate() + '/' + parseInt(eventDate.getMonth() + 1) + '/' + eventDate.getFullYear()}</Text>
+            </View>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Hora"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{("0" + eventHour.getHours()).slice(-2) + ':' + ("0" + eventHour.getMinutes()).slice(-2)}</Text>
+            </View>
+        </View>
+
+        <OptionTitle text={"Descripción"} additionalStyle={styles.optionTitle} />
+        <Text style={styles.textInput}>{eventDescription}</Text>
+    </>);
+}
+
+
+const PetInfo = ({petType, sex, size, breed, furColor, lifeStage, petDescription}) => {
+    return (<>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', paddingTop: 25, color: colors.secondary }}>Mascota</Text>
+        <View style={{ marginTop: 10, borderBottomColor: colors.secondary, borderBottomWidth: 1}} />
+        <View style={commonStyles.alignedContent}>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Tipo"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetTypeToLabel(petType)}</Text>
+                <OptionTitle text={"Sexo"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetSexToLabel(sex)}</Text>
+                <OptionTitle text={"Tamaño"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetSizeToLabel(size)}</Text>
+
+            </View>
+            <View style={{ flexDirection: 'column', flex: 0.5 }}>
+                <OptionTitle text={"Raza"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{breed}</Text>
+                <OptionTitle text={"Color de pelaje"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{furColor}</Text>
+                <OptionTitle text={"Etapa de la vida"} additionalStyle={styles.optionTitle} />
+                <Text style={styles.textInput}>{mapPetLifeStageToLabel(lifeStage)}</Text>
+            </View>
+        </View>
+        <OptionTitle text={"Descripción de la mascota"} additionalStyle={styles.optionTitle} />
+        <Text style={styles.textInput}>{petDescription}</Text>
+    </>);
+}
+
+const ReportInfo = ({eventInfo, petInfo}) => {
+    return (<>
+        <EventInfo petLocationTitle={eventInfo.locationTitle} eventLocation={eventInfo.location} eventCity={eventInfo.city} eventProvince={eventInfo.province} eventDate={eventInfo.date} eventHour={eventInfo.hour} eventDescription={eventInfo.description}/>
+        <PetInfo petType={petInfo.type} sex={petInfo.sex} size={petInfo.size} breed={petInfo.breed} furColor={petInfo.furColor} lifeStage={petInfo.lifeStage} petDescription={petInfo.description}/>
+    </>);
+}
+
+const ReportContent = ({selectedIndex, reportInfo, fosterInfo}) => {
+    if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
+        // Show information tab data: event and pet details
+        return <ReportInfo eventInfo={reportInfo.eventInfo} petInfo={reportInfo.petInfo} />;
+    } else if (selectedIndex == segmentedTabTitles.indexOf(historyTitle)) {
+        // Show history tab data: places where the pet has been fostered
+        return <FosteringInfo sinceDate={fosterInfo.sinceDate} untilDate={fosterInfo.untilDate} contactEmail={fosterInfo.contactEmail}/>;
     }
+    return null;
+}
+
+const ContactButton = ({showContactInfo}) => {
+    return <AppButton buttonText={"Contacto"} onPress={showContactInfo} additionalButtonStyles={{ ...styles.button, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>;
+}
+
+const MyReportButtons = ({resolveReport, suspendReport}) => {
+    return (<>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
+        <AppButton buttonText={"Suspender reporte"} onPress={suspendReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, margin: 0, marginBottom: 60 }}/>
+    </>);
+}
+
+const EditModeButtons = ({saveChanges, discardChanges}) => {
+    return (<>
+        <AppButton buttonText={"Guardar cambios"} onPress={saveChanges} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
+        <AppButton buttonText={"Descartar cambios"} onPress={discardChanges} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.grey, margin: 0, marginBottom: 60 }}/>
+    </>);
+}
+
+const ReportButtons = ({isMyReport, isInEditMode, guestButtonHandler, editModeButtonHandler, myReportButtonHandler}) => {
+    if (!isMyReport) {
+        return <ContactButton showContactInfo={guestButtonHandler.showContactInfo}/>;
+    } else {
+        if (!isInEditMode) {
+            return <MyReportButtons resolveReport={myReportButtonHandler.resolveReport} suspendReport={myReportButtonHandler.suspendReport} />
+        }
+        if (isInEditMode) {
+            return <EditModeButtons saveChanges={editModeButtonHandler.saveChanges} discardChanges={editModeButtonHandler.discardChanges} />
+        }
+    }
+}
+
+const ActionButtons = ({selectedIndex, isMyReport, isInEditMode, guestButtonHandler, editModeButtonHandler, myReportButtonHandler}) => {
+    if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
+        return <ReportButtons isMyReport={isMyReport} isInEditMode={isInEditMode} guestButtonHandler={guestButtonHandler} editModeButtonHandler={editModeButtonHandler} myReportButtonHandler={myReportButtonHandler}/>
+    }
+    return null;
 }
 
 const styles = StyleSheet.create({

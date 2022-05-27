@@ -56,6 +56,7 @@ export class UserReportGridView extends React.PureComponent {
         
         return(
             <View style={commonStyles.container}>
+                {this.props.reports.length == 0 ? <Text style={{fontSize: 15, fontWeight: '500', color: colors.secondary, marginTop: 20}}>Podés crear un reporte en caso de encontrar o perder una mascota.</Text> : null}
                 <FlatList 
                     data={[...this.props.reports, {action: "add-report"}]} 
                     numColumns={2}

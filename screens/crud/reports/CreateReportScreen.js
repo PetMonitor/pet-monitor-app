@@ -7,10 +7,11 @@ import * as Location from 'expo-location';
 
 import { getJsonData, postJsonData, getLocationFromCoordinates } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import { getReportTypeItems, getPickerOnValue, getDatePicker, getTimePicker, showTextInput, showOptionTitle, showSectionTitle } from '../../../utils/editionHelper';
+import { getReportTypePickerItems, PickerOnValue, getDatePicker, getTimePicker, OptionTextInput, OptionTitle, showSectionTitle } from '../../../utils/editionHelper';
 
 import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
+import { AppButton } from '../../../utils/buttons.js';
 
 /** Implements the report creation screen. */
 export class CreateReportScreen extends React.Component {
@@ -189,45 +190,54 @@ export class CreateReportScreen extends React.Component {
                 <ScrollView style={{flex:1, paddingHorizontal: 35}}>
                     {/* Report type picker */}
                     {showSectionTitle("Tipo de reporte")}
-                    {getPickerOnValue(this.state.reportType, (itemValue) => this.setState({ reportType: itemValue }), getReportTypeItems)}
+                    <PickerOnValue 
+                        value={this.state.reportType} 
+                        onValueChange={(itemValue) => this.setState({ reportType: itemValue })} 
+                        pickerItems={getReportTypePickerItems} />
 
                     {/* Event section */}
                     {showSectionTitle("Evento")}
                     {this.state.userLocation && <>
-                        {showOptionTitle("Seleccionar la ubicación aproximada")}
+                        <OptionTitle text={"Seleccionar la ubicación aproximada"} />
                         {this.showLocationMapSelector()}</>}
 
-                    {showOptionTitle("Provincia")}
-                    {showTextInput(text => { this.setState({ province: text })}, this.state.province)}
+                    <OptionTitle text={"Provincia"} />
+                    <OptionTextInput onChangeText={text => { this.setState({ province: text })}} value={this.state.province} />
 
-                    {showOptionTitle("Ciudad")}
-                    {showTextInput(text => { this.setState({ city: text })}, this.state.city)}
+                    <OptionTitle text={"Ciudad"} />
+                    <OptionTextInput onChangeText={text => { this.setState({ city: text })}} value={this.state.city} />
 
-                    {showOptionTitle("Ubicación aproximada")}
-                    {showTextInput(text => { this.setState({ location: text })}, this.state.location)}
+                    <OptionTitle text={"Ubicación aproximada"} />
+                    <OptionTextInput onChangeText={text => { this.setState({ location: text })}} value={this.state.location} />
 
                     <View style={commonStyles.alignedContent}>
                         <View style={{flexDirection: 'column', flex: 0.5}}>
-                            {showOptionTitle("Fecha")}
+                            <OptionTitle text={"Fecha"} />
                             {getDatePicker(this.state.date, (selectedDate) => this.setState({ date: selectedDate }))}
 
                         </View>    
                         <View style={{flexDirection: 'column', flex: 0.5}}>
-                            {showOptionTitle("Hora")}
+                            <OptionTitle text={"Hora"} />
                             {getTimePicker(this.state.hour, (selectedDate) => this.setState({ hour: selectedDate }))}
                         </View>
                     </View>
 
-                    {showOptionTitle("Descripción del evento")}
-                    {showTextInput(text => { this.setState({ description: text })}, this.state.description, true)}
+                    <OptionTitle text={"Descripción del evento"} />
+                    <OptionTextInput onChangeText={text => { this.setState({ description: text })}} value={this.state.description} isMultiline={true} />
 
                     {/* Pet section */}
                     {showSectionTitle("Mascota")}
                     {this.state.userPets.length > 0 && this.showPetSelector()}
-                    {this.showPetCreateButton()} 
-                    <TouchableOpacity style={[styles.button, {alignSelf: 'center', backgroundColor: colors.primary, marginTop: 40, marginBottom: 60}]} onPress={() => this.createReport()}>
-                        <Text style={styles.buttonFont}>Crear reporte</Text>
-                    </TouchableOpacity>       
+                    <AppButton
+                        buttonText={"Mascota nueva"} 
+                        onPress={this.navigateToCreatePet} 
+                        additionalButtonStyles={styles.button} 
+                        additionalTextStyles={{ paddingLeft: 10 }}
+                        additionalElement={<Icon name='plus' size={20} color={colors.white} />} /> 
+                    <AppButton
+                        buttonText={"Crear reporte"} 
+                        onPress={this.createReport} 
+                        additionalButtonStyles={[styles.button, {alignSelf: 'center', backgroundColor: colors.primary, marginTop: 40, marginBottom: 60}]} />     
                 </ScrollView>
                 {this.state.isLoading && 
                     <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
@@ -258,15 +268,6 @@ export class CreateReportScreen extends React.Component {
         </MapView>;
     }
 
-    showPetCreateButton() {
-        return <TouchableOpacity style={styles.button} onPress={() => this.navigateToCreatePet()}>
-            <View style={commonStyles.alignedContent}>
-                <Icon name='plus' size={20} color={colors.white} />
-                <Text style={[styles.buttonFont, { paddingLeft: 10 }]}>Mascota nueva</Text>
-            </View>
-        </TouchableOpacity>;
-    }
-
     showPetSelector() {
         return <>
             <Text style={{ fontSize: 18, color: colors.secondary, fontWeight: '700', paddingTop: 10, paddingBottom: 10 }}>Seleccionar mascota</Text>
@@ -283,17 +284,12 @@ export class CreateReportScreen extends React.Component {
 const styles = StyleSheet.create({
     button: {
         backgroundColor: colors.secondary,
+        margin: 0,
         marginTop: 10,
         padding: 18, 
         borderRadius: 7, 
         width: '55%', 
         alignSelf: 'flex-start'
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
     },
     modalView: {
         margin: 20,

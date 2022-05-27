@@ -2,9 +2,9 @@ import React from 'react';
 
 import { Text, SafeAreaView, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 
-import { showCheckBoxItem, showOptionTitle, showDogCatSelector, showTextInput } from '../utils/editionHelper'
-import { showHeader } from '../utils/headers';
-import { showButton } from '../utils/buttons';
+import { CheckBoxItem, OptionTitle, DogCatSelector, OptionTextInput } from '../utils/editionHelper'
+import { HeaderWithBackArrow } from '../utils/headers';
+import { AppButton } from '../utils/buttons';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
@@ -68,51 +68,65 @@ export class ReportListFilterScreen extends React.Component {
 
         return (
             <SafeAreaView style={commonStyles.container}>
-                {showHeader("Filtros", colors.secondary, colors.white, colors.secondary, () => this.props.navigation.goBack(), cleanFilterLabel)}
+                <HeaderWithBackArrow headerText={"Filtros"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} additionalElement={cleanFilterLabel}/>
                 <ScrollView style={{flex:1, padding: 35}}>
                     {/* Report type filter */}
-                    {showOptionTitle("Tipo de reporte", styles.filterTitle)}
+                    <OptionTitle text={"Tipo de reporte"} additionalStyle={styles.filterTitle} />
                     {/* custom checkbox */}
-                    {this.showReportTypeCheckboxes()}
+                    <ReportTypeCheckboxes 
+                        lostPetIsSelected={this.state.lostPetIsSelected}
+                        petFoundIsSelected={this.state.petFoundIsSelected}
+                        petForAdoptionIsSelected={this.state.petForAdoptionIsSelected}
+                        onLostCheckboxPress={() => this.setState({ lostPetIsSelected: !this.state.lostPetIsSelected })}
+                        onFoundCheckboxPress={() => this.setState({ petFoundIsSelected: !this.state.petFoundIsSelected })}
+                        onAdoptionCheckboxPress={() => this.setState({ petForAdoptionIsSelected: !this.state.petForAdoptionIsSelected })} />
 
                     {/* Pet filter */}
-                    {showOptionTitle("Mascota", styles.filterTitle)}
-                    {showDogCatSelector(() => this.setState({ dogIsSelected: !this.state.dogIsSelected }), () => this.setState({ catIsSelected: !this.state.catIsSelected }), this.state.dogIsSelected, this.state.catIsSelected)}
+                    <OptionTitle text={"Mascota"} additionalStyle={styles.filterTitle} />
+                    <DogCatSelector 
+                        onPressDog={() => this.setState({ dogIsSelected: !this.state.dogIsSelected })} 
+                        onPressCat={() => this.setState({ catIsSelected: !this.state.catIsSelected })}
+                        dogIsSelected={this.state.dogIsSelected} 
+                        catIsSelected={this.state.catIsSelected} />
 
                     {/* Sex filter */}
-                    {showOptionTitle("Sexo", styles.filterTitle)}
-                    {this.showSexCheckboxes()}
+                    <OptionTitle text={"Sexo"} additionalStyle={styles.filterTitle} />
+                    <PetSexCheckboxes 
+                        femaleIsSelected={this.state.femaleIsSelected} 
+                        maleIsSelected={this.state.maleIsSelected} 
+                        onFemaleCheckboxPress={() => this.setState({ femaleIsSelected: !this.state.femaleIsSelected })} 
+                        onMaleCheckboxPress={() => this.setState({ maleIsSelected: !this.state.maleIsSelected })}/>
 
                     {/* Breed filter */}
-                    {showOptionTitle("Raza", styles.filterTitle)}
-                    {showTextInput(text => this.setState({ breed: text }), this.state.breed)}
+                    <OptionTitle text={"Raza"} additionalStyle={styles.filterTitle} />
+                    <OptionTextInput onChangeText={text => this.setState({ breed: text })} value={this.state.breed} />
 
                     {/* Region filter */}
-                    {showOptionTitle("Región", styles.filterTitle)}
-                    {showTextInput(text => this.setState({ region: text }), this.state.region)}
+                    <OptionTitle text={"Región"} additionalStyle={styles.filterTitle} />
+                    <OptionTextInput onChangeText={text => this.setState({ region: text })} value={this.state.region} />
 
-                    {showButton("Aplicar filtros", () => this.saveFilters(), styles.button)}
+                    <AppButton buttonText={"Aplicar filtros"} onPress={() => this.saveFilters()} additionalButtonStyles={styles.button}/>
                     
                 </ScrollView>
             </SafeAreaView>
         )
     
     }
+}
 
-    showSexCheckboxes = () => {
-        return [
-            showCheckBoxItem(this.state.femaleIsSelected, "Hembra", () => this.setState({ femaleIsSelected: !this.state.femaleIsSelected })),
-            showCheckBoxItem(this.state.maleIsSelected, "Macho", () => this.setState({ maleIsSelected: !this.state.maleIsSelected }))
-        ];
-    }
+const PetSexCheckboxes = ({femaleIsSelected, maleIsSelected, onFemaleCheckboxPress, onMaleCheckboxPress}) => {
+    return (<>
+        <CheckBoxItem optionIsSelected={femaleIsSelected} checkBoxTitle={"Hembra"} onPress={onFemaleCheckboxPress}/>
+        <CheckBoxItem optionIsSelected={maleIsSelected} checkBoxTitle={"Macho"} onPress={onMaleCheckboxPress}/>
+    </>);
+}
 
-    showReportTypeCheckboxes = () => {
-        return [
-            showCheckBoxItem(this.state.lostPetIsSelected, "Mascotas perdidas", () => this.setState({ lostPetIsSelected: !this.state.lostPetIsSelected })),
-            showCheckBoxItem(this.state.petFoundIsSelected, "Mascotas encontradas", () => this.setState({ petFoundIsSelected: !this.state.petFoundIsSelected })),
-            showCheckBoxItem(this.state.petForAdoptionIsSelected, "Mascotas en adopción", () => this.setState({ petForAdoptionIsSelected: !this.state.petForAdoptionIsSelected }))
-        ];
-    }
+const ReportTypeCheckboxes = ({lostPetIsSelected, petFoundIsSelected, petForAdoptionIsSelected, onLostCheckboxPress, onFoundCheckboxPress, onAdoptionCheckboxPress}) => {
+    return (<>
+        <CheckBoxItem optionIsSelected={lostPetIsSelected} checkBoxTitle={"Mascotas perdidas"} onPress={onLostCheckboxPress}/>
+        <CheckBoxItem optionIsSelected={petFoundIsSelected} checkBoxTitle={"Mascotas encontradas"} onPress={onFoundCheckboxPress}/>
+        <CheckBoxItem optionIsSelected={petForAdoptionIsSelected} checkBoxTitle={"Mascotas en adopción"} onPress={onAdoptionCheckboxPress}/>
+    </>);
 }
 
 const styles = StyleSheet.create({

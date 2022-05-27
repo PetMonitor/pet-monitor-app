@@ -1,24 +1,43 @@
 import React from 'react';
 
-import { StyleSheet, FlatList, Text, View, Dimensions, Image } from 'react-native';
+import { StyleSheet, FlatList, Text, View, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { Buffer } from 'buffer'
+
+import { mapReportTypeToLabel, mapReportTypeToLabelColor, } from '../utils/mappers';
 
 import colors from '../config/colors';
 
 const { height, width } = Dimensions.get("screen")
 
-export function showPetImagesHeader(petPhotos, petName) {
-    return <View style={{flex: 1, justifyContent: 'flex-end'}}>
-        <FlatList 
-            data={petPhotos} 
-            horizontal={true}
-            keyExtractor={(_, index) => index.toString()}
-            initialNumToRender={petPhotos.length}
-            renderItem={renderPet}
-        />
-        <View style={{width: width, backgroundColor: colors.semiTransparent, position: 'absolute', height: 30, justifyContent: 'center'}}>
-            <Text style={{paddingLeft: 35, fontSize: 24, fontWeight: 'bold', color: colors.clearBlack}}>{petName}</Text>
-        </View>    
-    </View>
+export const PetImagesHeader = ({petPhotos, petName}) => {
+    return (
+        <View style={{flex: 1, justifyContent: 'flex-end'}}>
+            <FlatList 
+                data={petPhotos} 
+                horizontal={true}
+                keyExtractor={(_, index) => index.toString()}
+                initialNumToRender={petPhotos.length}
+                renderItem={renderPet}
+            />
+            <View style={{width: width, backgroundColor: colors.semiTransparent, position: 'absolute', height: 30, justifyContent: 'center'}}>
+                <Text style={{paddingLeft: 35, fontSize: 24, fontWeight: 'bold', color: colors.clearBlack}}>{petName}</Text>
+            </View>    
+        </View>
+    );
+}
+
+export const ReportImagesList = ({notices, onItemPress, withLabel}) => {
+    return (
+        <View style={{flex: 1}}>
+            <FlatList 
+                data={notices} 
+                numColumns={2}
+                keyExtractor={(_, index) => index.toString()}
+                initialNumToRender={notices.length}
+                renderItem={(item) => renderReportItem(item, onItemPress, withLabel)}
+            />
+        </View>
+    );
 }
 
 function renderPet({item}) {
@@ -27,53 +46,15 @@ function renderPet({item}) {
     )
 }
 
-const styles = StyleSheet.create({
-    optionTitle: {
-        fontSize: 16, 
-        color: colors.clearBlack,
-        paddingTop: 20, 
-        fontWeight: 'bold'
-    },
-    textInput: {
-        paddingTop: 10, 
-        color: colors.clearBlack, 
-        fontSize: 16, 
-    },
-    button: {
-        backgroundColor: colors.secondary,
-        marginTop: 10,
-        padding: 18, 
-        borderRadius: 7, 
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
-    },
-    modalView: {
-        margin: 20,
-        backgroundColor: colors.white,
-        borderRadius: 20,
-        padding: 35,
-        shadowColor: colors.clearBlack,
-        shadowOffset: {
-        width: 0,
-        height: 2
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5
-    },
-    modalTitle: {
-        marginBottom: 15,
-        color: colors.secondary,
-        fontWeight: 'bold',
-        fontSize: 18,
-        textAlign: "center"
-    },
-    modalText: {
-      marginBottom: 15,
-      color: colors.clearBlack
-    }
-});
+function renderReportItem({item}, onItemPress, withLabel) {
+    return (
+        <TouchableOpacity onPress={() => onItemPress(item)}>
+            <Image style={{height: (width - 20) / 2, width:  (width - 20) / 2, borderRadius: 5, margin: 5}}
+                    source={{uri:`data:image/png;base64,${Buffer.from(item.pet.photo).toString('base64')}`}}
+            />
+            {withLabel ? 
+                <Text style={{fontSize: 16, fontWeight: 'bold', color: mapReportTypeToLabelColor(item.noticeType), paddingLeft: 7, paddingBottom: 20}}>{mapReportTypeToLabel(item.noticeType)}</Text> : null }
+        </TouchableOpacity>
+    )
+}
+
