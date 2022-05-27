@@ -1,13 +1,10 @@
 import React from "react";
-
-import { Text, TouchableOpacity, View, Image, StyleSheet, FlatList, Dimensions } from 'react-native';
+import colors from '../../../config/colors';
 import Icon from 'react-native-vector-icons/AntDesign';
-
 import { getSecureStoreValueFor } from '../../../utils/store';
 import { getJsonData } from '../../../utils/requests.js';
 
-import commonStyles from '../../../utils/styles';
-import colors from '../../../config/colors';
+import { Text, TouchableOpacity, View, Image, StyleSheet, FlatList, Dimensions } from 'react-native';
 
 const { height, width } = Dimensions.get("screen")
 
@@ -98,7 +95,7 @@ export class UserPetGridView extends React.Component {
         }
         
         return(
-            <View style={commonStyles.container}>
+            <View style={styles.container}>
                 <FlatList 
                     data={[...this.state.pets, {action: "add-pet"}]} 
                     numColumns={2}
@@ -121,4 +118,10 @@ const styles = StyleSheet.create({
         paddingLeft: 7, 
         paddingBottom: 20
     },
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+        flexDirection: 'column',    // main axis: vertical
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    }
 });

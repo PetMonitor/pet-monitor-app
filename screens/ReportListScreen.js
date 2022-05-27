@@ -11,7 +11,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
-import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 
 const { height, width } = Dimensions.get("screen")
@@ -36,6 +35,58 @@ export class ReportListScreen extends React.Component {
     truncate = (str, maxLength) => {
         return (str.length > maxLength) ? str.substr(0, maxLength - 1) + '...' : str;
     };
+
+    getFilters = () => {
+        const filters = this.props.route.params.filters
+        var filtersToApply = {}
+
+
+        if (!filters || (filters && this.objectIsEmpty(filters))) {
+            return filtersToApply
+        }
+
+        if (filters.breed != '') {
+            filtersToApply.breed = filters.breed
+        }
+
+        if (filters.region != '') {
+            filtersToApply.region = filters.region
+        }
+        
+        if (!(filters.lostPetIsSelected && filters.petForAdoptionIsSelected && filters.petFoundIsSelected)) {
+            var reportTypes = []
+            if (filters.lostPetIsSelected) {
+                reportTypes.push('LOST')
+                reportTypes.push('STOLEN')
+            }
+            if (filters.petForAdoptionIsSelected) {
+                reportTypes.push('FOR_ADOPTION')
+            }
+            if (filters.petFoundIsSelected) {
+                reportTypes.push('FOUND')
+            }
+            if (reportTypes.length > 0) {
+                filtersToApply.reportType = reportTypes.join(",")
+            }
+        }
+        if (!(filters.catIsSelected && filters.dogIsSelected)) {
+            if (filters.catIsSelected) {
+                filtersToApply.petType = 'CAT'
+            }
+            if (filters.dogIsSelected) {
+                filtersToApply.petType = 'DOG'
+            }
+        }
+        if (!(filters.femaleIsSelected && filters.maleIsSelected)) {
+            if (filters.femaleIsSelected) {
+                filtersToApply.petSex = 'FEMALE'
+            }
+            if (filters.maleIsSelected) {
+                filtersToApply.petSex = 'MALE'
+            }
+        }
+        return filtersToApply
+    }
 
     renderItem = ({item}) =>  {
         return (
@@ -79,51 +130,69 @@ export class ReportListScreen extends React.Component {
         if (this.props.route.params) {
             let filters = this.props.route.params.filters
             if ((filters && !prevProps.route.params) || (filters != prevProps.route.params.filters)) {
-                let queryParams = this.getQueryParamsBasedOnFilters(filters);
-                this.getReports(queryParams);
+                let queryParams = ''
+                
+                if (!this.objectIsEmpty(filters)) {
+                    queryParams = '?'
+                    
+                    const filtersToApply = this.getFilters()
+                    queryParams += filtersToApply.petSex ? "petSex=" + filtersToApply.petSex + "&" : ""
+                    queryParams += filtersToApply.petType ? "petType=" + filtersToApply.petType + "&" : ""
+                    queryParams += filtersToApply.breed ? "petBreed=" + filtersToApply.breed + "&" : ""
+                    queryParams += filtersToApply.reportType ? "noticeType=" + filtersToApply.reportType + "&" : ""
+                    queryParams += filtersToApply.region ? "noticeRegion=" + filtersToApply.region + "&" : ""
+                }
+
+                getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+                    getJsonData(global.noticeServiceBaseUrl + '/notices' + queryParams, 
+                    {
+                        'Authorization': 'Basic ' + sessionToken 
+                    }
+                    ).then(response => {
+                        this.setState({ notices : response });
+                    }).catch(err => {
+                        console.log(err);
+                        alert(err)
+                    }).finally(() => this.setState({ isLoading : false }));
+                });
             }
         }
     }
 
     componentDidMount() {
-        this.getUserLocation();
-        this.getReports()
-    }
+        Location.requestForegroundPermissionsAsync()
+        .then( response => {
+            if (response.status !== 'granted') {
+                alert('Permission to access location was denied');
+                return;
+            }
 
-    getReports(queryParams='') {
+            Location.getCurrentPositionAsync({})
+            .then(location => {
+                this.setState({ location: location })
+            });
+        });
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/notices' + queryParams, { 'Authorization': 'Basic ' + sessionToken }
+            getJsonData(global.noticeServiceBaseUrl + '/notices', 
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }
             ).then(response => {
                 this.setState({ notices: response });
             }).catch(err => {
                 console.log(err);
-                alert(err);
-            }).finally(() => this.setState({ isLoading: false }));
+                alert(err)
+            }).finally(() => this.setState({ isLoading : false }));
         });
     }
     
-    getUserLocation() {
-        Location.requestForegroundPermissionsAsync()
-            .then(response => {
-                if (response.status !== 'granted') {
-                    alert('Permission to access location was denied');
-                    return;
-                }
-
-                Location.getCurrentPositionAsync({})
-                    .then(location => {
-                        this.setState({ location: location });
-                    });
-            });
-    }
-
     render() {
         const mapTabTitle = "Mapa";
         const listTabTitle = "Lista";
         const segmentedTabTitles = [mapTabTitle, listTabTitle];
 
         return (
-            <SafeAreaView style={commonStyles.container}>
+            <SafeAreaView style={styles.container}>
                 <View>
                     <SegmentedControlTab 
                         values={segmentedTabTitles}
@@ -206,90 +275,18 @@ export class ReportListScreen extends React.Component {
             </SafeAreaView>
         )
     }
-
-    getQueryParamsBasedOnFilters(filters) {
-        let queryParams = '';
-
-        if (!this.objectIsEmpty(filters)) {
-            queryParams = '?';
-
-            const filtersToApply = this.getFilters();
-            queryParams += filtersToApply.petSex ? "petSex=" + filtersToApply.petSex + "&" : "";
-            queryParams += filtersToApply.petType ? "petType=" + filtersToApply.petType + "&" : "";
-            queryParams += filtersToApply.breed ? "petBreed=" + filtersToApply.breed + "&" : "";
-            queryParams += filtersToApply.reportType ? "noticeType=" + filtersToApply.reportType + "&" : "";
-            queryParams += filtersToApply.region ? "noticeRegion=" + filtersToApply.region + "&" : "";
-        }
-        return queryParams;
-    }
-
-    getFilters = () => {
-        const filters = this.props.route.params.filters
-        var filtersToApply = {}
-
-        if (!filters || (filters && this.objectIsEmpty(filters))) {
-            return filtersToApply
-        }
-
-        if (filters.breed != '') {
-            filtersToApply.breed = filters.breed
-        }
-
-        if (filters.region != '') {
-            filtersToApply.region = filters.region
-        }
-        
-        if (!(filters.lostPetIsSelected && filters.petForAdoptionIsSelected && filters.petFoundIsSelected)) {
-            addReportTypeFilters();
-        }
-        if (!(filters.catIsSelected && filters.dogIsSelected)) {
-            addPetTypeFilters();
-        }
-        if (!(filters.femaleIsSelected && filters.maleIsSelected)) {
-            addPetSexFilters();
-        }
-        return filtersToApply
-
-        function addPetSexFilters() {
-            if (filters.femaleIsSelected) {
-                filtersToApply.petSex = 'FEMALE';
-            }
-            if (filters.maleIsSelected) {
-                filtersToApply.petSex = 'MALE';
-            }
-        }
-
-        function addPetTypeFilters() {
-            if (filters.catIsSelected) {
-                filtersToApply.petType = 'CAT';
-            }
-            if (filters.dogIsSelected) {
-                filtersToApply.petType = 'DOG';
-            }
-        }
-
-        function addReportTypeFilters() {
-            var reportTypes = [];
-            if (filters.lostPetIsSelected) {
-                reportTypes.push('LOST');
-                reportTypes.push('STOLEN');
-            }
-            if (filters.petForAdoptionIsSelected) {
-                reportTypes.push('FOR_ADOPTION');
-            }
-            if (filters.petFoundIsSelected) {
-                reportTypes.push('FOUND');
-            }
-            if (reportTypes.length > 0) {
-                filtersToApply.reportType = reportTypes.join(",");
-            }
-        }
-    }
 }
 
 const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.white,
+      flexDirection: 'column', // main axis: vertical
+      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    },
     alignedContent: {
-        ...commonStyles.alignedContent,
+        alignItems:'center', 
+        flexDirection: 'row', 
         margin: 5
     },
     checkBoxOptionTitle: {

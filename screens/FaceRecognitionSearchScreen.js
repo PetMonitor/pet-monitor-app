@@ -6,7 +6,6 @@ import { getSecureStoreValueFor } from '../utils/store';
 import Icon from 'react-native-vector-icons/Feather';
 import { encode as btoa } from 'base-64'
 
-import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 
 /** Implements the Face Recognition search screen. */
@@ -81,7 +80,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
 
     render() {
         return (
-            <View style={commonStyles.container}>
+            <View style={styles.container}>
                 <ScrollView style={{flex:1, padding: 20}}>
                 <Text style={{margin: 20, color: colors.clearBlack, fontSize: 15, marginTop: 30}}>Si perdiste o encontraste a una mascota podés iniciar una búsqueda por  reconocimiento facial para encontrar  mascotas similares.</Text>
                 <Text style={styles.sectionTitle}>Seleccionar mascota</Text>
@@ -102,7 +101,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
                 </TouchableOpacity>  */}
 
                 <TouchableOpacity style={styles.buttonSearch} onPress={() => this.navigateToSearchResults()}>
-                    <View style={[commonStyles.alignedContent, { justifyContent: 'center'}]}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
                         <Icon name='search' size={20} color={colors.white} />
                         <Text style={[styles.buttonFont, {paddingLeft: 10}]}>Buscar</Text>
                     </View>
@@ -114,6 +113,12 @@ export class FaceRecognitionSearchScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+        flexDirection: 'column',    // main axis: vertical
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
+    },
     sectionTitle: {
         fontSize: 20, 
         color: colors.secondary,

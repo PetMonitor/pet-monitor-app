@@ -1,11 +1,8 @@
 import React, {useState} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput , TouchableOpacity, StyleSheet, View } from 'react-native';
-
 import { putJsonData } from "../../../utils/requests";
 import { getSecureStoreValueFor } from '../../../utils/store';
-
-import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
 
 
@@ -48,7 +45,7 @@ const ChangePasswordScreen = ({ route, navigation }) => {
     }
     
     return (
-        <SafeAreaView style={commonStyles.container}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
                 <Text style={styles.textLabel}>Contraseña actual</Text>
                 <TextInput 
@@ -91,6 +88,12 @@ const ChangePasswordScreen = ({ route, navigation }) => {
 }
 
 const styles = StyleSheet.create({
+
+    container: {
+        flex: 1,
+        backgroundColor: colors.white,
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    },
     topContainer: {
         flexDirection: 'column',
         justifyContent: 'center',

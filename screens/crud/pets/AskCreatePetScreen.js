@@ -4,8 +4,6 @@ import { postJsonData } from '../../../utils/requests.js';
 
 import { Text, TouchableOpacity, StatusBar, StyleSheet, SafeAreaView, View } from 'react-native';
 import { Dog, Cat } from 'phosphor-react-native';
-
-import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors.js';
 
 export class AskCreatePetScreen extends React.Component {
@@ -24,8 +22,12 @@ export class AskCreatePetScreen extends React.Component {
 
         const styles = StyleSheet.create({
             container: {
+                flex: 1,
+                backgroundColor: 'white',
+                flexDirection: 'column', // main axis: vertical
                 alignItems: 'center', // align items across secondary axis (horizontal)
                 justifyContent: 'center', // justify along main axis (vertical)
+                paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
             },
             title: {
                 fontWeight: 'bold',
@@ -55,7 +57,7 @@ export class AskCreatePetScreen extends React.Component {
         };
 
         return (
-            <SafeAreaView style={[commonStyles.container, styles.container]}>
+            <SafeAreaView style={styles.container}>
                 <View style={{flex:2, paddingTop:50, paddingBottom:50}}>  
                     <Text style={styles.title}>Presentanos a tus mascotas!</Text>  
                 </View> 
@@ -63,7 +65,7 @@ export class AskCreatePetScreen extends React.Component {
                     <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>Recomendamos registrar a todas tus mascotas.</Text>
                     <Text style={{paddingTop:20, paddingBottom:20, fontSize: 16}}>¿Empezamos con la primera?</Text>  
                 </View> 
-                <View style={{flex:2, flexDirection:'row', paddingTop:20, paddingBottom:50}} >
+                <View style={{flex:2,flexDirection:'row',paddingTop:20, paddingBottom:50}} >
                     <TouchableOpacity onPress={() => handleCreatePet('CAT')}>
                         <Cat size={tabIconSize} color={colors.yellow} weight='regular' />
                     </TouchableOpacity>    

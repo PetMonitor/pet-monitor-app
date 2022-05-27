@@ -1,16 +1,13 @@
 import React from "react";
-
-import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
+import colors from '../../../config/colors';
 import { Picker } from '@react-native-picker/picker';
+import { putJsonData } from '../../../utils/requests';
+import { getSecureStoreValueFor } from '../../../utils/store';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import uuid from 'react-native-uuid';
 
-import { putJsonData } from '../../../utils/requests';
-import { getSecureStoreValueFor } from '../../../utils/store';
-
-import commonStyles from '../../../utils/styles';
-import colors from '../../../config/colors';
+import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
 
 export class EditUserDetailsScreen extends React.Component {
 
@@ -73,7 +70,7 @@ export class EditUserDetailsScreen extends React.Component {
             console.log(result);
         
             if (!result.cancelled) {
-            //   this.setState({profilePicture: result.base64});
+              //this.setState({profilePicture: result.base64});
               console.log(result.uri);
             }
         }
@@ -90,7 +87,7 @@ export class EditUserDetailsScreen extends React.Component {
         }} />;
         
         return (
-            <SafeAreaView style={commonStyles.container}>   
+            <SafeAreaView style={styles.container}>   
                 <ScrollView>
                     <View style={styles.topContainer}>
                         {/* TODO: image source should be conditional to profilePicture value, this is just the default in case of null */}
@@ -208,6 +205,12 @@ export class EditUserDetailsScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+        flexDirection: 'column',    // main axis: vertical
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
+    },
     topContainer: {
         flex: 1,
         backgroundColor: colors.white,
@@ -256,10 +259,12 @@ const styles = StyleSheet.create({
         borderRadius: 7,
         backgroundColor: colors.primary,
         width: '55%',
+
         alignItems: 'center'
     },
     alignedContent: {
-        ...commonStyles.alignedContent,
+        flexDirection: 'row', 
+        alignItems:'center', 
         marginTop: 10
     },
 });

@@ -1,14 +1,12 @@
 import React from "react";
 
-import { Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions, SafeAreaView, TouchableOpacity, TextInput } from 'react-native';
+import { Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { getJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import { showHeader } from '../../../utils/headers';
-import { mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../../../utils/mappers';
+import { mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../../../utils/mappers';
 
-import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
 
 const { height, width } = Dimensions.get("screen")
@@ -38,16 +36,19 @@ export class ViewPetDetailsScreen extends React.Component {
         )
     }
 
-    showTextInput = (onChangeText, value = '', isMultiline = false ) => (
-        <TextInput
-            onChangeText = {onChangeText}
-            autoCorrect = { false }
-            style = {[styles.editableTextInput, isMultiline ? {paddingBottom: 90, paddingTop: 10} : {}]}
-            maxLength = { isMultiline ? 100 : 50 }
-            multiline = {isMultiline}
-            placeholder = {isMultiline ? "Ingrese descripción" : ""}
-            value = { value ? value : "" }
-        />
+    showHeader = () => (
+        <>
+            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 20, marginBottom: 10}}>
+                <MaterialIcon
+                    name='arrow-left'
+                    size={33}
+                    color={colors.secondary}
+                    style={{marginLeft: 10}}
+                    onPress={() => this.props.navigation.goBack()} />
+                <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Mascota</Text>
+            </View>
+            <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
+        </>
     )
 
     changeToEditMode = () => {
@@ -104,8 +105,8 @@ export class ViewPetDetailsScreen extends React.Component {
         }} />;
 
         return (
-            <SafeAreaView style={commonStyles.container}>
-                {showHeader("Mascota", colors.secondary, colors.white, colors.secondary, () => this.props.navigation.goBack())}
+            <SafeAreaView style={styles.container}>
+                {this.showHeader()}
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
                         data={this.state.petPhotos} 
@@ -120,7 +121,7 @@ export class ViewPetDetailsScreen extends React.Component {
                 </View>
                 <View style={{flex: 2}}>
                     <View style={{paddingHorizontal: 35}}>
-                    <View style={{...commonStyles.alignedContent, paddingTop: 20 }}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 20 }}>
                             <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.clearBlack}}>Información</Text>
                             {this.state.isMyPet ? 
                                     <TouchableOpacity onPress={() => this.changeToEditMode()}>
@@ -130,12 +131,10 @@ export class ViewPetDetailsScreen extends React.Component {
                         {dividerLine}
                         </View>
                     <ScrollView style={{flex:1, paddingHorizontal: 35}}>
-                        <View style={commonStyles.alignedContent}>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <View style={{flexDirection: 'column', flex: 0.5}}>
                                 <Text style={styles.optionTitle}>Tipo</Text>
-                                {/* <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text> */}
-                                {/* <TextInput value={mapPetTypeToLabel(this.state.petType)}/> */}
-                                {this.showTextInput(text => { this.setState({ petType: text })}, this.state.petType)}
+                                <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text>
                                 <Text style={styles.optionTitle}>Sexo</Text>
                                 <Text style={styles.textInput}>{mapPetSexToLabel(this.state.sex)}</Text>
                                 <Text style={styles.optionTitle}>Tamaño</Text>
@@ -147,7 +146,7 @@ export class ViewPetDetailsScreen extends React.Component {
                                 <Text style={styles.textInput}>{this.state.breed}</Text>
                                 <Text style={styles.optionTitle}>Color pelaje</Text>
                                 <Text style={styles.textInput}>{this.state.furColor}</Text>
-                                <Text style={styles.optionTitle}>Etapa de la vida</Text>
+                                <Text style={styles.optionTitle}>Etapa</Text>
                                 <Text style={styles.textInput}>{mapPetLifeStageToLabel(this.state.lifeStage)}</Text>
                             </View>
                         </View>
@@ -177,6 +176,12 @@ export class ViewPetDetailsScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.white,
+      flexDirection: 'column', // main axis: vertical
+      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    },
     optionTitle: {
         fontSize: 16, 
         color: colors.clearBlack,
@@ -199,17 +204,5 @@ const styles = StyleSheet.create({
         fontWeight: '500', 
         alignSelf: 'center',
         color: colors.white
-    },
-    editableTextInput: {
-        borderRadius: 8, 
-        backgroundColor: colors.inputGrey, 
-        padding: 10, 
-        borderWidth: 1, 
-        borderColor: colors.inputGrey, 
-        fontSize: 16, 
-        fontWeight: '500',
-        width: '70%',
-        marginTop: 10, 
-        marginRight: 10
     },
   });

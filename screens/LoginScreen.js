@@ -2,13 +2,12 @@ import React from 'react';
 import * as Facebook from 'expo-facebook';
 import * as FileSystem from 'expo-file-system';
 
-import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 import * as config from '../config/config';
 
 import { getJsonData, postJsonData } from '../utils/requests.js';
 import { secureStoreSave } from '../utils/store.js';
-import { Image, Text, TextInput, TouchableOpacity, StyleSheet, View } from 'react-native';
+import { Image, Platform, Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, View } from 'react-native';
 
 
 export class LoginScreen extends React.Component {
@@ -133,7 +132,7 @@ export class LoginScreen extends React.Component {
       };
   
       return (
-        <View style={commonStyles.container}>
+        <View style={styles.container}>
           <View style={styles.loginUpperContainer}>
             <Image style={{height: "60%", width: "60%", resizeMode: 'contain', position: 'absolute', bottom: "15%"}} source={require('../assets/complete_logo.png')} />
           </View>
@@ -188,6 +187,12 @@ const styles = StyleSheet.create({
     fontWeight: '500', 
     alignSelf: 'center'
   },
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+    flexDirection: 'column', // main axis: vertical
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   loginUpperContainer: {
     height: "30%",
     width: "100%",
@@ -197,8 +202,9 @@ const styles = StyleSheet.create({
   section: {
     flex: 1,
     width:'100%',
-    alignItems: 'center',
-    ...commonStyles.alignedContent
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   textInput: {
     borderRadius: 8, 
