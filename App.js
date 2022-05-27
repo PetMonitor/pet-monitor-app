@@ -35,10 +35,10 @@ export default class App extends React.Component {
             <Stack.Navigator initialRouteName="Login">
               <Stack.Screen name="Login" component={LoginScreen} options={{title: '', headerShown: false}} />
               <Stack.Screen name="BottomTabNavigator" component={BottomTabNavigator} options={{ headerShown: false, headerLeft: () => null }} />
-              <Stack.Screen name="CreateUserScreen" component={CreateUserScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
-              <Stack.Screen name="EditUserScreen" component={EditUserDetailsScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
-              <Stack.Screen name="ChangeUserPasswordScreen" component={ChangePasswordScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
-              <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor: colors.primary}}} />
+              <Stack.Screen name="CreateUserScreen" component={CreateUserScreen} options={{headerShown: false}}/>
+              <Stack.Screen name="EditUserScreen" component={EditUserDetailsScreen} options={{headerShown: false}}/>
+              <Stack.Screen name="ChangeUserPasswordScreen" component={ChangePasswordScreen} options={{headerShown: false}}/>
+              <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{headerBackVisible: false, title: '', headerStyle: {backgroundColor: colors.primary}}} />
               <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: '', headerShown: false }} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
               <Stack.Screen name="ViewPet" component={ViewPetDetailsScreen} options={{ headerShown: false }} />
               <Stack.Screen name="ImageSelectorScreen" component={ImageSelectorScreen} options={{ headerShown: false}} />

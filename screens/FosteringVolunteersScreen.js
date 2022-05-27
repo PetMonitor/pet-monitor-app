@@ -3,7 +3,9 @@ import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions } from '
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
+import commonStyles from '../utils/styles';
 import colors from '../config/colors';
+import { AppButton } from '../utils/buttons';
 
 const { height, width } = Dimensions.get("screen")
 
@@ -83,7 +85,7 @@ export class FosteringVolunteersScreen extends React.Component {
 
     render() {
         return (
-            <View style={styles.container}> 
+            <View style={commonStyles.container}> 
                 <FlatList 
                     data={this.state.volunteers}
                     keyExtractor={(_, index) => index.toString()}
@@ -92,21 +94,16 @@ export class FosteringVolunteersScreen extends React.Component {
                     style={{marginLeft: 30, marginTop: 10, marginRight: 30}}
 
                 />
-                <TouchableOpacity style={[styles.button, {marginBottom: 20, marginTop: 10}]} onPress={() => this.navigateToSettingsView()}>
-                    <Text style={styles.buttonFont}>Quiero sumarme como voluntario</Text>
-                </TouchableOpacity>       
+                <AppButton
+                        buttonText={"Quiero sumarme como voluntario"} 
+                        onPress={this.navigateToSettingsView} 
+                        additionalButtonStyles={{width: width - 60, alignSelf: 'center', marginBottom: 20, marginTop: 10}} />
             </View>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
     text: {
         color: colors.clearBlack, 
         fontSize: 16
@@ -115,18 +112,5 @@ const styles = StyleSheet.create({
         marginTop: 20, 
         borderWidth: 0.9,
         borderColor: colors.inputGrey,
-    },
-    button: {
-        backgroundColor: colors.secondary,
-        padding: 18, 
-        width: width - 60,
-        borderRadius: 7, 
-        alignSelf: 'center'
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
     },
 });

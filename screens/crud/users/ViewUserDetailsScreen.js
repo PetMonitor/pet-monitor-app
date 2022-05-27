@@ -1,17 +1,21 @@
 import React, { Component } from "react";
+
+import { Text, TouchableOpacity, StyleSheet, SafeAreaView, View, Image, LogBox } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+
+import { UserPetGridView } from '../pets/UserPetGridView';
+import { UserReportGridView } from "../reports/UserReportGridView";
 
 import { getJsonData } from '../../../utils/requests';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import colors from '../../../config/colors';
-import { UserPetGridView } from '../pets/UserPetGridView';
 
-import { Text, TouchableOpacity, StyleSheet, SafeAreaView, View, Image, LogBox } from 'react-native';
-import { UserReportGridView } from "../reports/UserReportGridView";
+import commonStyles from '../../../utils/styles';
+import colors from '../../../config/colors';
+import { AppButton } from "../../../utils/buttons";
+
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 
 export class ViewUserDetailsScreen extends Component {
-
 
     constructor(props) {
         super(props);
@@ -31,62 +35,58 @@ export class ViewUserDetailsScreen extends Component {
         this.setState({ userData: newUserData })
     }
 
-    fetchUserPetsDetails = () => {
-        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getSecureStoreValueFor("userId").then(userId => {
-                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
-                {
-                    'Authorization': 'Basic ' + sessionToken 
-                }).then(response => {
-                    response.map(async r => {
-                        const pet = { 
-                            key: r.petId,
-                            id: r.petId, 
-                            photoId: r.photos[0].photoId, 
-                            name: r.name 
-                        };
-                        this.setState({ 
-                            pets: [...this.state.pets, pet],
-                            photoByPet: {
-                                ...this.state.photoByPet,
-                                [pet.id]: pet.photoId
-                            }
-                        });
-                    })
-                    this.fetchUserReportsDetails()
-                    // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
-                }).catch(err => {
-                    console.log(err);
-                    alert(err);
-                    this.props.navigation.popToTop();
-                });
-            });
+    fetchUserDetails = (sessionToken, userId) => {
+        getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
+        {
+            'Authorization': 'Basic ' + sessionToken 
+        }).then(response => {
+            this.fetchUserPetsDetails(response);
+            this.fetchUserReportsDetails(sessionToken, userId)
+            // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
+        }).catch(err => {
+            console.log(err);
+            alert(err);
+            this.props.navigation.popToTop();
         });
     };
 
-    fetchUserReportsDetails = () => {
-        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getSecureStoreValueFor("userId").then(userId => {
-                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
-                {
-                    'Authorization': 'Basic ' + sessionToken 
-                }).then(response => {
-                    response.map(async r => {
-                        const report = { 
-                            key: r.noticeId,
-                            id: r.noticeId, 
-                            photoId: this.state.photoByPet[r.pet.id], 
-                            reportType: r.noticeType 
-                        };
-                        this.setState({ reports : [...this.state.reports, report] });
-                    })
-                }).catch(err => {
-                    console.log(err);
-                    alert(err)
-                });
-            });
+    fetchUserReportsDetails = (sessionToken, userId) => {
+        getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
+        {
+            'Authorization': 'Basic ' + sessionToken 
+        }).then(response => {
+            response.map(async r => {
+                const report = { 
+                    key: r.noticeId,
+                    id: r.noticeId, 
+                    photoId: this.state.photoByPet[r.pet.id], 
+                    reportType: r.noticeType 
+                };
+                this.setState({ reports : [...this.state.reports, report] });
+            })
+        }).catch(err => {
+            console.log(err);
+            alert(err)
         });
     };
+
+    fetchUserPetsDetails(response) {
+        response.map(async (r) => {
+            const pet = {
+                key: r.petId,
+                id: r.petId,
+                photoId: r.photos[0].photoId,
+                name: r.name
+            };
+            this.setState({
+                pets: [...this.state.pets, pet],
+                photoByPet: {
+                    ...this.state.photoByPet,
+                    [pet.id]: pet.photoId
+                }
+            });
+        });
+    }
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
@@ -97,7 +97,7 @@ export class ViewUserDetailsScreen extends Component {
                 }
                 ).then(response => {
                     this.setState({ userData : response });
-                    this.fetchUserPetsDetails();
+                    this.fetchUserDetails(sessionToken, userId);
 
                     FileSystem.downloadAsync(
                         global.noticeServiceBaseUrl + '/photos/profile/' + this.state.userData.userId, 
@@ -166,7 +166,7 @@ export class ViewUserDetailsScreen extends Component {
         }} />;
         
         return (
-            <SafeAreaView style={styles.container}>   
+            <SafeAreaView style={commonStyles.container}>   
                 <View style={{flexDirection:'row', alignItems:'stretch', flex: 1, marginTop: 15}}>
                     <View style={{marginLeft: 30, flex: 2}}>
                         {profilePicture}
@@ -174,12 +174,13 @@ export class ViewUserDetailsScreen extends Component {
                     <View style={{flexDirection:'column-reverse', justifyContent:'left', flex: 3, marginLeft: 20}}>
                         { this.state.facebookLogin ? 
                             null :
-                            <TouchableOpacity style={[styles.button]} onPress={handleEditProfile}> 
-                            	<Text style={styles.buttonFont}>Editar perfil</Text> 
-                            </TouchableOpacity>
+                            <AppButton
+                                buttonText={"Editar perfil"} 
+                                onPress={handleEditProfile} 
+                                additionalButtonStyles={styles.button} /> 
                         }
                         <Text style={{color: colors.clearBlack, fontSize: 16}}>{this.state.userData.username}</Text>
-                        <Text style={{color: colors.clearBlack, fontSize: 24, marginBottom: 5, fontWeight: '500'}}>{this.state.userData.name}</Text>
+                        <Text style={{color: colors.clearBlack, fontSize: 24, marginBottom: 5, fontWeight: '500'}}>{this.state.userData.name ? this.state.userData.name : this.state.userData.username}</Text>
                     </View>
                 </View>
                 {dividerLine}
@@ -203,22 +204,10 @@ export class ViewUserDetailsScreen extends Component {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.white,
-        flexDirection: "column", // main axis: vertical
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
-    },
     button: {
         backgroundColor: colors.primary,
+        margin: 0,
         marginTop: "5%", 
-        padding: 18, 
-        borderRadius: 7, 
         marginRight: 30,
         alignSelf: 'stretch'
     },

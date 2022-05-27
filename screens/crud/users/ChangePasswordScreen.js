@@ -1,9 +1,14 @@
 import React, {useState} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, TextInput , TouchableOpacity, StyleSheet, View } from 'react-native';
+import { Text, TextInput, StyleSheet, View } from 'react-native';
+
 import { putJsonData } from "../../../utils/requests";
 import { getSecureStoreValueFor } from '../../../utils/store';
+import { HeaderWithBackArrow } from "../../../utils/headers";
+
+import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
+import { AppButton } from "../../../utils/buttons";
 
 
 const ChangePasswordScreen = ({ route, navigation }) => {
@@ -44,15 +49,22 @@ const ChangePasswordScreen = ({ route, navigation }) => {
         });        
     }
     
-    return (
-        <SafeAreaView style={styles.container}>
+    return ( <>
+        <SafeAreaView
+                edges={["top"]}
+                style={{ flex: 0, backgroundColor: colors.primary }}/>
+            <SafeAreaView
+                edges={["left", "right", "bottom"]}
+                style={commonStyles.container} >                
+                <HeaderWithBackArrow headerText={"Cambiar contraseña"} headerTextColor={colors.white} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => navigation.goBack()}/> 
+                
             <View style={styles.topContainer}>
                 <Text style={styles.textLabel}>Contraseña actual</Text>
                 <TextInput 
                     onChangeText = { passwordInput => { setOldPassword(passwordInput) }}
                     autoCapitalize = 'none'
                     autoCorrect = { false }
-                    style = {styles.textInput}
+                    style = {[styles.textInput, , {marginBottom: 10}]}
                     maxLength = { 30 }
                     secureTextEntry = { true }   
                 />
@@ -62,7 +74,7 @@ const ChangePasswordScreen = ({ route, navigation }) => {
                     onChangeText = { passwordInput => { setNewPassword(passwordInput) }}
                     autoCapitalize = 'none'
                     autoCorrect = { false }
-                    style = {styles.textInput}
+                    style = {[styles.textInput, , {marginBottom: 10}]}
                     maxLength = { 30 }
                     secureTextEntry = { true }   
                 />
@@ -76,36 +88,30 @@ const ChangePasswordScreen = ({ route, navigation }) => {
                     maxLength = { 30 }
                     secureTextEntry = { true }   
                 />
-                <TouchableOpacity 
-                    style={[styles.button]}
-                    onPress={handleSetNewPassword}>
-                    <Text style={[styles.buttonFont, { color: colors.white }]}>Guardar Cambios</Text>
-                </TouchableOpacity>
+                <AppButton
+                        buttonText={"Guardar cambios"} 
+                        onPress={handleSetNewPassword} 
+                        additionalButtonStyles={styles.button} /> 
             </View>
         </SafeAreaView>
-    );
+   </>);
 
 }
 
 const styles = StyleSheet.create({
-
-    container: {
-        flex: 1,
-        backgroundColor: colors.white,
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    },
     topContainer: {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'baseline',
-        marginLeft: 15,
+        marginLeft: 60,
+        marginRight: 60
     },
     textLabel: {
         color: colors.darkGrey,
-        fontSize: 20,
-        marginTop: 10,
+        fontSize: 18,
+        marginTop: 20,
         marginBottom: 10,
-        marginLeft: '10%',
+        fontWeight: '500'
     },
     textInput: {
         color: colors.darkGrey,
@@ -113,27 +119,17 @@ const styles = StyleSheet.create({
         backgroundColor: colors.inputGrey, 
         borderWidth: 1, 
         borderColor: colors.inputGrey, 
-        fontSize: 18, 
+        fontSize: 16, 
         fontWeight: '500',
         height: '10%',
         padding: 10,
-        margin: 10,
-        width: '70%',
-        marginLeft: '10%',
-    },
-    buttonFont: {
-        fontSize: 18, 
-        fontWeight: "bold", 
-        alignSelf: "center",
+        alignSelf: 'stretch',
     },
     button: {
-        padding: 10,
-        borderRadius: 7,
+        marginHorizontal: 0,
         backgroundColor: colors.primary,
-        width: '70%',
-        marginLeft:'10%'
+        alignSelf: 'stretch'
     },
 });
-
 
 export default ChangePasswordScreen;
