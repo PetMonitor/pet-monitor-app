@@ -274,18 +274,6 @@ const styles = StyleSheet.create({
         ...commonStyles.alignedContent,
         marginTop: 10
     },
-    checkBoxOptionTitle: {
-        marginLeft: 5, 
-        fontSize: 15
-    },
-    sectionTitle: {
-        fontSize: 20, 
-        color: colors.primary,
-        paddingLeft: 10, 
-        paddingTop: 25, 
-        paddingBottom: 5, 
-        fontWeight: 'bold',
-    },
     optionTitle: {
         fontSize: 16, 
         color: colors.clearBlack,

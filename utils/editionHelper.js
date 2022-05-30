@@ -92,8 +92,8 @@ export const OptionTextInput = ({onChangeText, value = '', isMultiline = false }
     return <TextInput
         onChangeText = {onChangeText}
         autoCorrect = { false }
-        style = {[editionStyles.textInput, isMultiline ? {paddingBottom: 90, paddingTop: 10} : {}]}
-        maxLength = { isMultiline ? 100 : 50 }
+        style = {[editionStyles.textInput, isMultiline ? {height: 120, paddingTop: 10, paddingBottom: 10} : {}]}
+        maxLength = { isMultiline ? 300 : 50 }
         multiline = {isMultiline}
         placeholder = {isMultiline ? "Ingrese descripción" : ""}
         value = { value ? value : "" }
@@ -107,7 +107,6 @@ export const CheckBoxItem = ({optionIsSelected, checkBoxTitle, onPress, addition
             name={optionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
             size={23}
             color={optionIsSelected ? colors.secondary : colors.inputGrey}
-            // style={{marginLeft: 10}}
         />
         <Text style={editionStyles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
     </TouchableOpacity>
