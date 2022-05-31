@@ -52,6 +52,7 @@ export class ReportViewScreen extends React.Component {
             contactInfoModalVisible: false,
             isMyReport: false,
             isInEditMode: false,
+            fosterHistory: []
         };
     }
 
@@ -110,33 +111,37 @@ export class ReportViewScreen extends React.Component {
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            this.getReportInfo(sessionToken);
-            this.getContactInfo(sessionToken);
+            this.fetchReportInfo(sessionToken);
+            this.fetchContactInfo(sessionToken);
         });
         getSecureStoreValueFor("userId").then(userId => this.setState({ isMyReport: userId === this.props.route.params.noticeUserId}));
     }
 
-    getReportInfo(sessionToken) {
+    fetchReportInfo(sessionToken) {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.props.route.params.noticeId,
             {
                 'Authorization': 'Basic ' + sessionToken
             }
         ).then(notice => {
+            let datetime = new Date(notice.eventTimestamp)
             this.setState({
                 reportType: notice.noticeType,
                 eventDescription: notice.description,
+                date: datetime,
+                hour: datetime,
                 province: notice.locality,
                 city: notice.neighbourhood,
                 location: notice.street,
             });
-            this.getPetInfo(notice, sessionToken);
+            this.fetchPetInfo(notice, sessionToken);
+            this.fetchFosteringInfo(notice.pet.id, sessionToken);
         }).catch(err => {
             console.log(err);
             alert(err);
         });
     }
 
-    getPetInfo(notice, sessionToken) {
+    fetchPetInfo(notice, sessionToken) {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + notice.pet.id,
             {
                 'Authorization': 'Basic ' + sessionToken
@@ -160,7 +165,24 @@ export class ReportViewScreen extends React.Component {
         });
     }
 
-    getContactInfo(sessionToken) {
+    fetchFosteringInfo(petId, sessionToken) {
+        getJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory',
+            {
+                'Authorization': 'Basic ' + sessionToken
+            }
+        ).then(history => {
+            console.log(history)
+            this.setState({
+                fosterHistory: history
+            });
+
+        }).catch(err => {
+            console.log(err);
+            alert(err);
+        });
+    }
+
+    fetchContactInfo(sessionToken) {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId,
             {
                 'Authorization': 'Basic ' + sessionToken
