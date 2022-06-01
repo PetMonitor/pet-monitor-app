@@ -50,6 +50,46 @@ export class ViewUserDetailsScreen extends Component {
         });
     };
 
+    /*fetchUserReportsDetails = () => {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getSecureStoreValueFor("userId").then(userId => {
+                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
+                {
+                    'Authorization': 'Basic ' + sessionToken 
+                }).then(response => {
+                    response.map(async r => {
+
+                        const report = { 
+                            key: r.noticeId,
+                            id: r.noticeId, 
+                            photoId: this.state.photoByPet[r.pet.id], 
+                            reportType: r.noticeType 
+                        };
+
+                        // check if reports with this id in state
+                        const reportsWithId = this.state.reports.filter(report => report == r.noticeId)
+
+                        console.log(`REPORTS WITH ID ${r.noticeId} ARE ${JSON.stringify(reportsWithId)}`)
+
+                        if (reportsWithId.length == 0) {
+                            // add report to state
+                            this.setState({ reports : [...this.state.reports, report] });
+                        } else {
+                            // replace report in state
+                            const updatedReportsList = this.state.reports.filter(report => report != r.noticeId)
+                            console.log(`REPORTS WITHOUT ID ${r.noticeId} ARE ${JSON.stringify(updatedReportsList)}`)
+                            updatedReportsList.push(report)
+                            this.setState({ reports : updatedReportsList });
+                        }
+                    })
+                }).catch(err => {
+                    console.log(err);
+                    alert(err)
+                });
+            });
+        });
+    };*/
+
     fetchUserReportsDetails = (sessionToken, userId) => {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
         {
@@ -88,7 +128,7 @@ export class ViewUserDetailsScreen extends Component {
         });
     }
 
-    componentDidMount() {
+    fetchUserDetails = () => {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getSecureStoreValueFor("userId").then(userId => {
                 getJsonData(global.noticeServiceBaseUrl + '/users/' + userId, 
@@ -103,7 +143,6 @@ export class ViewUserDetailsScreen extends Component {
                         global.noticeServiceBaseUrl + '/photos/profile/' + this.state.userData.userId, 
                         FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE
                     ).then(response => {
-
                         if (response.status == 200) {
                             this.setState({ userProfilePictureUrl : FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE });
                             console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
@@ -123,7 +162,15 @@ export class ViewUserDetailsScreen extends Component {
         getSecureStoreValueFor('facebookToken').then(facebookToken => {
             this.setState({ facebookLogin : facebookToken != null })
         });
-        
+    }
+
+    componentDidMount() {
+        this.fetchUserDetails();
+    }
+
+    onReportCreated = (createdNoticeId) => {
+        console.log(`NEW REPORT created ${createdNoticeId}. Updating view...`);
+        // this.fetchUserReportsDetails();
     }
 
     render() {
@@ -194,8 +241,8 @@ export class ViewUserDetailsScreen extends Component {
                         </TouchableOpacity>
                     </View>
                     { this.state.petView 
-                        ? <UserPetGridView userId={this.state.userData.userId} pets={this.state.pets} navigation={navigation}/> 
-                        : <UserReportGridView userId={this.state.userData.userId} reports={this.state.reports} navigation={navigation}/> }
+                        ? <UserPetGridView userId={this.state.userData.userId} pets={this.state.pets} navigation={navigation} /> 
+                        : <UserReportGridView userId={this.state.userData.userId} reports={this.state.reports} onReportCreated={this.onReportCreated} navigation={navigation}/> }
                                 
                 </View>
             </SafeAreaView>

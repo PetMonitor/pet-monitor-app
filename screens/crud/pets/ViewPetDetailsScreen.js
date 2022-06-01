@@ -10,7 +10,6 @@ import { mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapPetType
 
 import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
-import { AppButton } from "../../../utils/buttons.js";
 
 const { height, width } = Dimensions.get("screen")
 
@@ -19,6 +18,7 @@ export class ViewPetDetailsScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            petId: this.props.route.params.petId,
             name: '',
             petPhotos: [],
             sex: '',
@@ -29,7 +29,6 @@ export class ViewPetDetailsScreen extends React.Component {
             lifeStage: '',
             petDescription: '',
             isMyPet: false,
-            isInEditMode: false,
         };
     }
 
@@ -39,35 +38,18 @@ export class ViewPetDetailsScreen extends React.Component {
         )
     }
 
-    showTextInput = (onChangeText, value = '', isMultiline = false ) => (
-        <TextInput
-            onChangeText = {onChangeText}
-            autoCorrect = { false }
-            style = {[styles.editableTextInput, isMultiline ? {paddingBottom: 90, paddingTop: 10} : {}]}
-            maxLength = { isMultiline ? 100 : 50 }
-            multiline = {isMultiline}
-            placeholder = {isMultiline ? "Ingrese descripción" : ""}
-            value = { value ? value : "" }
-        />
-    )
+    onPetDataUpdated = (updatedPetData) => {
+        this.setState({
+            ...updatedPetData
+        });
+    };
 
-    changeToEditMode = () => {
-        // TODO: edit event/pet page or history depending on the index
-        this.setState({ isInEditMode: true });
-    }
-
-    saveChanges = () => {
-        // TODO: add logic
-        this.setState({ isInEditMode: false });
-    }
-
-    discardChanges = () => {
-        // TODO: add logic
-        this.setState({ isInEditMode: false });
-    }
-
-    deletePet = () => {
-        // TODO: add logic
+    editPetsDetails = () => {
+        this.props.navigation.push('EditPetDetails', { 
+            petData: this.state, 
+            userId: this.props.route.params.userId, 
+            onUpdate: this.onPetDataUpdated
+        })
     }
 
     componentDidMount() {
@@ -124,7 +106,7 @@ export class ViewPetDetailsScreen extends React.Component {
                     <View style={{...commonStyles.alignedContent, paddingTop: 20 }}>
                             <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.clearBlack}}>Información</Text>
                             {this.state.isMyPet ? 
-                                    <TouchableOpacity onPress={() => this.changeToEditMode()}>
+                                    <TouchableOpacity onPress={() => this.editPetsDetails()}>
                                         <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
                                     </TouchableOpacity> : <></>}
                         </View>
@@ -154,24 +136,7 @@ export class ViewPetDetailsScreen extends React.Component {
                         <Text style={styles.optionTitle}>Descripción</Text>
                         <Text style={styles.textInput}>{this.state.petDescription}</Text>
 
-                        {this.state.isInEditMode && 
-                                <>
-                                <AppButton
-                                    buttonText={"Guardar cambios"} 
-                                    onPress={this.saveChanges} 
-                                    additionalButtonStyles={[styles.button, {backgroundColor: colors.primary, marginTop: 40}]} />
-                                <AppButton
-                                    buttonText={"Descartar cambios"} 
-                                    onPress={this.discardChanges} 
-                                    additionalButtonStyles={[styles.button, {backgroundColor: colors.grey, marginBottom: 60}]} />
-                                </> }
-
-                        {this.state.isMyPet && !this.state.isInEditMode &&
-                            <AppButton
-                                buttonText={"Eliminar mascota"} 
-                                onPress={this.deletePet} 
-                                additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 15, marginTop: 40, marginBottom: 60}]} /> }
-                    </ScrollView>
+                        </ScrollView>
                 </View>
             </SafeAreaView>
         )

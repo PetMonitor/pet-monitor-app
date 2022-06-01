@@ -95,6 +95,12 @@ export class CreateReportScreen extends React.Component {
     }
 
     createReport = () => {
+
+        if (this.state.eventMarker == null) {
+            alert("Debes marcar una ubicación aproximada en el mapa!")
+            return;
+        }
+
         this.setState({ isLoading : true });
         getSecureStoreValueFor("userId").then(userId => {
             let hour = this.state.hour
@@ -115,7 +121,6 @@ export class CreateReportScreen extends React.Component {
                 this.setState({ createdNoticeId: response.noticeId })
                 this.setModalVisible(true);
                 // go back to previous page
-                // this.props.navigation.goBack();
             }).catch(err => {
                 alert(err)
             }).finally(() => this.setState({ isLoading : false }));
@@ -123,10 +128,14 @@ export class CreateReportScreen extends React.Component {
     }
 
     navigateToReport = () => {
-        this.props.navigation.push('ReportView', { noticeUserId: this.state.userId, noticeId: this.state.createdNoticeId, goToUserProfile: true }); 
+        //this.props.navigation.push('ReportView', { noticeUserId: this.state.userId, noticeId: this.state.createdNoticeId, isMyReport: true, goToUserProfile: true }); 
+        this.props.route.params.onReportCreated(this.state.createdNoticeId)
+        this.props.navigation.navigate('ViewUserDetails')
     }
 
+
     componentDidMount() {
+        console.log("Running ComponentDidMount in CreateReportScreen")
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
