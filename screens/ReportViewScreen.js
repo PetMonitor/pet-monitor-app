@@ -1,20 +1,18 @@
 import React from 'react';
 
-import { getJsonData, deleteJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
+import { getJsonData, deleteJsonData } from '../utils/requests.js';
+import { OptionTitle } from '../utils/editionHelper.js';
+import { HeaderWithBackArrow } from '../utils/headers';
+import { PetImagesHeader } from '../utils/images.js';
+import { AppButton } from '../utils/buttons.js';
 
 import { Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 
-import { getJsonData } from '../utils/requests.js';
-import { getSecureStoreValueFor } from '../utils/store';
-import { OptionTitle } from '../utils/editionHelper.js';
 import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
-import { HeaderWithBackArrow } from '../utils/headers';
-import { PetImagesHeader } from '../utils/images.js';
-import { AppButton } from '../utils/buttons.js';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
