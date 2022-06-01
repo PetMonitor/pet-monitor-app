@@ -88,7 +88,6 @@ export class ViewPetDetailsScreen extends React.Component {
 
         return (
             <SafeAreaView style={commonStyles.container}>
-                <HeaderWithBackArrow headerText={"Mascota"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} />
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
                         data={this.state.petPhotos} 

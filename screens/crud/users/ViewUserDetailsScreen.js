@@ -27,7 +27,8 @@ export class ViewUserDetailsScreen extends Component {
             pets: [],
             reports: [],
             photoByPet: {},
-            facebookLogin: false
+            facebookLogin: false,
+            mounted: false
         }
     }
 
@@ -128,7 +129,7 @@ export class ViewUserDetailsScreen extends Component {
         });
     }
 
-    fetchUserDetails = () => {
+    fetchUserData = () => {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getSecureStoreValueFor("userId").then(userId => {
                 getJsonData(global.noticeServiceBaseUrl + '/users/' + userId, 
@@ -148,6 +149,7 @@ export class ViewUserDetailsScreen extends Component {
                             console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
                         }
                     
+                        this.setState({ mounted : true })
                     }).catch(error => {
                         console.log(`No profile picture found ${error}`)
                     })
@@ -165,7 +167,7 @@ export class ViewUserDetailsScreen extends Component {
     }
 
     componentDidMount() {
-        this.fetchUserDetails();
+        this.fetchUserData();
     }
 
     onReportCreated = (createdNoticeId) => {
