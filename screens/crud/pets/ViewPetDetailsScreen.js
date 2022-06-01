@@ -1,13 +1,14 @@
 import React from "react";
 
+import { Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions, SafeAreaView, TouchableOpacity, TextInput } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { getJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import { mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../../../utils/mappers';
-import { TouchableOpacity, Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions } from 'react-native';
-import { PencilSimple } from 'phosphor-react-native';
+import { HeaderWithBackArrow } from '../../../utils/headers';
+import { mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapPetTypeToLabel } from '../../../utils/mappers';
 
+import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
 
 const { height, width } = Dimensions.get("screen")
@@ -27,6 +28,7 @@ export class ViewPetDetailsScreen extends React.Component {
             size: '',
             lifeStage: '',
             petDescription: '',
+            isMyPet: false,
         };
     }
 
@@ -57,7 +59,6 @@ export class ViewPetDetailsScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(responsePet => {
-                console.log(responsePet)
                 this.setState({ 
                     name : responsePet.name,
                     petPhotos: responsePet.photos,
@@ -75,11 +76,19 @@ export class ViewPetDetailsScreen extends React.Component {
                 alert(err)
             });
         });
+        getSecureStoreValueFor("userId").then(userId => this.setState({ isMyPet: userId === this.props.route.params.userId}));
     }
 
     render() {
+        const dividerLine = <View style={{
+            marginTop: 10,
+            borderBottomColor: colors.secondary,
+            borderBottomWidth: 1,
+        }} />;
+
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={commonStyles.container}>
+                <HeaderWithBackArrow headerText={"Mascota"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} />
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
                         data={this.state.petPhotos} 
@@ -93,14 +102,18 @@ export class ViewPetDetailsScreen extends React.Component {
                     </View>    
                 </View>
                 <View style={{flex: 2}}>
-                    <ScrollView style={{flex:1, paddingLeft: 35, paddingRight: 35}}>
-                        <View style={{flexDirection: 'row' }}>
-                            <Text style={[styles.optionTitle, {fontSize: 20, fontWeight: 'bold', paddingTop: 25}]}>Información</Text>
-                            <TouchableOpacity onPress={() => this.editPetsDetails()} style={{paddingLeft:10, paddingRight:10, paddingTop:15}}>
-                                <PencilSimple  color={colors.yellow} size={32} weight={'fill'} />
-                            </TouchableOpacity>
+                    <View style={{paddingHorizontal: 35}}>
+                    <View style={{...commonStyles.alignedContent, paddingTop: 20 }}>
+                            <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.clearBlack}}>Información</Text>
+                            {this.state.isMyPet ? 
+                                    <TouchableOpacity onPress={() => this.editPetsDetails()}>
+                                        <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
+                                    </TouchableOpacity> : <></>}
                         </View>
-                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                        {dividerLine}
+                        </View>
+                    <ScrollView style={{flex:1, paddingHorizontal: 35}}>
+                        <View style={commonStyles.alignedContent}>
                             <View style={{flexDirection: 'column', flex: 0.5}}>
                                 <Text style={styles.optionTitle}>Tipo</Text>
                                 <Text style={styles.textInput}>{mapPetTypeToLabel(this.state.petType)}</Text>
@@ -115,27 +128,22 @@ export class ViewPetDetailsScreen extends React.Component {
                                 <Text style={styles.textInput}>{this.state.breed}</Text>
                                 <Text style={styles.optionTitle}>Color pelaje</Text>
                                 <Text style={styles.textInput}>{this.state.furColor}</Text>
-                                <Text style={styles.optionTitle}>Etapa</Text>
+                                <Text style={styles.optionTitle}>Etapa de la vida</Text>
                                 <Text style={styles.textInput}>{mapPetLifeStageToLabel(this.state.lifeStage)}</Text>
                             </View>
                         </View>
 
                         <Text style={styles.optionTitle}>Descripción</Text>
                         <Text style={styles.textInput}>{this.state.petDescription}</Text>
-                    </ScrollView>
+
+                        </ScrollView>
                 </View>
-            </View>
+            </SafeAreaView>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.white,
-      flexDirection: 'column', // main axis: vertical
-      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
     optionTitle: {
         fontSize: 16, 
         color: colors.clearBlack,
@@ -146,5 +154,23 @@ const styles = StyleSheet.create({
         paddingTop: 10, 
         color: colors.clearBlack, 
         fontSize: 16, 
+    },
+    button: {
+        backgroundColor: colors.secondary,
+        margin: 0,
+        marginTop: 10,
+        alignSelf: 'stretch',
+    },
+    editableTextInput: {
+        borderRadius: 8, 
+        backgroundColor: colors.inputGrey, 
+        padding: 10, 
+        borderWidth: 1, 
+        borderColor: colors.inputGrey, 
+        fontSize: 16, 
+        fontWeight: '500',
+        width: '70%',
+        marginTop: 10, 
+        marginRight: 10
     },
   });

@@ -1,15 +1,18 @@
 import React from 'react';
 
+import { EventRegister } from 'react-native-event-listeners';
+import { Text, TextInput, StyleSheet, ScrollView, View, Image, SafeAreaView } from 'react-native';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+
 import { postJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
+import { CheckBoxItem, getLifeStagePickerItems, getPetTypePickerItems, getSexTypePickerItems, getSizeTypePickerItems, PickerOnValue } from '../../../utils/editionHelper';
 import Loader  from '../../../utils/Loader.js';
-import colors from '../../../config/colors';
+import { HeaderWithBackArrow } from '../../../utils/headers';
 
-import { Picker } from '@react-native-picker/picker';
-import { EventRegister } from 'react-native-event-listeners';
-import { Text, TextInput, TouchableOpacity, StatusBar, StyleSheet, ScrollView, View, Image } from 'react-native';
-import FeatherIcon from 'react-native-vector-icons/Feather';
-import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import commonStyles from '../../../utils/styles';
+import colors from '../../../config/colors';
+import { AppButton } from '../../../utils/buttons.js';
 
 export class CreatePetScreen extends React.Component {
 
@@ -52,7 +55,7 @@ export class CreatePetScreen extends React.Component {
             }
 
             if (this.state.photos.length == 0) {
-                alert('At least one photo is required!');
+                alert('Se requiere al menos una foto de la mascota!');
                 return;
             }
 
@@ -140,30 +143,14 @@ export class CreatePetScreen extends React.Component {
             this.props.navigation.navigate('ImageSelectorScreen');
         };
 
-        const showCheckBoxItem = (optionIsSelected, checkBoxTitle) => (
-            <>
-                <MaterialIcon
-                    name={optionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                    size={25}
-                    color={optionIsSelected ? colors.secondary : colors.inputGrey}
-                    style={{marginLeft: 10}}
-                />
-                <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
-            </>
-        );
-
-        return (
-            <View style={styles.container}> 
-                <View style={{flexDirection: 'row', alignContent: 'center', paddingTop: 70, paddingBottom: 10, backgroundColor: colors.primary}}>
-                    <MaterialIcon
-                        name='arrow-left'
-                        size={30}
-                        color={colors.white}
-                        style={{marginLeft: 10}}
-                        onPress={() => this.props.navigation.goBack()} />
-                    <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 15, color: colors.white}}>Crear mascota</Text>
-                </View>
-
+        return (<>
+            <SafeAreaView
+                edges={["top"]}
+                style={{ flex: 0, backgroundColor: colors.primary }}/>
+            <SafeAreaView
+                edges={["left", "right", "bottom"]}
+                style={commonStyles.container} >
+                <HeaderWithBackArrow headerText={"Crear mascota"} headerTextColor={colors.white} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()} />
             { this.state.isLoading ? 
                 <Loader /> :
                 <ScrollView style={styles.scrollView} >
@@ -177,42 +164,27 @@ export class CreatePetScreen extends React.Component {
                     <View style={{flex:1, flexDirection: 'row'}}>
                         <View style={{flex:1, flexDirection: 'column'}}>
                             <Text style={styles.optionTitle}>Tipo</Text>
-                            <Picker
-                                selectedValue={this.state.petType}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ petType: itemValue })}>
-                                    <Picker.Item label="Gato" value="CAT" />
-                                    <Picker.Item label="Perro" value="DOG" />
-                            </Picker>
+                            <PickerOnValue 
+                                value={this.state.type} 
+                                onValueChange={(itemValue) => this.setState({ type: itemValue })} 
+                                pickerItems={getPetTypePickerItems} />
                             <Text style={styles.optionTitle}>Sexo</Text>
-                            <Picker
-                                selectedValue={this.state.sex}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ sex: itemValue })}>
-                                    <Picker.Item label="Macho" value="MALE" />
-                                    <Picker.Item label="Hembra" value="FEMALE" />
-                            </Picker>
-                            
+                            <PickerOnValue 
+                                value={this.state.sex} 
+                                onValueChange={(itemValue) => this.setState({ sex: itemValue })} 
+                                pickerItems={getSexTypePickerItems} />
                         </View>
                         <View style={{flex:1, flexDirection: 'column'}}>
                             <Text style={styles.optionTitle}>Etapa de la vida</Text>
-                            <Picker
-                                selectedValue={this.state.lifeStage}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ lifeStage: itemValue }) }>
-                                    <Picker.Item label="Cachorro" value="BABY" />
-                                    <Picker.Item label="Adulto" value="ADULT" />
-                                    <Picker.Item label="Mayor" value="SENIOR" />
-                            </Picker>
+                            <PickerOnValue 
+                                value={this.state.lifeStage} 
+                                onValueChange={(itemValue) => this.setState({ lifeStage: itemValue })} 
+                                pickerItems={getLifeStagePickerItems} />
                             <Text style={styles.optionTitle}>Tamaño</Text>
-                            <Picker
-                                selectedValue={this.state.size}
-                                itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ size: itemValue }) }>
-                                    <Picker.Item label="Pequeño" value="SMALL" />
-                                    <Picker.Item label="Mediano" value="MEDIUM" />
-                                    <Picker.Item label="Grande" value="LARGE" />
-                            </Picker>
+                            <PickerOnValue 
+                                value={this.state.size} 
+                                onValueChange={(itemValue) => this.setState({ size: itemValue })} 
+                                pickerItems={getSizeTypePickerItems} />
                         </View>
                     </View>
                     <Text style={styles.optionTitle}>Raza</Text>
@@ -231,10 +203,11 @@ export class CreatePetScreen extends React.Component {
                         maxLength = { 100 } />
 
                     <Text style={styles.optionTitle}>Fotos</Text>
-                    <TouchableOpacity style={[styles.buttonUpload, {flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}]} onPress={handleImagePickerPress} >
-                        <FeatherIcon name={'upload'} size={20} color={colors.white} style={{marginRight: 10}} />
-                        <Text style={styles.buttonFont}>Subir fotos</Text>
-                    </TouchableOpacity>
+                    <AppButton
+                        buttonText={"Subir fotos"} 
+                        onPress={handleImagePickerPress} 
+                        additionalButtonStyles={[styles.buttonUpload, {...commonStyles.alignedContent, justifyContent: 'center'}]} 
+                        additionalElement={<FeatherIcon name={'upload'} size={20} color={colors.white} style={{marginRight: 10}} />} />
 
                     {/* Render uploaded images here */}
                     <View style={{flexDirection:'row', marginTop: 10, marginLeft: 10}}>
@@ -256,62 +229,50 @@ export class CreatePetScreen extends React.Component {
 
                     { (!initialSetup) ? 
                     <>
-                        <TouchableOpacity  style={styles.alignedContent} 
-                            onPress={() => this.setState({ isMyPet: !this.state.isMyPet })}>
-                            {showCheckBoxItem(this.state.isMyPet, "Es mi mascota")}
-                        </TouchableOpacity>
+                        <CheckBoxItem 
+                            optionIsSelected={this.state.isMyPet} 
+                            checkBoxTitle={"Es mi mascota"} 
+                            onPress={() => this.setState({ isMyPet: !this.state.isMyPet })}
+                            additionalStyle={{marginLeft: 10}} />
                         
-                        <TouchableOpacity onPress={createPet} style={[styles.button, {alignSelf: 'center', marginTop: 40, marginBottom: 60}]}>
-                            <Text style={styles.buttonFont}>Guardar mascota</Text>
-                        </TouchableOpacity> 
+                        <AppButton
+                            buttonText={"Guardar mascota"} 
+                            onPress={createPet} 
+                            additionalButtonStyles={[styles.button, {alignSelf: 'center', marginTop: 40, marginBottom: 60}]} />
                     </> :
                     
                     /* Buttons for initial setup where user can
                         create user profile + add pets. 
                     */
                     <>
-                        <TouchableOpacity onPress={handleNextPet} style={styles.button}>
-                            <Text style={styles.buttonFont}>Nueva Mascota</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleFinishInitialSetup} style={[styles.button, {marginBottom: '30%'}]}>
-                            <Text style={styles.buttonFont}>Finalizar</Text>
-                        </TouchableOpacity>
+                        <AppButton
+                            buttonText={"Nueva mascota"} 
+                            onPress={handleNextPet} 
+                            additionalButtonStyles={[styles.button, {alignSelf: 'center', marginTop: 40}]} 
+                            additionalTextStyles={{ paddingLeft: 10 }}
+                            additionalElement={<FeatherIcon name='plus' size={20} color={colors.white} />} />
+                        <AppButton
+                            buttonText={"Finalizar"} 
+                            onPress={handleFinishInitialSetup} 
+                            additionalButtonStyles={[styles.button, {alignSelf: 'center', marginTop: 20, marginBottom: 60, backgroundColor: colors.primary}]} />
                     </>
                     }
                 </ScrollView>
             }
-            </View>
+            </SafeAreaView>
+            </>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
-    },
     scrollView: {
         flex: 1,
         marginHorizontal: 20,
     },
     alignedContent: {
-        alignItems:'center', 
-        flexDirection: 'row', 
+        ...commonStyles.alignedContent,
         marginTop: 10
-    },
-    checkBoxOptionTitle: {
-        marginLeft: 5, 
-        fontSize: 15
-    },
-    sectionTitle: {
-        fontSize: 20, 
-        color: colors.primary,
-        paddingLeft: 10, 
-        paddingTop: 25, 
-        paddingBottom: 5, 
-        fontWeight: 'bold',
     },
     optionTitle: {
         fontSize: 16, 
@@ -338,7 +299,6 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         paddingHorizontal: 15, 
         paddingVertical: 10,
-        borderRadius: 7, 
         alignSelf: 'flex-start'
     },
     button: {
@@ -349,12 +309,6 @@ const styles = StyleSheet.create({
         borderRadius: 7, 
         width: '55%', 
         alignSelf: 'flex-start'
-    },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: '500', 
-        alignSelf: 'center',
-        color: colors.white
     },
     modalView: {
         margin: 20,
@@ -374,5 +328,5 @@ const styles = StyleSheet.create({
     modalText: {
       marginBottom: 15,
       textAlign: "center",
-    }
+    },
 });

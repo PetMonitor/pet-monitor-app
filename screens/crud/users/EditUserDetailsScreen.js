@@ -1,13 +1,18 @@
 import React from "react";
-import colors from '../../../config/colors';
+
+import { Text, TextInput, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { putJsonData } from '../../../utils/requests';
-import { getSecureStoreValueFor } from '../../../utils/store';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import uuid from 'react-native-uuid';
 
-import { Text, TextInput , TouchableOpacity, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
+import { putJsonData } from '../../../utils/requests';
+import { getSecureStoreValueFor } from '../../../utils/store';
+import { HeaderWithBackArrow } from "../../../utils/headers";
+
+import commonStyles from '../../../utils/styles';
+import colors from '../../../config/colors';
+import { AppButton } from "../../../utils/buttons";
 
 export class EditUserDetailsScreen extends React.Component {
 
@@ -70,7 +75,7 @@ export class EditUserDetailsScreen extends React.Component {
             console.log(result);
         
             if (!result.cancelled) {
-              //this.setState({profilePicture: result.base64});
+            //   this.setState({profilePicture: result.base64});
               console.log(result.uri);
             }
         }
@@ -80,8 +85,20 @@ export class EditUserDetailsScreen extends React.Component {
         }
 
 
-        return (
-            <SafeAreaView style={styles.container}>   
+        const dividerLine = <View style={{
+            marginTop: 10,
+            borderBottomColor: colors.inputGrey,
+            borderBottomWidth: 1,
+        }} />;
+        
+        return ( <>
+            <SafeAreaView
+                edges={["top"]}
+                style={{ flex: 0, backgroundColor: colors.primary }}/>
+            <SafeAreaView
+                edges={["left", "right", "bottom"]}
+                style={commonStyles.container} >                
+                <HeaderWithBackArrow headerText={"Editar perfil"} headerTextColor={colors.white} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()}/> 
                 <ScrollView>
                     <View style={styles.topContainer}>
                         {/* TODO: image source should be conditional to profilePicture value, this is just the default in case of null */}
@@ -97,14 +114,7 @@ export class EditUserDetailsScreen extends React.Component {
                                         color={colors.white}/>
                                 </View>
                         </ImageBackground>
-                        <View style={{
-                            marginTop: 20,
-                            marginLeft: 30, 
-                            marginRight: 30,
-                            borderBottomColor: colors.inputGrey,
-                            borderBottomWidth: 1,
-                        }}
-                        />
+                        {dividerLine}
                         <Text style={{color: colors.primary, fontWeight: 'bold', fontSize: 20, marginLeft: 30, marginTop: 10, marginBottom: 10, alignSelf: 'flex-start'}}>Información básica</Text>
                         
                     </View>
@@ -192,26 +202,19 @@ export class EditUserDetailsScreen extends React.Component {
                         </View> : null}
                         
                     </View>
-                    <View style={{flex: 1, alignItems: 'center', marginTop: 30, marginBottom: 40}}>
-                        <TouchableOpacity 
-                            style={[styles.button]}
-                            onPress={handleEditProfile}>
-                            <Text style={[styles.buttonFont, { color: colors.white }]}>Guardar cambios</Text>
-                        </TouchableOpacity>
+                    <View style={{flex: 1, alignItems: 'center', marginTop: 10, marginBottom: 40}}>
+                        <AppButton
+                            buttonText={"Guardar cambios"} 
+                            onPress={handleEditProfile} 
+                            additionalButtonStyles={styles.button} /> 
                     </View>
                 </ScrollView>
             </SafeAreaView>
-        );
+        </>);
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
-    },
     topContainer: {
         flex: 1,
         backgroundColor: colors.white,
@@ -249,23 +252,13 @@ const styles = StyleSheet.create({
         padding: 15,
         flex: 3
     },
-    buttonFont: {
-        fontSize: 16, 
-        fontWeight: "500", 
-        alignSelf: "center",
-    },
     button: {
-        padding: 18,
-        margin: 10,
-        borderRadius: 7,
         backgroundColor: colors.primary,
         width: '55%',
-
         alignItems: 'center'
     },
     alignedContent: {
-        flexDirection: 'row', 
-        alignItems:'center', 
+        ...commonStyles.alignedContent,
         marginTop: 10
     },
 });

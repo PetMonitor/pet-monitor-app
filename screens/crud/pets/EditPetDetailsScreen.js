@@ -5,6 +5,7 @@ import { putJsonData, deleteJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
 import { Image, Text, TextInput, TouchableOpacity, StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { AppButton } from "../../../utils/buttons.js";
 
 import uuid from 'react-native-uuid';
 import colors from '../../../config/colors';
@@ -202,13 +203,16 @@ export class EditPetDetailsScreen extends React.Component {
                         autoCorrect = { false }
                         style = { [styles.textInput, {paddingBottom: 90, paddingTop: 10}] }
                         maxLength = { 100 } />
-                        
-                    <TouchableOpacity onPress={handleEditPetDetails} style={styles.button}>
-                        <Text style={styles.buttonFont}>Guardar Cambios</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleDeletePet} style={[styles.button, { backgroundColor:colors.pink, marginBottom: '30%'}]}>
-                        <Text style={styles.buttonFont}>Eliminar Mascota</Text>
-                    </TouchableOpacity>
+                    
+
+                    <AppButton
+                        buttonText={"Guardar Cambios"} 
+                        onPress={handleEditPetDetails} 
+                        additionalButtonStyles={[styles.button, {backgroundColor: colors.primary, marginTop: 15, marginTop: 40, marginBottom: 60}]} /> 
+                    <AppButton
+                        buttonText={"Eliminar mascota"} 
+                        onPress={handleDeletePet} 
+                        additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 15, marginTop: 40, marginBottom: 60}]} /> 
                 </ScrollView>
             </View>
         )
@@ -273,12 +277,9 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: colors.secondary,
-        marginTop: 15,
-        marginLeft: '6%',
-        padding: 18, 
-        borderRadius: 7, 
-        width: '90%', 
-        alignSelf: 'flex-start'
+        margin: 0,
+        marginTop: 10,
+        alignSelf: 'stretch',
     },
     buttonFont: {
         fontSize: 16, 

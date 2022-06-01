@@ -1,8 +1,12 @@
 import React from 'react';
-import { Text, SafeAreaView, View, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Dog, Cat } from 'phosphor-react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import { Text, SafeAreaView, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+
+import { CheckBoxItem, OptionTitle, DogCatSelector, OptionTextInput } from '../utils/editionHelper'
+import { HeaderWithBackArrow } from '../utils/headers';
+import { AppButton } from '../utils/buttons';
+
+import commonStyles from '../utils/styles';
 import colors from '../config/colors';
 
 /** Implements the screen that sets the filters for the reports that are shown. */
@@ -48,46 +52,6 @@ export class ReportListFilterScreen extends React.Component {
         });
     }
 
-    showFiltersHeader = () => (
-        <>
-            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 40, marginBottom: 20}}>
-                <Icon
-                    name='arrow-left'
-                    size={33}
-                    color={colors.secondary}
-                    style={{marginLeft: 10}}
-                    onPress={() => this.props.navigation.goBack()} />
-                <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Filtros</Text>
-                <TouchableOpacity style={{paddingRight: 20, alignSelf: 'flex-end', position: 'absolute'}} onPress={() => this.cleanFilters()}>
-                    <Text style={{fontSize: 16, fontWeight: '500', color: colors.pink}}>Reestablecer</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
-        </>
-    )
-
-    showCheckBoxItem = (optionIsSelected, checkBoxTitle) => (
-        <>
-            <Icon
-                name={optionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                size={25}
-                color={optionIsSelected ? colors.secondary : colors.inputGrey}
-                style={{marginLeft: 10}}
-            />
-            <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
-        </>
-    )
-
-    showTextInput = (onChangeText, value) => (
-        <TextInput
-            onChangeText = {onChangeText}
-            autoCorrect = { false }
-            style = {styles.textInput}
-            maxLength = { 50 }
-            value = {value}
-        />
-    )
-
     componentDidMount() {
         let filters = this.props.route.params.filters
         if (filters) {
@@ -98,117 +62,83 @@ export class ReportListFilterScreen extends React.Component {
     }
 
     render() {
+        const cleanFilterLabel = <TouchableOpacity style={{ paddingRight: 20, alignSelf: 'flex-end', position: 'absolute' }} onPress={() => this.cleanFilters()}>
+            <Text style={{ fontSize: 16, fontWeight: '500', color: colors.pink }}>Reestablecer</Text>
+        </TouchableOpacity>;
+
         return (
-            <SafeAreaView style={styles.container}>
-                {this.showFiltersHeader()}
-                <ScrollView style={{flex:1, padding: 20}}>
+            <SafeAreaView style={commonStyles.container}>
+                <HeaderWithBackArrow headerText={"Filtros"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} additionalElement={cleanFilterLabel}/>
+                <ScrollView style={{flex:1, padding: 35}}>
                     {/* Report type filter */}
-                    <Text style={[styles.filterTitle, {paddingTop: 10}]}>Tipo de reporte</Text>
+                    <OptionTitle text={"Tipo de reporte"} additionalStyle={styles.filterTitle} />
                     {/* custom checkbox */}
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ lostPetIsSelected: !this.state.lostPetIsSelected })}>
-                        {this.showCheckBoxItem(this.state.lostPetIsSelected, "Mascotas perdidas")}
-                    </TouchableOpacity>
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ petFoundIsSelected: !this.state.petFoundIsSelected })}>
-                        {this.showCheckBoxItem(this.state.petFoundIsSelected, "Mascotas encontradas")}
-                    </TouchableOpacity>
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ petForAdoptionIsSelected: !this.state.petForAdoptionIsSelected })}>
-                        {this.showCheckBoxItem(this.state.petForAdoptionIsSelected, "Mascotas en adopción")}
-                    </TouchableOpacity>    
+                    <ReportTypeCheckboxes 
+                        lostPetIsSelected={this.state.lostPetIsSelected}
+                        petFoundIsSelected={this.state.petFoundIsSelected}
+                        petForAdoptionIsSelected={this.state.petForAdoptionIsSelected}
+                        onLostCheckboxPress={() => this.setState({ lostPetIsSelected: !this.state.lostPetIsSelected })}
+                        onFoundCheckboxPress={() => this.setState({ petFoundIsSelected: !this.state.petFoundIsSelected })}
+                        onAdoptionCheckboxPress={() => this.setState({ petForAdoptionIsSelected: !this.state.petForAdoptionIsSelected })} />
 
                     {/* Pet filter */}
-                    <Text style={styles.filterTitle}>Mascota</Text>
-                    <View style={[styles.alignedContent, {justifyContent:'space-evenly'}]}>
-                        <TouchableOpacity onPress={() => this.setState({ dogIsSelected: !this.state.dogIsSelected })}>
-                            <Dog color={this.state.dogIsSelected ? colors.secondary : colors.inputGrey} weight='regular' size={68} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => this.setState({ catIsSelected: !this.state.catIsSelected })}>
-                            <Cat color={this.state.catIsSelected ? colors.secondary : colors.inputGrey} weight='regular' size={68} />
-                        </TouchableOpacity>
-                    </View>
+                    <OptionTitle text={"Mascota"} additionalStyle={styles.filterTitle} />
+                    <DogCatSelector 
+                        onPressDog={() => this.setState({ dogIsSelected: !this.state.dogIsSelected })} 
+                        onPressCat={() => this.setState({ catIsSelected: !this.state.catIsSelected })}
+                        dogIsSelected={this.state.dogIsSelected} 
+                        catIsSelected={this.state.catIsSelected} />
 
                     {/* Sex filter */}
-                    <Text style={styles.filterTitle}>Sexo</Text>
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ femaleIsSelected: !this.state.femaleIsSelected })}>
-                        {this.showCheckBoxItem(this.state.femaleIsSelected, "Hembra")}
-                    </TouchableOpacity>
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ maleIsSelected: !this.state.maleIsSelected })}>
-                        {this.showCheckBoxItem(this.state.maleIsSelected, "Macho")}
-                    </TouchableOpacity>
+                    <OptionTitle text={"Sexo"} additionalStyle={styles.filterTitle} />
+                    <PetSexCheckboxes 
+                        femaleIsSelected={this.state.femaleIsSelected} 
+                        maleIsSelected={this.state.maleIsSelected} 
+                        onFemaleCheckboxPress={() => this.setState({ femaleIsSelected: !this.state.femaleIsSelected })} 
+                        onMaleCheckboxPress={() => this.setState({ maleIsSelected: !this.state.maleIsSelected })}/>
 
                     {/* Breed filter */}
-                    <Text style={styles.filterTitle}>Raza</Text>
-                    {this.showTextInput(text => { this.setState({ breed: text })}, this.state.breed)}
+                    <OptionTitle text={"Raza"} additionalStyle={styles.filterTitle} />
+                    <OptionTextInput onChangeText={text => this.setState({ breed: text })} value={this.state.breed} />
 
                     {/* Region filter */}
-                    <Text style={styles.filterTitle}>Región</Text>
-                    {this.showTextInput(text => { this.setState({ region: text })}, this.state.region)}
+                    <OptionTitle text={"Región"} additionalStyle={styles.filterTitle} />
+                    <OptionTextInput onChangeText={text => this.setState({ region: text })} value={this.state.region} />
 
-                    <TouchableOpacity style={styles.button} onPress={() => this.saveFilters()}>
-                        <Text style={styles.buttonFont}>Aplicar filtros</Text>
-                    </TouchableOpacity>  
+                    <AppButton buttonText={"Aplicar filtros"} onPress={() => this.saveFilters()} additionalButtonStyles={styles.button}/>
                     
                 </ScrollView>
             </SafeAreaView>
         )
+    
     }
+}
+
+const PetSexCheckboxes = ({femaleIsSelected, maleIsSelected, onFemaleCheckboxPress, onMaleCheckboxPress}) => {
+    return (<>
+        <CheckBoxItem optionIsSelected={femaleIsSelected} checkBoxTitle={"Hembra"} onPress={onFemaleCheckboxPress}/>
+        <CheckBoxItem optionIsSelected={maleIsSelected} checkBoxTitle={"Macho"} onPress={onMaleCheckboxPress}/>
+    </>);
+}
+
+const ReportTypeCheckboxes = ({lostPetIsSelected, petFoundIsSelected, petForAdoptionIsSelected, onLostCheckboxPress, onFoundCheckboxPress, onAdoptionCheckboxPress}) => {
+    return (<>
+        <CheckBoxItem optionIsSelected={lostPetIsSelected} checkBoxTitle={"Mascotas perdidas"} onPress={onLostCheckboxPress}/>
+        <CheckBoxItem optionIsSelected={petFoundIsSelected} checkBoxTitle={"Mascotas encontradas"} onPress={onFoundCheckboxPress}/>
+        <CheckBoxItem optionIsSelected={petForAdoptionIsSelected} checkBoxTitle={"Mascotas en adopción"} onPress={onAdoptionCheckboxPress}/>
+    </>);
 }
 
 const styles = StyleSheet.create({
     button: {
-      backgroundColor: colors.secondary,
-      marginTop: 60,
-      marginBottom: 90,
-      padding: 18, 
-      borderRadius: 7, 
-      left: "15%", 
+      marginTop: 50,
+      marginBottom: 80,
       width: "70%", 
-      alignSelf: 'flex-start'
-    },
-    buttonFont: {
-      fontSize: 16, 
-      fontWeight: '500', 
-      alignSelf: 'center',
-      color: colors.white
-    },
-    container: {
-      flex: 1,
-      backgroundColor: colors.white,
-      flexDirection: 'column', // main axis: vertical
-      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
-    alignedContent: {
-        alignItems:'center', 
-        flexDirection: 'row', 
-        marginTop: 10
+      alignSelf: 'center'
     },
     filterTitle: {
-        fontSize: 16, 
-        color: colors.clearBlack, 
-        paddingLeft: 20, 
         paddingTop: 25, 
-        paddingBottom: 5, 
-        fontWeight: '500'
+        paddingBottom: 5,
     },
-    checkBoxOptionTitle: {
-        marginLeft: 5, 
-        fontSize: 15
-    },
-    textInput: {
-      borderRadius: 8, 
-      backgroundColor: colors.inputGrey, 
-      padding: 15, 
-      borderWidth: 1, 
-      borderColor: colors.inputGrey, 
-      fontSize: 16, 
-      fontWeight: '500',
-      marginLeft: 10, 
-      marginTop: 10, 
-      marginRight: 10
-    },
-  });
+});
 
