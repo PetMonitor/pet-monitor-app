@@ -1,56 +1,49 @@
 import React from 'react';
-import { Text, View, Modal, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native';
 
-import { getJsonData, postJsonData, getLocationFromCoordinates } from '../../../utils/requests.js';
+import Loader  from '../../../utils/Loader.js';
+import { Text, View, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native';
+
+import Icon from 'react-native-vector-icons/Feather';
+
+import { getJsonData, putJsonData, getLocationFromCoordinates } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
 import colors from '../../../config/colors';
 
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Icon from 'react-native-vector-icons/Feather';
 import * as Location from 'expo-location';
 
-/** Implements the report creation screen. */
-export class CreateReportScreen extends React.Component {
+import uuid from 'react-native-uuid';
+var HttpStatus = require('http-status-codes');
+
+/** Implements the report edit screen. */
+export class EditReportScreen extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            reportType: 'LOST',
-            country: '',
-            province: '',
-            city: '',
-            location: '',
-            date: new Date(),
-            hour: new Date(),
-            description: '',
+            petId: this.props.route.params.reportState.petId,
+            reportType: this.props.route.params.reportState.reportType,
+            date: new Date(this.props.route.params.reportState.date),
+            hour: new Date(this.props.route.params.reportState.hour),
+            description: this.props.route.params.reportState.eventDescription,
+            isMyReport: this.props.route.params.reportState.isMyReport,
+            noticeId: this.props.route.params.reportState.noticeId,
+            city: this.props.route.params.reportState.city,
+            province: this.props.route.params.reportState.province,
+            location: this.props.route.params.reportState.location,
+            country: this.props.route.params.reportState.country,
+            userId: this.props.route.params.reportState.userId,
+            eventMarker: { 
+                latitude: this.props.route.params.reportState.latitude,  
+                longitude: this.props.route.params.reportState.longitude, 
+            }, 
             userPets: [],
-            selectedPetIdx: null,
-            operationResultModalVisible: false,
-            petId: '',
-            userId: '',
-            isLoading: false,
-            createdNoticeId: '',
-            userLocation: null,
-            eventMarker: null
+            isLoading: false
         };
-    }
 
-    setModalVisible = (visible) => {
-        this.setState({ operationResultModalVisible: visible });
     }
-
-    showTextInput = (onChangeText, value = '', isMultiline = false ) => (
-        <TextInput
-            onChangeText = { onChangeText }
-            autoCorrect = { false }
-            style = {[styles.textInput, isMultiline ? {paddingBottom: 90, paddingTop: 10} : {}]}
-            maxLength = { isMultiline ? 300 : 50 }
-            multiline = {isMultiline}
-            placeholder = {isMultiline ? "Ingrese descripción" : ""}
-        />
-    )
 
     setSelectedPhoto = (petId) => {
         let selectedPet = petId
@@ -103,48 +96,65 @@ export class CreateReportScreen extends React.Component {
         this.props.navigation.navigate('CreatePet', { initialSetup: false }); 
     }
 
-    createReport = () => {
+    navigateToReport = () => {
+        this.props.navigation.push('ReportView', { noticeUserId: this.state.userId, noticeId: this.state.createdNoticeId, isMyReport: true, goToUserProfile: true }); 
+    }
 
-        if (this.state.eventMarker == null) {
-            alert("Debes marcar una ubicación aproximada en el mapa!")
-            return;
+
+    handleEditReportDetails = () => {
+        let hour = this.state.hour
+        let timestamp = new Date(this.state.date)
+        timestamp.setHours(hour.getHours(), hour.getMinutes())
+
+        let editedReport = Object.assign({}, { 
+            _ref: uuid.v4(),
+            petId: this.state.petId,
+            noticeType: this.state.reportType,
+            street: this.state.location,
+            neighbourhood: this.state.city,
+            locality: this.state.province,
+            country: this.state.country,
+            description: this.state.description,
+            eventTimestamp: timestamp.toISOString(),
+        })
+
+        if (this.state.eventMarker) {
+            editedReport = {
+                ...editedReport,
+                eventLocation: { lat: this.state.eventMarker.latitude, long: this.state.eventMarker.longitude},
+            }
         }
 
-        this.setState({ isLoading : true });
-        getSecureStoreValueFor("userId").then(userId => {
-            let hour = this.state.hour
-            let timestamp = new Date(this.state.date)
-            timestamp.setHours(hour.getHours(), hour.getMinutes())
+        //console.log(`EDIT REPORT ${JSON.stringify(editedReport)}`)
 
-            postJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', {
-                noticeType: this.state.reportType,
-                description: this.state.description,
-                petId: this.state.petId,
-                eventLocation: { lat: this.state.eventMarker.latitude, long: this.state.eventMarker.longitude},
-                street: this.state.location,
-                neighbourhood: this.state.city,
-                locality: this.state.province,
-                country: this.state.country,
-                eventTimestamp: timestamp.toISOString(),
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            putJsonData(global.noticeServiceBaseUrl + '/users/' + this.state.userId + '/notices/' + this.state.noticeId, 
+            editedReport,
+            {
+                'Authorization': 'Basic ' + sessionToken 
             }).then(response => {
-                this.setState({ createdNoticeId: response.noticeId })
-                this.setModalVisible(true);
-                // go back to previous page
+                console.log(response);
+                this.props.navigation.pop();
+
+                if (this.props.route.params.reportState.petId == this.state.petId) {
+                    console.log(`PET WAS NOT UPDATED FOR THIS NOTICE`)
+                    return this.props.route.params.onUpdate({
+                        ...this.state,
+                        eventDescription: this.state.description
+                    });
+                }
+
+                this.props.route.params.onUpdate();
             }).catch(err => {
-                alert(err)
-            }).finally(() => this.setState({ isLoading : false }));
-        })
+                console.error(err);
+                alert(err);
+                this.props.navigation.goBack();
+            });
+        });
     }
-
-    navigateToReport = () => {
-        //this.props.navigation.push('ReportView', { noticeUserId: this.state.userId, noticeId: this.state.createdNoticeId, isMyReport: true, goToUserProfile: true }); 
-        this.props.route.params.onReportCreated(this.state.createdNoticeId)
-        this.props.navigation.navigate('ViewUserDetails')
-    }
-
 
     componentDidMount() {
-        console.log("Running ComponentDidMount in CreateReportScreen")
+        console.log("Running ComponentDidMount in EditReportScreen")
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
@@ -180,31 +190,6 @@ export class CreateReportScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}> 
-            <View>
-                {/* We can use the modal only to notify an error, and redirect automatically when post succeeds */}
-                <Modal 
-                    animationType="slide"
-                    transparent={true}
-                    visible={this.state.operationResultModalVisible}
-                    onRequestClose={() => {
-                        Alert.alert("Modal has been closed.");
-                        this.setModalVisible(!modalVisible);
-                    }}>
-                    <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
-                        <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Reporte creado!</Text>
-                        <TouchableOpacity
-                            style={[styles.button, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
-                            onPress={() => {
-                                this.setModalVisible(!this.state.operationResultModalVisible);
-                                this.navigateToReport();
-                            }}>
-                            <Text>Ok</Text>
-                        </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>  
-                </View>
                 <ScrollView style={{flex:1, padding: 20}}>
                     {/* Report type picker */}
                     <Text style={[styles.sectionTitle, {paddingTop: 10}]}>Tipo de reporte</Text>
@@ -226,10 +211,10 @@ export class CreateReportScreen extends React.Component {
                         <MapView style={{height: 300, margin: 10}}
                             // provider={PROVIDER_GOOGLE}
                             region={{
-                            latitude: this.state.eventMarker ? this.state.eventMarker.latitude : this.state.userLocation.coords.latitude,
-                            longitude: this.state.eventMarker ? this.state.eventMarker.longitude : this.state.userLocation.coords.longitude,
-                            latitudeDelta: 0.0022,
-                            longitudeDelta: 0.0121,
+                                latitude: this.state.eventMarker.latitude,
+                                longitude: this.state.eventMarker.longitude,
+                                latitudeDelta: 0.0022,
+                                longitudeDelta: 0.0121,
                             }}
                             showsUserLocation={true}
                             onPress={(e) => {
@@ -242,13 +227,32 @@ export class CreateReportScreen extends React.Component {
                                 <Marker coordinate={this.state.eventMarker} image={require('../../../assets/eventMarker.png')} />}
                         </MapView></>}
                     <Text style={[styles.optionTitle, {paddingTop: 10}]}>Provincia</Text>
-                    {this.showTextInput(text => { this.setState({ province: text })}, this.state.province)}
+                    <TextInput 
+                        value={this.state.province}
+                        onChangeText = { province => { this.setState({ province: province }) }}
+                        autoCapitalize = 'none'
+                        autoCorrect = { false }
+                        style = { styles.textInput }
+                        maxLength = { 100 } />
 
                     <Text style={styles.optionTitle}>Ciudad</Text>
-                    {this.showTextInput(text => { this.setState({ city: text })}, this.state.city)}
+                    <TextInput 
+                        value={this.state.city}
+                        onChangeText = { city => { this.setState({ city: city }) }}
+                        autoCapitalize = 'none'
+                        autoCorrect = { false }
+                        style = { styles.textInput }
+                        maxLength = { 100 } />
+
 
                     <Text style={styles.optionTitle}>Ubicación aproximada</Text>
-                    {this.showTextInput(text => { this.setState({ location: text })}, this.state.location)}
+                    <TextInput 
+                        value={this.state.location}
+                        onChangeText = { location => { this.setState({ location: location }) }}
+                        autoCapitalize = 'none'
+                        autoCorrect = { false }
+                        style = { styles.textInput }
+                        maxLength = { 100 } />
 
                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
                         <View style={{flexDirection: 'column', flex: 0.5}}>
@@ -280,7 +284,15 @@ export class CreateReportScreen extends React.Component {
                     </View>
 
                     <Text style={styles.optionTitle}>Descripción del evento</Text>
-                    {this.showTextInput(text => { this.setState({ description: text })}, "", true)}
+                    <TextInput
+                        value={this.state.description}
+                        onChangeText = { eventDescription => this.setState({ description: eventDescription }) }
+                        autoCorrect = { false }
+                        style = {[styles.textInput, {paddingBottom: 90, paddingTop: 10}]}
+                        maxLength = { 300 }
+                        multiline = { true }
+                        placeholder = { "Ingrese descripción" }
+                    />
 
                     {/* Pet section */}
                     <Text style={[styles.sectionTitle]}>Mascota</Text>
@@ -295,21 +307,20 @@ export class CreateReportScreen extends React.Component {
                             renderItem={this.renderPet}
                             style={{paddingLeft: 5, marginRight: 10}}
                         /></> : <></>}
-                    <TouchableOpacity style={styles.button} onPress={() => this.navigateToCreatePet()}>
+                    <TouchableOpacity style={[styles.button, {marginBottom: 30}]} onPress={() => this.navigateToCreatePet()}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <Icon name='plus' size={20} color={colors.white} />
                             <Text style={[styles.buttonFont, {paddingLeft: 10}]}>Mascota nueva</Text>
                         </View>
                     </TouchableOpacity> 
-                    <TouchableOpacity style={[styles.button, {alignSelf: 'center', backgroundColor: colors.primary, marginTop: 40, marginBottom: 60}]} onPress={() => this.createReport()}>
-                        <Text style={styles.buttonFont}>Crear reporte</Text>
-                    </TouchableOpacity>       
+                    <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', width: '92%', backgroundColor: colors.primary,marginLeft: 10, marginTop: 10, marginBottom: 50}]} onPress={() => this.handleEditReportDetails()}>
+                        <Text style={styles.buttonFont}>Guardar Cambios</Text>
+                    </TouchableOpacity>  
                 </ScrollView>
                 {this.state.isLoading ? 
-                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
-                        <ActivityIndicator size="large" color={colors.clearBlack}/>
-                    </View>
-                : <></>}
+                    <Loader /> 
+                    : <></>
+                }
             </View>
         )
     }

@@ -19,10 +19,12 @@ import { FosteringVolunteerProfileScreen } from './screens/FosteringVolunteerPro
 import { FosteringVolunteerProfileSettingsScreen } from './screens/FosteringVolunteerProfileSettingsScreen';
 import { FaceRecognitionResultsScreen } from './screens/FaceRecognitionResultsScreen';
 import { ViewPetDetailsScreen } from './screens/crud/pets/ViewPetDetailsScreen.js';
+import { EditReportScreen } from './screens/crud/reports/EditReportScreen';
 
 import { LogBox } from 'react-native';
 
 import colors from './config/colors';
+import { EditPetDetailsScreen } from './screens/crud/pets/EditPetDetailsScreen.js';
 
 LogBox.ignoreAllLogs(true);
 
@@ -40,12 +42,14 @@ export default class App extends React.Component {
               <Stack.Screen name="ChangeUserPasswordScreen" component={ChangePasswordScreen} options={{title: '', headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{title: '', headerStyle: {backgroundColor: colors.primary}}} />
               <Stack.Screen name="CreatePet" component={CreatePetScreen} options={{title: '', headerShown: false }} initialParams={{ userInfo:{}, initialSetup:false, initPetType:'DOG'}} />
-              <Stack.Screen name="ViewPet" component={ViewPetDetailsScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="EditPetDetails" component={EditPetDetailsScreen} options={{title: 'Editar Información', headerShown: true, headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}}/>
+              <Stack.Screen name="ViewPet" component={ViewPetDetailsScreen} options={{title: 'Mascota', headerShown: true, headerBackTitle: 'Atrás', headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}} />
               <Stack.Screen name="ImageSelectorScreen" component={ImageSelectorScreen} options={{ headerShown: false}} />
               <Stack.Screen name="FosteringVolunteerProfile" component={FosteringVolunteerProfileScreen} options={{headerShown: false}} />
               <Stack.Screen name="FosteringVolunteerProfileSettings" component={FosteringVolunteerProfileSettingsScreen} options={{headerShown: false}} />
               <Stack.Screen name="ReportListFilter" component={ReportListFilterScreen} options={{headerShown: false}} />
-              <Stack.Screen name="ReportView" component={ReportViewScreen} options={{headerShown: false}} />
+              <Stack.Screen name="ReportView" component={ReportViewScreen} options={{title: 'Reporte', headerShown: true, headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}} />
+              <Stack.Screen name="EditReportScreen" component={EditReportScreen} options={{title: 'Editar Reporte', headerShown: true, headerBackTitle: 'Atrás' , headerTintColor: colors.white, headerStyle: {backgroundColor: colors.primary}}} />
               <Stack.Screen name="FaceRecognitionResults" component={FaceRecognitionResultsScreen} options={{headerShown: false}} />
             </Stack.Navigator>
           </NavigationContainer>;

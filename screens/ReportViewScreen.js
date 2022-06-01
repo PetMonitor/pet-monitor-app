@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
-import { getJsonData } from '../utils/requests.js';
+import { Text, SafeAreaView, View, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal, Alert } from 'react-native';
+import { getJsonData, deleteJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
@@ -9,6 +9,7 @@ import SegmentedControlTab from "react-native-segmented-control-tab";
 import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../utils/mappers';
 
 import colors from '../config/colors';
+var HttpStatus = require('http-status-codes');
 
 const { height, width } = Dimensions.get("screen")
 
@@ -21,6 +22,9 @@ export class ReportViewScreen extends React.Component {
             // TODO: change this for request data
             reportType: '',
             name: '',
+            petId: '',
+            latitude: '',
+            longitude: '',
             province: '',
             city: '',
             location: '',
@@ -37,7 +41,9 @@ export class ReportViewScreen extends React.Component {
             petDescription: '',
             contactInfo: {},
             selectedIndex: 0,
-            contactInfoModalVisible: false
+            contactInfoModalVisible: false,
+            isMyReport: this.props.route.params.isMyReport,
+            noticeId: this.props.route.params.noticeId
         };
     }
 
@@ -62,15 +68,54 @@ export class ReportViewScreen extends React.Component {
     }
 
     resolveReport = () => {
-        // TODO
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            deleteJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.state.noticeId, 
+            {},
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }).then(response => {
+
+                if (response.status != HttpStatus.StatusCodes.OK) {
+                    console.log(`Delete pet endpoint returned error ${response}`)
+                    alert('Error occured attempting to delete pet!')
+                }
+                
+                this.props.navigation.navigate('ViewUserDetails');
+            }).catch(err => {
+                console.log(err);
+                alert(err)
+                this.props.navigation.goBack();
+            });
+        })
     }
+
+    confirmResolveReport = () =>
+        Alert.alert(
+        "Atención!",
+        "Si presionás OK este reporte será eliminado, y no aparecerá en ninguna búsqueda!",
+        [
+            {
+                text: "Cancelar",
+                onPress: () => console.log("Cancel delete report pressed"),
+                style: "cancel"
+            },
+            { 
+                text: "OK", 
+                onPress: () => this.resolveReport()
+            }
+        ]
+    );
 
     suspendReport = () => {
         // TODO: suspend or remove?
     }
 
-    changeToEditMode = () => {
-        // TODO: edit event/pet page or history depending on the index
+    onReportDataUpdated = () => {
+        this.getNoticeData();
+    }
+
+    goToEdit = () => {
+        this.props.navigation.push('EditReportScreen', { reportState: this.state, onUpdate: this.onReportDataUpdated })
     }
 
     navigateToReports = () => {
@@ -83,22 +128,28 @@ export class ReportViewScreen extends React.Component {
         }
     }
 
-    showHeader = () => (
-        <>
-            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 40, marginBottom: 20}}>
-                <MaterialIcon
-                    name='arrow-left'
-                    size={33}
-                    color={colors.secondary}
-                    style={{marginLeft: 10}}
-                    onPress={() => this.navigateToReports()} />
-                <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Reporte</Text>
-            </View>
-            <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
-        </>
-    )
+    getUserContactInfo = () => {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId, 
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }
+            ).then(response => {
+                this.setState({ 
+                    contactInfo: {
+                        name: response.name,
+                        email: response.email,
+                        phoneNumber: response.phoneNumber,
+                    }
+                });
+            }).catch(err => {
+                console.log(err);
+                alert(err)
+            }).finally(() => this.setState({ isLoading : false }));
+        });
+    }
 
-    componentDidMount() {
+    getNoticeData = () => {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.props.route.params.noticeId, 
             {
@@ -111,6 +162,8 @@ export class ReportViewScreen extends React.Component {
                     province: response.locality,
                     city: response.neighbourhood,
                     location: response.street,
+                    latitude: response.eventLocation.lat,
+                    longitude:  response.eventLocation.long,
                 });
                 getSecureStoreValueFor('sessionToken').then((sessionToken) => {
                     getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + response.pet.id, 
@@ -120,6 +173,7 @@ export class ReportViewScreen extends React.Component {
                     ).then(responsePet => {
                         this.setState({ 
                             name : responsePet.name,
+                            petId: response.pet.id,
                             petPhotos: responsePet.photos,
                             sex: responsePet.sex,
                             petType: responsePet.type,
@@ -140,24 +194,11 @@ export class ReportViewScreen extends React.Component {
                 alert(err)
             }).finally(() => this.setState({ isLoading : false }));
         });
-        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId, 
-            {
-                'Authorization': 'Basic ' + sessionToken 
-            }
-            ).then(response => {
-                this.setState({ 
-                    contactInfo: {
-                        name: response.name,
-                        email: response.email,
-                        phoneNumber: response.phoneNumber,
-                    }
-                });
-            }).catch(err => {
-                console.log(err);
-                alert(err)
-            }).finally(() => this.setState({ isLoading : false }));
-        });
+    }
+
+    componentDidMount() {
+        this.getNoticeData()
+        this.getUserContactInfo()
     }
 
     render() {
@@ -194,7 +235,6 @@ export class ReportViewScreen extends React.Component {
                     </View>
                 </Modal>  
                 </View>
-                {this.showHeader()}
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
                         data={this.state.petPhotos} 
@@ -211,8 +251,8 @@ export class ReportViewScreen extends React.Component {
                     <View style={{alignItems: 'flex-start'}}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <Text style={{fontSize: 24, fontWeight: 'bold', paddingLeft: 35, paddingTop: 20, paddingBottom: 10, color: mapReportTypeToLabelColor(this.state.reportType)}}>{mapReportTypeToLabel(this.state.reportType)}</Text>
-                            {this.props.isMyReport ? 
-                                <TouchableOpacity onPress={() => this.changeToEditMode()}>
+                            {this.state.isMyReport ? 
+                                <TouchableOpacity onPress={() => this.goToEdit()}>
                                     <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{paddingLeft: 10}}/> 
                                 </TouchableOpacity> : <></>}
                         </View> 
@@ -259,7 +299,6 @@ export class ReportViewScreen extends React.Component {
                                         <Text style={styles.textInput}>{mapPetSexToLabel(this.state.sex)}</Text>
                                         <Text style={styles.optionTitle}>Tamaño</Text>
                                         <Text style={styles.textInput}>{mapPetSizeToLabel(this.state.size)}</Text>
-                                
                                     </View>
                                     <View style={{flexDirection: 'column', flex: 0.5}}>
                                         <Text style={styles.optionTitle}>Raza</Text>
@@ -276,9 +315,10 @@ export class ReportViewScreen extends React.Component {
 
                                 {this.state.isMyReport ? 
                                 <>
-                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.resolveReport()}>
+                                <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.primary, marginTop: 40}]} onPress={() => this.confirmResolveReport()}>
                                     <Text style={styles.buttonFont}>Resolver reporte</Text>
                                 </TouchableOpacity>
+                                
                                 <TouchableOpacity style={[styles.button, {alignSelf: 'stretch', backgroundColor: colors.pink, marginTop: 15, marginBottom: 60}]} onPress={() => this.suspendReport()}>
                                     <Text style={styles.buttonFont}>Suspender reporte</Text>
                                 </TouchableOpacity>

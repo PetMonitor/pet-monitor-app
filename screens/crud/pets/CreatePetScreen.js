@@ -178,9 +178,9 @@ export class CreatePetScreen extends React.Component {
                         <View style={{flex:1, flexDirection: 'column'}}>
                             <Text style={styles.optionTitle}>Tipo</Text>
                             <Picker
-                                selectedValue={this.state.type}
+                                selectedValue={this.state.petType}
                                 itemStyle={{height: 88, fontSize: 18}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ type: itemValue })}>
+                                onValueChange={(itemValue, itemIndex) => this.setState({ petType: itemValue })}>
                                     <Picker.Item label="Gato" value="CAT" />
                                     <Picker.Item label="Perro" value="DOG" />
                             </Picker>
@@ -200,7 +200,7 @@ export class CreatePetScreen extends React.Component {
                                 selectedValue={this.state.lifeStage}
                                 itemStyle={{height: 88, fontSize: 18}}
                                 onValueChange={(itemValue, itemIndex) => this.setState({ lifeStage: itemValue }) }>
-                                    <Picker.Item label="Bebé" value="BABY" />
+                                    <Picker.Item label="Cachorro" value="BABY" />
                                     <Picker.Item label="Adulto" value="ADULT" />
                                     <Picker.Item label="Mayor" value="SENIOR" />
                             </Picker>

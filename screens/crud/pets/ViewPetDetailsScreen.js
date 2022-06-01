@@ -1,11 +1,12 @@
 import React from "react";
 
-import { Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { getJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
 import { mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, } from '../../../utils/mappers';
+import { TouchableOpacity, Text, Image, StyleSheet, View, ScrollView, FlatList, Dimensions } from 'react-native';
+import { PencilSimple } from 'phosphor-react-native';
 
 import colors from '../../../config/colors';
 
@@ -16,6 +17,7 @@ export class ViewPetDetailsScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            petId: this.props.route.params.petId,
             name: '',
             petPhotos: [],
             sex: '',
@@ -34,34 +36,19 @@ export class ViewPetDetailsScreen extends React.Component {
         )
     }
 
-    showHeader = () => (
-        <>
-            <View style={{justifyContent: 'center', alignItems: 'flex-start', marginTop: 70, marginBottom: 20}}>
-                <MaterialIcon
-                    name='arrow-left'
-                    size={33}
-                    color={colors.secondary}
-                    style={{marginLeft: 10}}
-                    onPress={() => this.props.navigation.goBack()} />
-                <Text style={{fontSize: 24, fontWeight: 'bold', marginLeft: 60, color: colors.secondary, position: 'absolute'}}>Mascota</Text>
-            </View>
-            <View style={{borderBottomWidth: 1, borderBottomColor: colors.inputGrey}}></View>
-        </>
-    )
+    onPetDataUpdated = (updatedPetData) => {
+        this.setState({
+            ...updatedPetData
+        });
+    };
 
-    // fetchPetsDetails = (petId) => {
-    //     getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-    //         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.userId + '/pets/' + petId, 
-    //         {
-    //             'Authorization': 'Basic ' + sessionToken 
-    //         }).then(response => {
-    //             this.setState({ petData : response });
-    //         }).catch(err => {
-    //             console.log(err);
-    //             alert(err)
-    //         });
-    //     });
-    // };
+    editPetsDetails = () => {
+        this.props.navigation.push('EditPetDetails', { 
+            petData: this.state, 
+            userId: this.props.route.params.userId, 
+            onUpdate: this.onPetDataUpdated
+        })
+    }
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
@@ -93,7 +80,6 @@ export class ViewPetDetailsScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                {this.showHeader()}
                 <View style={{flex: 1, justifyContent: 'flex-end'}}>
                     <FlatList 
                         data={this.state.petPhotos} 
@@ -108,7 +94,12 @@ export class ViewPetDetailsScreen extends React.Component {
                 </View>
                 <View style={{flex: 2}}>
                     <ScrollView style={{flex:1, paddingLeft: 35, paddingRight: 35}}>
-                        <Text style={[styles.optionTitle, {fontSize: 20, fontWeight: 'bold', paddingTop: 25}]}>Información</Text>
+                        <View style={{flexDirection: 'row' }}>
+                            <Text style={[styles.optionTitle, {fontSize: 20, fontWeight: 'bold', paddingTop: 25}]}>Información</Text>
+                            <TouchableOpacity onPress={() => this.editPetsDetails()} style={{paddingLeft:10, paddingRight:10, paddingTop:15}}>
+                                <PencilSimple  color={colors.yellow} size={32} weight={'fill'} />
+                            </TouchableOpacity>
+                        </View>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <View style={{flexDirection: 'column', flex: 0.5}}>
                                 <Text style={styles.optionTitle}>Tipo</Text>

@@ -1,6 +1,8 @@
 import React from "react";
 import colors from '../../../config/colors';
 import Icon from 'react-native-vector-icons/AntDesign';
+import { getSecureStoreValueFor } from '../../../utils/store';
+import { getJsonData } from '../../../utils/requests';
 
 import { Text, TouchableOpacity, View, Image, StyleSheet, FlatList, Dimensions } from 'react-native';
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../../../utils/mappers';
@@ -11,6 +13,16 @@ export class UserReportGridView extends React.PureComponent {
 
     constructor(props) {
         super(props);
+        this.state = {
+            reports: this.props.reports
+        }
+
+        console.log(`REPORT GRID ${JSON.stringify(this.state)}`)
+
+    }
+
+    onReportCreated = (createdNoticeId) => {
+        this.props.onReportCreated(createdNoticeId);
     }
 
     render() {
@@ -23,7 +35,8 @@ export class UserReportGridView extends React.PureComponent {
 
         const handleCreateNewReport = () => {
             navigation.navigate('BottomTabNavigator', {
-                screen: 'CreateReport'
+                screen: 'CreateReport',
+                params: { onReportCreated: this.onReportCreated }
             });
         }
 
@@ -54,10 +67,10 @@ export class UserReportGridView extends React.PureComponent {
         return(
             <View style={styles.container}>
                 <FlatList 
-                    data={[...this.props.reports, {action: "add-report"}]} 
+                    data={[...this.state.reports, {action: "add-report"}]} 
                     numColumns={2}
                     keyExtractor={(_, index) => index.toString()}
-                    initialNumToRender={this.props.reports.length + 1}
+                    initialNumToRender={this.state.reports.length + 1}
                     renderItem={renderReport}
                     style={{marginTop: 10}}
 

@@ -12,8 +12,6 @@ export class UserPetGridView extends React.Component {
 
     constructor(props) {
         super(props);
-        console.log(`PROPS FOR GRID ARE ${JSON.stringify(this.props)}`)
-
 
         this.state = {
             userId: this.props.userId,
@@ -49,6 +47,7 @@ export class UserPetGridView extends React.Component {
 
     componentDidMount() {
         //TODO: works but if commented out it won't load pets from props
+        console.log("Running componentDidMount in UserPetGridView")
         this.fetchUserPetsDetails()
     }
 
