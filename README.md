@@ -65,6 +65,7 @@ Run the application and open developer console in the emulator:
 ### Troubleshooting
 
 - If icons show up as question marks:
+  > npm install -g react-native-cli
   > react-native link react-native-vector-icons
 
 - Getting error `fontFamily "material-community" is not a system font and has not been loaded through Font.loadAsync.`

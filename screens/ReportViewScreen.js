@@ -1,19 +1,22 @@
 import React from 'react';
 
-import { Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
-import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import SegmentedControlTab from "react-native-segmented-control-tab";
-
-import { getJsonData } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
+import { getJsonData, deleteJsonData } from '../utils/requests.js';
 import { OptionTitle } from '../utils/editionHelper.js';
-import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
 import { HeaderWithBackArrow } from '../utils/headers';
 import { PetImagesHeader } from '../utils/images.js';
 import { AppButton } from '../utils/buttons.js';
 
+import {  Alert, Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
+
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import SegmentedControlTab from "react-native-segmented-control-tab";
+
+import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
+
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
+var HttpStatus = require('http-status-codes');
 
 const { height, width } = Dimensions.get("screen")
 
@@ -29,6 +32,9 @@ export class ReportViewScreen extends React.Component {
         this.state = {
             reportType: '',
             name: '',
+            petId: '',
+            latitude: '',
+            longitude: '',
             province: '',
             city: '',
             location: '',
@@ -50,8 +56,9 @@ export class ReportViewScreen extends React.Component {
             },
             selectedIndex: 0,
             contactInfoModalVisible: false,
-            isMyReport: false,
-            isInEditMode: false,
+            isMyReport: this.props.route.params.isMyReport,
+            noticeId: this.props.route.params.noticeId,
+            fosterHistory: []
         };
     }
 
@@ -76,26 +83,52 @@ export class ReportViewScreen extends React.Component {
     }
 
     resolveReport = () => {
-        // TODO
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            deleteJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.state.noticeId, 
+            {},
+            {
+                'Authorization': 'Basic ' + sessionToken 
+            }).then(response => {
+
+                if (response.status != HttpStatus.StatusCodes.OK) {
+                    console.log(`Delete pet endpoint returned error ${response}`)
+                    alert('Error occured attempting to delete pet!')
+                }
+                
+                this.props.navigation.navigate('ViewUserDetails');
+            }).catch(err => {
+                console.log(err);
+                alert(err)
+                this.props.navigation.goBack();
+            });
+        })
     }
 
-    suspendReport = () => {
-        // TODO: suspend or remove?
+    confirmResolveReport = () =>
+        Alert.alert(
+        "Atención!",
+        "Si presionás OK este reporte será eliminado, y no aparecerá en ninguna búsqueda!",
+        [
+            {
+                text: "Cancelar",
+                onPress: () => console.log("Cancel delete report pressed"),
+                style: "cancel"
+            },
+            { 
+                text: "OK", 
+                onPress: () => this.resolveReport()
+            }
+        ]
+    );
+
+    onReportDataUpdated = () => {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            this.fetchReportInfo(sessionToken);
+        });
     }
 
-    changeToEditMode = () => {
-        // TODO: edit event/pet page or history depending on the index
-        this.setState({ isInEditMode: true });
-    }
-
-    saveChanges = () => {
-        // TODO: edit event/pet page or history depending on the index
-        this.setState({ isInEditMode: false });
-    }
-
-    discardChanges = () => {
-        // TODO: edit event/pet page or history depending on the index
-        this.setState({ isInEditMode: false });
+    goToEdit = () => {
+        this.props.navigation.push('EditReportScreen', { reportState: this.state, onUpdate: this.onReportDataUpdated })
     }
 
     navigateToReports = () => {
@@ -108,35 +141,43 @@ export class ReportViewScreen extends React.Component {
         }
     }
 
+
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            this.getReportInfo(sessionToken);
-            this.getContactInfo(sessionToken);
+            this.fetchReportInfo(sessionToken);
+            this.fetchContactInfo(sessionToken);
         });
         getSecureStoreValueFor("userId").then(userId => this.setState({ isMyReport: userId === this.props.route.params.noticeUserId}));
     }
 
-    getReportInfo(sessionToken) {
+    fetchReportInfo(sessionToken) {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/notices/' + this.props.route.params.noticeId,
             {
                 'Authorization': 'Basic ' + sessionToken
             }
         ).then(notice => {
+            let datetime = new Date(notice.eventTimestamp)
             this.setState({
                 reportType: notice.noticeType,
                 eventDescription: notice.description,
+                date: datetime,
+                hour: datetime,
                 province: notice.locality,
                 city: notice.neighbourhood,
                 location: notice.street,
+                petId: notice.petId,
+                latitude:  notice.eventLocation.lat,
+                longitude: notice.eventLocation.long
             });
-            this.getPetInfo(notice, sessionToken);
+            this.fetchPetInfo(notice, sessionToken);
+            this.fetchFosteringInfo(notice.pet.id, sessionToken);
         }).catch(err => {
             console.log(err);
             alert(err);
         });
     }
 
-    getPetInfo(notice, sessionToken) {
+    fetchPetInfo(notice, sessionToken) {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/pets/' + notice.pet.id,
             {
                 'Authorization': 'Basic ' + sessionToken
@@ -160,7 +201,24 @@ export class ReportViewScreen extends React.Component {
         });
     }
 
-    getContactInfo(sessionToken) {
+    fetchFosteringInfo(petId, sessionToken) {
+        getJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory',
+            {
+                'Authorization': 'Basic ' + sessionToken
+            }
+        ).then(history => {
+            console.log(history)
+            this.setState({
+                fosterHistory: history
+            });
+
+        }).catch(err => {
+            console.log(err);
+            alert(err);
+        });
+    }
+
+    fetchContactInfo(sessionToken) {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId,
             {
                 'Authorization': 'Basic ' + sessionToken
@@ -195,7 +253,6 @@ export class ReportViewScreen extends React.Component {
                     email={this.state.contactInfo.email}
                     phoneNumber={this.state.contactInfo.phoneNumber}
                     onContactInfoOk={changeModalVisibility}/> 
-                <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
                 <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
 
                 <View style={{flex: 2}}>
@@ -204,7 +261,7 @@ export class ReportViewScreen extends React.Component {
                             text={reportTypeText} 
                             textColor={reportTypeLabel}
                             isMyReport={this.state.isMyReport}
-                            onEditModePress={this.changeToEditMode}/>
+                            onEditModePress={this.goToEdit}/>
                         <FosteringHistoryTabSeletor 
                             segmentedTabTitles={segmentedTabTitles} 
                             selectedIndex={this.state.selectedIndex} 
@@ -243,17 +300,11 @@ export class ReportViewScreen extends React.Component {
                         <ActionButtons 
                             selectedIndex={this.state.selectedIndex}
                             isMyReport={this.state.isMyReport}
-                            isInEditMode={this.state.isInEditMode}
                             guestButtonHandler={{
                                 showContactInfo: this.showContactInfo
                             }}
                             myReportButtonHandler={{
-                                resolveReport: this.resolveReport,
-                                suspendReport: this.suspendReport
-                            }}
-                            editModeButtonHandler={{
-                                saveChanges: this.saveChanges,
-                                discardChanges: this.discardChanges
+                                resolveReport: this.confirmResolveReport
                             }}/>
                     </ScrollView>
                 </View>
@@ -263,11 +314,11 @@ export class ReportViewScreen extends React.Component {
 }
 
 const EditModePencil = ({isMyReport, onEditModePress}) => {
-    return isMyReport && (
+    return isMyReport ? (
         <TouchableOpacity onPress={onEditModePress}>
             <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{ paddingLeft: 10 }} />
         </TouchableOpacity>
-    );
+    ) : null;
 }
 
 const Title = ({text, textColor, isMyReport, onEditModePress}) => {
@@ -418,36 +469,23 @@ const ContactButton = ({showContactInfo}) => {
     return <AppButton buttonText={"Contacto"} onPress={showContactInfo} additionalButtonStyles={{ ...styles.button, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>;
 }
 
-const MyReportButtons = ({resolveReport, suspendReport}) => {
+const MyReportButtons = ({resolveReport}) => {
     return (<>
-        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
-        <AppButton buttonText={"Suspender reporte"} onPress={suspendReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, margin: 0, marginBottom: 60 }}/>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, marginHorizontal: 0, marginTop: 40 }}/>
     </>);
 }
 
-const EditModeButtons = ({saveChanges, discardChanges}) => {
-    return (<>
-        <AppButton buttonText={"Guardar cambios"} onPress={saveChanges} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
-        <AppButton buttonText={"Descartar cambios"} onPress={discardChanges} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.grey, margin: 0, marginBottom: 60 }}/>
-    </>);
-}
-
-const ReportButtons = ({isMyReport, isInEditMode, guestButtonHandler, editModeButtonHandler, myReportButtonHandler}) => {
+const ReportButtons = ({isMyReport, guestButtonHandler, myReportButtonHandler}) => {
     if (!isMyReport) {
         return <ContactButton showContactInfo={guestButtonHandler.showContactInfo}/>;
     } else {
-        if (!isInEditMode) {
-            return <MyReportButtons resolveReport={myReportButtonHandler.resolveReport} suspendReport={myReportButtonHandler.suspendReport} />
-        }
-        if (isInEditMode) {
-            return <EditModeButtons saveChanges={editModeButtonHandler.saveChanges} discardChanges={editModeButtonHandler.discardChanges} />
-        }
+        return <MyReportButtons resolveReport={myReportButtonHandler.resolveReport} />
     }
 }
 
-const ActionButtons = ({selectedIndex, isMyReport, isInEditMode, guestButtonHandler, editModeButtonHandler, myReportButtonHandler}) => {
+const ActionButtons = ({selectedIndex, isMyReport, guestButtonHandler, myReportButtonHandler}) => {
     if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
-        return <ReportButtons isMyReport={isMyReport} isInEditMode={isInEditMode} guestButtonHandler={guestButtonHandler} editModeButtonHandler={editModeButtonHandler} myReportButtonHandler={myReportButtonHandler}/>
+        return <ReportButtons isMyReport={isMyReport} guestButtonHandler={guestButtonHandler} myReportButtonHandler={myReportButtonHandler}/>
     }
     return null;
 }

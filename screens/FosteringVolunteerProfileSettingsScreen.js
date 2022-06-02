@@ -1,11 +1,12 @@
 import React from 'react';
 
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Switch, ScrollView, SafeAreaView } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Dog, Cat } from 'phosphor-react-native';
+import { Text, StyleSheet, Switch, ScrollView, SafeAreaView, Alert } from 'react-native';
 
 import { HeaderWithBackArrow } from '../utils/headers';
 import { AppButton } from '../utils/buttons';
+import { CheckBoxItem, OptionTextInput, DogCatSelector } from '../utils/editionHelper';
+import { putJsonData, postJsonData, deleteJsonData } from "../utils/requests";
+import { getSecureStoreValueFor } from '../utils/store';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
@@ -18,80 +19,147 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
         this.state = {
             dogIsSelected: false,
             catIsSelected: false,
-            city: "",
+            location: "",
             province: "",
             available: true,
             smallSizeIsSelected: false,
             mediumSizeIsSelected: false,
             largeSizeIsSelected: false,
-            additionalInfo: ""
+            additionalInfo: "",
+            profileId: null,
+            _ref: null,
+            userId: null,
+            averageRating: null,
+            ratingAmount: null
         };
     }
 
-    petFosteringMapper = (canFoster) => {
-        if (canFoster.length == 1) {    
-            return this.petMapper(canFoster[0]);
-        } else if (canFoster.includes("DOG") && canFoster.includes("CAT")) {
-            return "perros y gatos";
+    getPetSizes = () => {
+        let sizes = []
+        if (this.state.smallSizeIsSelected) {
+            sizes.push('SMALL')
         }
+        if (this.state.mediumSizeIsSelected) {
+            sizes.push('MEDIUM')
+        }
+        if (this.state.largeSizeIsSelected) {
+            sizes.push('LARGE')
+        }
+        return sizes
     }
 
-    petMapper = (petType) => {
-        if (petType == "DOG") {
-            return "perros"
-        } else if (petType == "CAT") {
-            return "gatos"
-        } else {
-            ""
+    getPetTypes = () => {
+        let types = []
+        if (this.state.dogIsSelected) {
+            types.push('DOG')
         }
-    }
-
-    mapPetSizeToLabel = (size) => {
-        if (size == "SMALL") {
-            return "Pequeña"
-        } else if (size == "MEDIUM") {
-            return "Mediana"
-        } else if (size == "LARGE") {
-            return "Grande"
+        if (this.state.catIsSelected) {
+            types.push('CAT')
         }
+        return types
     }
 
     saveSettings = () => {
-
+        if (this.state.profileId) {
+            this.saveData();  
+        } else {
+            this.createData();
+        }
     }
 
-    showTextInput = (onChangeText, isMultiline = false ) => (
-        <TextInput
-            onChangeText = {onChangeText}
-            autoCorrect = { false }
-            style = {[styles.textInput, isMultiline ? {paddingBottom: 90, paddingTop: 10} : {}]}
-            maxLength = { isMultiline ? 200 : 50 }
-            multiline = {isMultiline}
-            placeholder = {isMultiline ? "Ingrese descripción" : ""}
-        />
-    )
+    removeSettings = () => {
+        deleteJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles/' + this.state.profileId)
+        .then(response => {
+            console.log(response);
+            Alert.alert('', `Perfil de voluntariado eliminado!`);
+            this.props.navigation.pop();
+            this.props.route.params.updateProfiles(null);
+        }).catch(err => {
+            alert(err);
+            return;
+        });
+    }
 
-    showTextInput = (onChangeText, isMultiline = false ) => (
-        <TextInput
-            onChangeText = {onChangeText}
-            autoCorrect = { false }
-            style = {[styles.textInput, isMultiline ? {paddingBottom: 90, paddingTop: 10} : {}]}
-            maxLength = { isMultiline ? 200 : 50 }
-            multiline = {isMultiline}
-            placeholder = {isMultiline ? "Ingrese descripción" : ""}
-        />
-    )
+    saveData() {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            putJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles/' + this.state.profileId,
+                {
+                    _ref: this.state._ref,
+                    userId: this.state.userId,
+                    petTypesToFoster: this.getPetTypes(),
+                    petSizesToFoster: this.getPetSizes(),
+                    additionalInformation: this.state.additionalInfo,
+                    location: this.state.location,
+                    province: this.state.province,
+                    available: this.state.available,
+                    averageRating: this.state.averageRating,
+                    ratingAmount: this.state.ratingAmount
+                },
+                {
+                    'Authorization': 'Basic ' + sessionToken
+                }).then(response => {
+                    console.log(`Profile successfully updated!`);
+                    Alert.alert('', `Perfil de voluntariado actualizado!`);
+                    this.props.navigation.pop();
+                    this.props.route.params.updateProfiles(response);
+                }).catch(err => {
+                    console.log(err);
+                    alert(err);
+                });
+        });
+    }
 
-    showCheckBoxItem = (optionIsSelected, checkBoxTitle) => (
-        <>
-            <Icon
-                name={optionIsSelected ? 'checkbox-marked' : 'checkbox-blank'}
-                size={25}
-                color={optionIsSelected ? colors.secondary : colors.inputGrey}
-            />
-            <Text style={styles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
-        </>
-    )
+    createData() {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getSecureStoreValueFor("userId").then(userId => {
+                postJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles',
+                    {
+                        userId: userId,
+                        petTypesToFoster: this.getPetTypes(),
+                        petSizesToFoster: this.getPetSizes(),
+                        additionalInformation: this.state.additionalInfo,
+                        location: this.state.location,
+                        province: this.state.province,
+                        available: this.state.available,
+                        averageRating: 0,
+                        ratingAmount: 0
+                    },
+                    {
+                        'Authorization': 'Basic ' + sessionToken
+                    }).then(response => {
+                        console.log(`Profile successfully created!`);
+                        Alert.alert('', `Perfil de voluntariado creado!`);
+                        this.props.navigation.pop();
+                        this.props.route.params.updateProfiles(response);
+                    }).catch(err => {
+                        console.log(err);
+                        alert(err);
+                    });
+            });
+        });
+    }
+
+    componentDidMount() {
+        const myVolunteerProfile = this.props.route.params.myVolunteerProfile
+        if (myVolunteerProfile) {
+            this.setState({
+                dogIsSelected: myVolunteerProfile.petTypesToFoster.includes('DOG'),
+                catIsSelected: myVolunteerProfile.petTypesToFoster.includes('CAT'),
+                location: myVolunteerProfile.location,
+                province: myVolunteerProfile.province,
+                available: myVolunteerProfile.available,
+                smallSizeIsSelected: myVolunteerProfile.petSizesToFoster.includes('SMALL'),
+                mediumSizeIsSelected: myVolunteerProfile.petSizesToFoster.includes('MEDIUM'),
+                largeSizeIsSelected: myVolunteerProfile.petSizesToFoster.includes('LARGE'),
+                additionalInfo: myVolunteerProfile.additionalInformation,
+                profileId: myVolunteerProfile.profileId,
+                _ref: myVolunteerProfile._ref,
+                userId: myVolunteerProfile.userId,
+                averageRating: myVolunteerProfile.averageRating,
+                ratingAmount: myVolunteerProfile.ratingAmount
+            });
+        }
+    }
 
     render() {
         return ( <>
@@ -101,42 +169,34 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
             <SafeAreaView
                 edges={["left", "right", "bottom"]}
                 style={commonStyles.container} >
-                <HeaderWithBackArrow headerText={"Información voluntariado"} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()}/>
+                <HeaderWithBackArrow headerText={"Perfil voluntariado"} headerTextColor={colors.white} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()}/>
                
-                <ScrollView style={{marginLeft: 20, marginRight: 20}}>
-                    <Text style={[styles.titleText, {marginTop: 15}]}>Puedo transitar</Text>
-                    <View style={[styles.alignedContent, {justifyContent:'space-evenly'}]}>
-                        <TouchableOpacity onPress={() => this.setState({ dogIsSelected: !this.state.dogIsSelected })}>
-                            <Dog color={this.state.dogIsSelected ? colors.secondary : colors.inputGrey} weight='regular' size={68} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => this.setState({ catIsSelected: !this.state.catIsSelected })}>
-                            <Cat color={this.state.catIsSelected ? colors.secondary : colors.inputGrey} weight='regular' size={68} />
-                        </TouchableOpacity>
-                    </View>
+                <ScrollView style={{paddingHorizontal: 20}}>
+                    <Text style={[styles.titleText, {marginTop: 15, marginBottom: 10}]}>Puedo transitar</Text>
+                    <DogCatSelector 
+                        onPressDog={() => this.setState({ dogIsSelected: !this.state.dogIsSelected })} 
+                        onPressCat={() => this.setState({ catIsSelected: !this.state.catIsSelected })}
+                        dogIsSelected={this.state.dogIsSelected} 
+                        catIsSelected={this.state.catIsSelected} />
 
                     <Text style={styles.titleText}>Zona</Text>
                     <Text style={[styles.optionTitle, {paddingTop: 10}]}>Provincia</Text>
-                    {this.showTextInput(text => { this.setState({ province: text })})}
+                    <OptionTextInput onChangeText={text => { this.setState({ province: text })}} value={this.state.province} />
 
-                    <Text style={styles.optionTitle}>Ciudad</Text>
-                    {this.showTextInput(text => { this.setState({ city: text })})}
+                    <Text style={styles.optionTitle}>Ciudad / Barrio</Text>
+                    <OptionTextInput onChangeText={text => { this.setState({ location: text })}} value={this.state.location} />
 
                     <Text style={styles.titleText}>Información adicional</Text>
-                    {this.showTextInput(text => { this.setState({ additionalInfo: text })}, true)}
+                    <OptionTextInput onChangeText={text => { this.setState({ additionalInfo: text })}} value={this.state.additionalInfo} isMultiline={true} />
 
                     <Text style={styles.titleText}>Tamaño mascota a transitar</Text>
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ smallSizeIsSelected: !this.state.smallSizeIsSelected })}>
-                        {this.showCheckBoxItem(this.state.smallSizeIsSelected, "Pequeña")}
-                    </TouchableOpacity>
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ mediumSizeIsSelected: !this.state.mediumSizeIsSelected })}>
-                        {this.showCheckBoxItem(this.state.mediumSizeIsSelected, "Mediana")}
-                    </TouchableOpacity>
-                    <TouchableOpacity  style={styles.alignedContent} 
-                        onPress={() => this.setState({ largeSizeIsSelected: !this.state.largeSizeIsSelected })}>
-                        {this.showCheckBoxItem(this.state.largeSizeIsSelected, "Grande")}
-                    </TouchableOpacity>  
+                    <PetSizeCheckboxes 
+                        smallSizeIsSelected={this.state.smallSizeIsSelected} 
+                        mediumSizeIsSelected={this.state.mediumSizeIsSelected}
+                        largeSizeIsSelected={this.state.largeSizeIsSelected}
+                        onSmallCheckboxPress={() => this.setState({smallSizeIsSelected: !this.state.smallSizeIsSelected})} 
+                        onMediumCheckboxPress={() => this.setState({mediumSizeIsSelected: !this.state.mediumSizeIsSelected})} 
+                        onLargeCheckboxPress={() => this.setState({largeSizeIsSelected: !this.state.largeSizeIsSelected})} />
 
                     <Text style={styles.titleText}>Disponible</Text>
                     <Switch
@@ -148,14 +208,37 @@ export class FosteringVolunteerProfileSettingsScreen extends React.Component {
                     />
 
                     <AppButton
-                        buttonText={"Guardar Información"} 
+                        buttonText={"Guardar información"} 
                         onPress={this.saveSettings} 
-                        additionalButtonStyles={{alignSelf: 'center', marginBottom: 30, marginTop: 30}} />
+                        additionalButtonStyles={{alignSelf: 'center', marginTop: 30, width: "60%"}} />
+                    {this.state.profileId &&
+                        <AppButton
+                            buttonText={"Eliminar perfil"} 
+                            onPress={this.removeSettings} 
+                            additionalButtonStyles={{alignSelf: 'center', marginBottom: 30, marginTop: 5, backgroundColor: colors.pink, width: "60%"}} />
+                    }
                 </ScrollView>               
             </SafeAreaView>
             </>
         )
     }
+}
+
+const PetSizeCheckboxes = ({smallSizeIsSelected, mediumSizeIsSelected, largeSizeIsSelected, onSmallCheckboxPress, onMediumCheckboxPress, onLargeCheckboxPress}) => {
+    return (<>
+        <CheckBoxItem 
+            optionIsSelected={smallSizeIsSelected} 
+            checkBoxTitle={"Pequeña"} 
+            onPress={onSmallCheckboxPress} />
+        <CheckBoxItem 
+            optionIsSelected={mediumSizeIsSelected} 
+            checkBoxTitle={"Mediana"} 
+            onPress={onMediumCheckboxPress} />
+        <CheckBoxItem 
+            optionIsSelected={largeSizeIsSelected} 
+            checkBoxTitle={"Grande"} 
+            onPress={onLargeCheckboxPress} />
+    </>);
 }
 
 const styles = StyleSheet.create({
@@ -183,16 +266,11 @@ const styles = StyleSheet.create({
         fontSize: 16, 
         fontWeight: '500',
         marginTop: 10, 
-        marginRight: 10
     },
     optionTitle: {
         fontSize: 16, 
         color: colors.clearBlack,
         paddingTop: 15, 
         fontWeight: '500'
-    },
-    checkBoxOptionTitle: {
-        marginLeft: 5, 
-        fontSize: 15
     },
 });

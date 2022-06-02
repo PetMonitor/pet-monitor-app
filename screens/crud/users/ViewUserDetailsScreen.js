@@ -27,7 +27,8 @@ export class ViewUserDetailsScreen extends Component {
             pets: [],
             reports: [],
             photoByPet: {},
-            facebookLogin: false
+            facebookLogin: false,
+            mounted: false
         }
     }
 
@@ -35,7 +36,7 @@ export class ViewUserDetailsScreen extends Component {
         this.setState({ userData: newUserData })
     }
 
-    fetchUserDetails = (sessionToken, userId) => {
+    fetchUserDetails = async (sessionToken, userId) => {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
         {
             'Authorization': 'Basic ' + sessionToken 
@@ -55,40 +56,44 @@ export class ViewUserDetailsScreen extends Component {
         {
             'Authorization': 'Basic ' + sessionToken 
         }).then(response => {
-            response.map(async r => {
-                const report = { 
+
+            const reports = response.map(r => {
+                return { 
                     key: r.noticeId,
                     id: r.noticeId, 
                     photoId: this.state.photoByPet[r.pet.id], 
                     reportType: r.noticeType 
                 };
-                this.setState({ reports : [...this.state.reports, report] });
             })
+
+            this.setState({ reports : reports });
+
         }).catch(err => {
             console.log(err);
             alert(err)
         });
     };
 
-    fetchUserPetsDetails(response) {
-        response.map(async (r) => {
-            const pet = {
+    async fetchUserPetsDetails(response) {
+        const pets = response.map(r => {
+            return {
                 key: r.petId,
                 id: r.petId,
                 photoId: r.photos[0].photoId,
                 name: r.name
             };
-            this.setState({
-                pets: [...this.state.pets, pet],
-                photoByPet: {
-                    ...this.state.photoByPet,
-                    [pet.id]: pet.photoId
-                }
-            });
         });
+
+        photoByPetMap = {} 
+
+        pets.forEach(pet => {
+            photoByPetMap[pet.id] = pet.photoId
+        });
+
+        this.setState({ pets: pets, photoByPet: photoByPetMap });
     }
 
-    componentDidMount() {
+    fetchUserData = () => {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getSecureStoreValueFor("userId").then(userId => {
                 getJsonData(global.noticeServiceBaseUrl + '/users/' + userId, 
@@ -103,12 +108,12 @@ export class ViewUserDetailsScreen extends Component {
                         global.noticeServiceBaseUrl + '/photos/profile/' + this.state.userData.userId, 
                         FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE
                     ).then(response => {
-
                         if (response.status == 200) {
                             this.setState({ userProfilePictureUrl : FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE });
                             console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
                         }
                     
+                        this.setState({ mounted : true })
                     }).catch(error => {
                         console.log(`No profile picture found ${error}`)
                     })
@@ -123,7 +128,19 @@ export class ViewUserDetailsScreen extends Component {
         getSecureStoreValueFor('facebookToken').then(facebookToken => {
             this.setState({ facebookLogin : facebookToken != null })
         });
-        
+    }
+
+    componentDidMount() {
+        this.fetchUserData();
+    }
+
+    onReportCreated = () => {
+        console.log(`NEW REPORT created. Updating view...`);
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getSecureStoreValueFor("userId").then(userId => {
+                this.fetchUserDetails(sessionToken, userId);
+            })
+        })
     }
 
     render() {
@@ -194,8 +211,8 @@ export class ViewUserDetailsScreen extends Component {
                         </TouchableOpacity>
                     </View>
                     { this.state.petView 
-                        ? <UserPetGridView userId={this.state.userData.userId} pets={this.state.pets} navigation={navigation}/> 
-                        : <UserReportGridView userId={this.state.userData.userId} reports={this.state.reports} navigation={navigation}/> }
+                        ? <UserPetGridView userId={this.state.userData.userId} pets={this.state.pets} navigation={navigation} /> 
+                        : <UserReportGridView userId={this.state.userData.userId} reports={this.state.reports} onReportCreated={this.onReportCreated} navigation={navigation}/> }
                                 
                 </View>
             </SafeAreaView>

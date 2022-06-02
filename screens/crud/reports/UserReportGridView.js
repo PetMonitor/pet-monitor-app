@@ -14,6 +14,13 @@ export class UserReportGridView extends React.PureComponent {
 
     constructor(props) {
         super(props);
+        this.state = {
+            reports: this.props.reports
+        }
+    }
+
+    onReportCreated = () => {
+        this.props.onReportCreated();
     }
 
     render() {
@@ -26,7 +33,8 @@ export class UserReportGridView extends React.PureComponent {
 
         const handleCreateNewReport = () => {
             navigation.navigate('BottomTabNavigator', {
-                screen: 'CreateReport'
+                screen: 'CreateReport',
+                params: { onReportCreated: this.onReportCreated }
             });
         }
 
@@ -58,10 +66,10 @@ export class UserReportGridView extends React.PureComponent {
             <View style={commonStyles.container}>
                 {this.props.reports.length == 0 ? <Text style={{fontSize: 15, fontWeight: '500', color: colors.secondary, marginTop: 20}}>Podés crear un reporte en caso de encontrar o perder una mascota.</Text> : null}
                 <FlatList 
-                    data={[...this.props.reports, {action: "add-report"}]} 
+                    data={[...this.state.reports, {action: "add-report"}]} 
                     numColumns={2}
                     keyExtractor={(_, index) => index.toString()}
-                    initialNumToRender={this.props.reports.length + 1}
+                    initialNumToRender={this.state.reports.length + 1}
                     renderItem={renderReport}
                     style={{marginTop: 10}}
 

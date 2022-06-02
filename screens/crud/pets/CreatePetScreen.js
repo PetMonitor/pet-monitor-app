@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { EventRegister } from 'react-native-event-listeners';
-import { Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, View, Image, SafeAreaView } from 'react-native';
+import { Text, TextInput, StyleSheet, ScrollView, View, Image, SafeAreaView } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 
 import { postJsonData } from '../../../utils/requests.js';
@@ -273,18 +273,6 @@ const styles = StyleSheet.create({
     alignedContent: {
         ...commonStyles.alignedContent,
         marginTop: 10
-    },
-    checkBoxOptionTitle: {
-        marginLeft: 5, 
-        fontSize: 15
-    },
-    sectionTitle: {
-        fontSize: 20, 
-        color: colors.primary,
-        paddingLeft: 10, 
-        paddingTop: 25, 
-        paddingBottom: 5, 
-        fontWeight: 'bold',
     },
     optionTitle: {
         fontSize: 16, 
