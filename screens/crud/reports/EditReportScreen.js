@@ -15,7 +15,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 
 import uuid from 'react-native-uuid';
-var HttpStatus = require('http-status-codes');
 
 /** Implements the report edit screen. */
 export class EditReportScreen extends React.Component {
@@ -46,11 +45,7 @@ export class EditReportScreen extends React.Component {
     }
 
     setSelectedPhoto = (petId) => {
-        let selectedPet = petId
-        if (petId == this.state.petId) {
-            selectedPet = ''
-        }
-        this.setState({ petId: selectedPet });
+        this.setState({ petId: petId });
     }
 
     renderPet = ({item}) =>  {
@@ -125,8 +120,6 @@ export class EditReportScreen extends React.Component {
             }
         }
 
-        //console.log(`EDIT REPORT ${JSON.stringify(editedReport)}`)
-
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             putJsonData(global.noticeServiceBaseUrl + '/users/' + this.state.userId + '/notices/' + this.state.noticeId, 
             editedReport,
@@ -154,19 +147,6 @@ export class EditReportScreen extends React.Component {
     }
 
     componentDidMount() {
-        console.log("Running ComponentDidMount in EditReportScreen")
-        Location.requestForegroundPermissionsAsync()
-        .then( response => {
-            if (response.status !== 'granted') {
-                alert('Permission to access location was denied');
-                return;
-            }
-
-            Location.getCurrentPositionAsync({})
-            .then(userLocation => {
-                this.setState({ userLocation: userLocation })
-            });
-        });
         getSecureStoreValueFor('sessionToken').then(sessionToken =>  
             getSecureStoreValueFor("userId").then(userId => {
                 getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
@@ -206,9 +186,9 @@ export class EditReportScreen extends React.Component {
                     </Picker>
                     {/* Event section */}
                     <Text style={[styles.sectionTitle]}>Evento</Text>
-                    {this.state.userLocation && <>
-                        <Text style={[styles.optionTitle, {paddingTop: 10}]}>Seleccionar la ubicación aproximada</Text>
-                        <MapView style={{height: 300, margin: 10}}
+                    <Text style={[styles.optionTitle, {paddingTop: 10}]}>Seleccionar la ubicación aproximada</Text>
+                    
+                    <MapView style={{height: 300, margin: 10}}
                             // provider={PROVIDER_GOOGLE}
                             region={{
                                 latitude: this.state.eventMarker.latitude,
@@ -225,7 +205,7 @@ export class EditReportScreen extends React.Component {
                             }}>
                             {this.state.eventMarker &&
                                 <Marker coordinate={this.state.eventMarker} image={require('../../../assets/eventMarker.png')} />}
-                        </MapView></>}
+                    </MapView>
                     <Text style={[styles.optionTitle, {paddingTop: 10}]}>Provincia</Text>
                     <TextInput 
                         value={this.state.province}

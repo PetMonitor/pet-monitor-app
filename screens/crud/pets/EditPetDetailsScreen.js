@@ -10,7 +10,6 @@ import { AppButton } from "../../../utils/buttons.js";
 import uuid from 'react-native-uuid';
 import colors from '../../../config/colors';
 
-var HttpStatus = require('http-status-codes');
 
 export class EditPetDetailsScreen extends React.Component {
 
@@ -34,12 +33,7 @@ export class EditPetDetailsScreen extends React.Component {
                 {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(response => {
-
-                    if (response.status != HttpStatus.StatusCodes.OK) {
-                        console.log(`Delete pet endpoint returned error ${response}`)
-                        alert('Error occured attempting to delete pet!')
-                    }
-                    
+                    console.log(`Delete pet endpoint returned error ${response}`)
                     this.props.navigation.navigate('ViewUserDetails');
                 }).catch(err => {
                     console.log(err);
@@ -71,13 +65,7 @@ export class EditPetDetailsScreen extends React.Component {
                 {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(responsePet => {
-                    console.log(responsePet);
-
-                    if (responsePet.status != HttpStatus.StatusCodes.OK) {
-                        console.log(`Edit pet endpoint returned error ${responsePet}`)
-                        alert("Error occured attempting to edit pet!")
-                    }
-
+                    console.log(`Edit pet endpoint returned error ${responsePet}`);
                     this.props.navigation.pop();
                     this.props.route.params.onUpdate(this.state);
                 }).catch(err => {
@@ -208,11 +196,11 @@ export class EditPetDetailsScreen extends React.Component {
                     <AppButton
                         buttonText={"Guardar Cambios"} 
                         onPress={handleEditPetDetails} 
-                        additionalButtonStyles={[styles.button, {backgroundColor: colors.primary, marginTop: 15, marginTop: 40, marginBottom: 60}]} /> 
+                        additionalButtonStyles={[styles.button, {backgroundColor: colors.primary, marginTop: 40}]} /> 
                     <AppButton
                         buttonText={"Eliminar mascota"} 
                         onPress={handleDeletePet} 
-                        additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 15, marginTop: 40, marginBottom: 60}]} /> 
+                        additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 20, marginBottom: 60}]} /> 
                 </ScrollView>
             </View>
         )

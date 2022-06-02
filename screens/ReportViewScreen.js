@@ -7,7 +7,7 @@ import { HeaderWithBackArrow } from '../utils/headers';
 import { PetImagesHeader } from '../utils/images.js';
 import { AppButton } from '../utils/buttons.js';
 
-import { Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
+import {  Alert, Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
@@ -122,7 +122,9 @@ export class ReportViewScreen extends React.Component {
     );
 
     onReportDataUpdated = () => {
-        this.getNoticeData();
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            this.fetchReportInfo(sessionToken);
+        });
     }
 
     goToEdit = () => {
@@ -163,6 +165,9 @@ export class ReportViewScreen extends React.Component {
                 province: notice.locality,
                 city: notice.neighbourhood,
                 location: notice.street,
+                petId: notice.petId,
+                latitude:  notice.eventLocation.lat,
+                longitude: notice.eventLocation.long
             });
             this.fetchPetInfo(notice, sessionToken);
             this.fetchFosteringInfo(notice.pet.id, sessionToken);
@@ -248,7 +253,6 @@ export class ReportViewScreen extends React.Component {
                     email={this.state.contactInfo.email}
                     phoneNumber={this.state.contactInfo.phoneNumber}
                     onContactInfoOk={changeModalVisibility}/> 
-                <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
                 <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
 
                 <View style={{flex: 2}}>
@@ -310,11 +314,11 @@ export class ReportViewScreen extends React.Component {
 }
 
 const EditModePencil = ({isMyReport, onEditModePress}) => {
-    return isMyReport && (
+    return isMyReport ? (
         <TouchableOpacity onPress={onEditModePress}>
             <MaterialIcon name='pencil' size={20} color={colors.secondary} style={{ paddingLeft: 10 }} />
         </TouchableOpacity>
-    );
+    ) : null;
 }
 
 const Title = ({text, textColor, isMyReport, onEditModePress}) => {
@@ -465,10 +469,9 @@ const ContactButton = ({showContactInfo}) => {
     return <AppButton buttonText={"Contacto"} onPress={showContactInfo} additionalButtonStyles={{ ...styles.button, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>;
 }
 
-const MyReportButtons = ({resolveReport, suspendReport}) => {
+const MyReportButtons = ({resolveReport}) => {
     return (<>
-        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
-        <AppButton buttonText={"Suspender reporte"} onPress={suspendReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, margin: 0, marginBottom: 60 }}/>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, marginHorizontal: 0, marginTop: 40 }}/>
     </>);
 }
 

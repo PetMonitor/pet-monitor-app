@@ -17,13 +17,10 @@ export class UserReportGridView extends React.PureComponent {
         this.state = {
             reports: this.props.reports
         }
-
-        console.log(`REPORT GRID ${JSON.stringify(this.state)}`)
-
     }
 
-    onReportCreated = (createdNoticeId) => {
-        this.props.onReportCreated(createdNoticeId);
+    onReportCreated = () => {
+        this.props.onReportCreated();
     }
 
     render() {
