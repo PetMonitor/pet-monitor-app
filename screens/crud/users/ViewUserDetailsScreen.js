@@ -36,7 +36,7 @@ export class ViewUserDetailsScreen extends Component {
         this.setState({ userData: newUserData })
     }
 
-    fetchUserDetails = (sessionToken, userId) => {
+    fetchUserDetails = async (sessionToken, userId) => {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
         {
             'Authorization': 'Basic ' + sessionToken 
@@ -51,82 +51,46 @@ export class ViewUserDetailsScreen extends Component {
         });
     };
 
-    /*fetchUserReportsDetails = () => {
-        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getSecureStoreValueFor("userId").then(userId => {
-                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
-                {
-                    'Authorization': 'Basic ' + sessionToken 
-                }).then(response => {
-                    response.map(async r => {
-
-                        const report = { 
-                            key: r.noticeId,
-                            id: r.noticeId, 
-                            photoId: this.state.photoByPet[r.pet.id], 
-                            reportType: r.noticeType 
-                        };
-
-                        // check if reports with this id in state
-                        const reportsWithId = this.state.reports.filter(report => report == r.noticeId)
-
-                        console.log(`REPORTS WITH ID ${r.noticeId} ARE ${JSON.stringify(reportsWithId)}`)
-
-                        if (reportsWithId.length == 0) {
-                            // add report to state
-                            this.setState({ reports : [...this.state.reports, report] });
-                        } else {
-                            // replace report in state
-                            const updatedReportsList = this.state.reports.filter(report => report != r.noticeId)
-                            console.log(`REPORTS WITHOUT ID ${r.noticeId} ARE ${JSON.stringify(updatedReportsList)}`)
-                            updatedReportsList.push(report)
-                            this.setState({ reports : updatedReportsList });
-                        }
-                    })
-                }).catch(err => {
-                    console.log(err);
-                    alert(err)
-                });
-            });
-        });
-    };*/
-
     fetchUserReportsDetails = (sessionToken, userId) => {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
         {
             'Authorization': 'Basic ' + sessionToken 
         }).then(response => {
-            response.map(async r => {
-                const report = { 
+
+            const reports = response.map(r => {
+                return { 
                     key: r.noticeId,
                     id: r.noticeId, 
                     photoId: this.state.photoByPet[r.pet.id], 
                     reportType: r.noticeType 
                 };
-                this.setState({ reports : [...this.state.reports, report] });
             })
+
+            this.setState({ reports : reports });
+
         }).catch(err => {
             console.log(err);
             alert(err)
         });
     };
 
-    fetchUserPetsDetails(response) {
-        response.map(async (r) => {
-            const pet = {
+    async fetchUserPetsDetails(response) {
+        const pets = response.map(r => {
+            return {
                 key: r.petId,
                 id: r.petId,
                 photoId: r.photos[0].photoId,
                 name: r.name
             };
-            this.setState({
-                pets: [...this.state.pets, pet],
-                photoByPet: {
-                    ...this.state.photoByPet,
-                    [pet.id]: pet.photoId
-                }
-            });
         });
+
+        photoByPetMap = {} 
+
+        pets.forEach(pet => {
+            photoByPetMap[pet.id] = pet.photoId
+        });
+
+        this.setState({ pets: pets, photoByPet: photoByPetMap });
     }
 
     fetchUserData = () => {
@@ -170,9 +134,13 @@ export class ViewUserDetailsScreen extends Component {
         this.fetchUserData();
     }
 
-    onReportCreated = (createdNoticeId) => {
-        console.log(`NEW REPORT created ${createdNoticeId}. Updating view...`);
-        // this.fetchUserReportsDetails();
+    onReportCreated = () => {
+        console.log(`NEW REPORT created. Updating view...`);
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getSecureStoreValueFor("userId").then(userId => {
+                this.fetchUserDetails(sessionToken, userId);
+            })
+        })
     }
 
     render() {

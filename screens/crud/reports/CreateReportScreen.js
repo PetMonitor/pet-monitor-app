@@ -28,7 +28,6 @@ export class CreateReportScreen extends React.Component {
             hour: new Date(),
             description: '',
             userPets: [],
-            selectedPetIdx: null,
             operationResultModalVisible: false,
             petId: '',
             userId: '',
@@ -96,6 +95,11 @@ export class CreateReportScreen extends React.Component {
 
     createReport = () => {
 
+        if (this.state.petId.length == 0) {
+            alert("Debes seleccionar al menos una mascota!")
+            return;
+        }
+
         if (this.state.eventMarker == null) {
             alert("Debes marcar una ubicación aproximada en el mapa!")
             return;
@@ -129,7 +133,7 @@ export class CreateReportScreen extends React.Component {
 
     navigateToReport = () => {
         //this.props.navigation.push('ReportView', { noticeUserId: this.state.userId, noticeId: this.state.createdNoticeId, isMyReport: true, goToUserProfile: true }); 
-        this.props.route.params.onReportCreated(this.state.createdNoticeId)
+        this.props.route.params.onReportCreated()
         this.props.navigation.navigate('ViewUserDetails')
     }
 
