@@ -128,9 +128,8 @@ export class CreatePetScreen extends React.Component {
                 .then(response => {
                     console.log(response);
                     alert('Mascota creada!')
-                    // go back to previous page
                     if (this.props.route.params.onGoBack) {
-                        this.props.route.params.onGoBack()
+                        this.props.route.params.onGoBack();
                     }
                     this.props.navigation.goBack();
                 }).catch(err => {

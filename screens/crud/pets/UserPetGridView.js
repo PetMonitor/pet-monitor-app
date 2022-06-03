@@ -11,7 +11,7 @@ import colors from '../../../config/colors';
 
 const { height, width } = Dimensions.get("screen")
 
-export class UserPetGridView extends React.Component {
+export class UserPetGridView extends React.PureComponent {
 
     constructor(props) {
         super(props);
@@ -22,51 +22,37 @@ export class UserPetGridView extends React.Component {
         }
     }
 
-    fetchUserPetsDetails = () => {
-        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getSecureStoreValueFor("userId").then(userId => {
-                getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', 
-                    {
-                        'Authorization': 'Basic ' + sessionToken 
-                    }).then(response => {
-                        var petList = response.map(r => {
-                            return { 
-                                key: r.petId,
-                                id: r.petId, 
-                                photoId: r.photos[0].photoId, 
-                                name: r.name 
-                            };
-                        });
-
-                        this.setState({ pets: petList });
-                    }).catch(err => {
-                        console.log(err);
-                        alert(err);
-                        this.props.navigation.popToTop();
-                });
-            });
-        });
-    };
-
-    componentDidMount() {
-        //TODO: works but if commented out it won't load pets from props
-        console.log("Running componentDidMount in UserPetGridView")
-        this.fetchUserPetsDetails()
+    onPetDeleted = (deletedPetId) => {
+        this.props.onPetDeleted(deletedPetId);
     }
 
+    onPetCreated = () => {
+        this.props.onPetCreated();
+    }
+
+    componentDidUpdate(prevProps) {
+        const updatedPetsNumber = this.props.pets.length !== prevProps.pets.length;
+        if (updatedPetsNumber) {
+          this.setState({ pets: this.props.pets });
+        }
+    }
 
     render() {
 
         const { navigation } = this.props;
 
         const handleNavigateToPetProfile = (petId) => {
-            navigation.push('ViewPet', { userId: this.props.userId, petId: petId });
+            navigation.push('ViewPet', { 
+                userId: this.props.userId, 
+                petId: petId,
+                onPetDeleted: this.onPetDeleted
+            });
         }
 
         const handleCreateNewPet = () => {
             navigation.push('CreatePet', { 
                 initialSetup: false,
-                onGoBack: () => this.fetchUserPetsDetails()
+                onGoBack: () => this.onPetCreated()
             });
         }
 

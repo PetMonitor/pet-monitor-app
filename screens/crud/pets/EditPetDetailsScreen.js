@@ -33,8 +33,9 @@ export class EditPetDetailsScreen extends React.Component {
                 {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(response => {
-                    console.log(`Delete pet endpoint returned error ${response}`)
+                    console.log(`Delete pet endpoint returned ${JSON.stringify(response)}`)
                     this.props.navigation.navigate('ViewUserDetails');
+                    this.props.route.params.onPetDeleted(this.state.petId);
                 }).catch(err => {
                     console.log(err);
                     alert(err)

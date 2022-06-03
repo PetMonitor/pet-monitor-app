@@ -48,6 +48,7 @@ export class ViewPetDetailsScreen extends React.Component {
         this.props.navigation.push('EditPetDetails', { 
             petData: this.state, 
             userId: this.props.route.params.userId, 
+            onPetDeleted: this.props.route.params.onPetDeleted, 
             onUpdate: this.onPetDataUpdated
         })
     }

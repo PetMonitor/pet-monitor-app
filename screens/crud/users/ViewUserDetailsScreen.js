@@ -43,7 +43,6 @@ export class ViewUserDetailsScreen extends Component {
         }).then(response => {
             this.fetchUserPetsDetails(response);
             this.fetchUserReportsDetails(sessionToken, userId)
-            // console.log(`User ${this.state.userData.username} has pets ${JSON.stringify(this.state.pets)}`);
         }).catch(err => {
             console.log(err);
             alert(err);
@@ -61,6 +60,7 @@ export class ViewUserDetailsScreen extends Component {
                 return { 
                     key: r.noticeId,
                     id: r.noticeId, 
+                    petId: r.pet.id,
                     photoId: this.state.photoByPet[r.pet.id], 
                     reportType: r.noticeType 
                 };
@@ -147,6 +147,30 @@ export class ViewUserDetailsScreen extends Component {
         })
     }
 
+    onPetDeleted = (deletedPetId) => {
+        const remainingPets = this.state.pets.filter(pet => pet.id != deletedPetId);
+        const remainingNotices = this.state.reports.filter(report => report.petId != deletedPetId);
+        delete this.state.photoByPet[deletedPetId]
+
+        this.setState({ reports: remainingNotices, pets: remainingPets })
+    }
+
+    onPetCreated = () => {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getSecureStoreValueFor("userId").then(userId => {
+                this.fetchUserDetails(sessionToken, userId);
+            })
+        })
+    }
+
+    onReportCreated = () => {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getSecureStoreValueFor("userId").then(userId => {
+                this.fetchUserDetails(sessionToken, userId);
+            })
+        })
+    }
+
     render() {
 
         const { navigation } = this.props;
@@ -215,7 +239,7 @@ export class ViewUserDetailsScreen extends Component {
                         </TouchableOpacity>
                     </View>
                     { this.state.petView 
-                        ? <UserPetGridView userId={this.state.userData.userId} pets={this.state.pets} navigation={navigation} /> 
+                        ? <UserPetGridView userId={this.state.userData.userId} pets={this.state.pets} onPetDeleted={this.onPetDeleted} onPetCreated={this.onPetCreated} navigation={navigation} /> 
                         : <UserReportGridView userId={this.state.userData.userId} reports={this.state.reports} onReportCreated={this.onReportCreated} onReportDeleted={this.onReportDeleted} navigation={navigation}/> }
                                 
                 </View>
