@@ -1,18 +1,19 @@
 import React from 'react';
 
 import Loader  from '../../../utils/Loader.js';
-import { Text, View, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native';
+import { Text, View, TextInput, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
 
 import { getJsonData, putJsonData, getLocationFromCoordinates } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
+import { HeaderWithBackArrow } from '../../../utils/headers.js';
+import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
 
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import * as Location from 'expo-location';
 
 import uuid from 'react-native-uuid';
 
@@ -169,7 +170,9 @@ export class EditReportScreen extends React.Component {
 
     render() {
         return (
-            <View style={styles.container}> 
+            <SafeAreaView style={commonStyles.container}>
+                <HeaderWithBackArrow headerText={"Editar reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} />
+
                 <ScrollView style={{flex:1, padding: 20}}>
                     {/* Report type picker */}
                     <Text style={[styles.sectionTitle, {paddingTop: 10}]}>Tipo de reporte</Text>
@@ -301,18 +304,12 @@ export class EditReportScreen extends React.Component {
                     <Loader /> 
                     : <></>
                 }
-            </View>
+            </SafeAreaView>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
     sectionTitle: {
         fontSize: 20, 
         color: colors.primary,

@@ -3,12 +3,14 @@ import React from "react";
 import Icon from 'react-native-vector-icons/AntDesign';
 import { putJsonData, deleteJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import { Image, Text, TextInput, TouchableOpacity, StyleSheet, View, ScrollView, Alert } from 'react-native';
+import { Image, Text, TextInput, TouchableOpacity, StyleSheet, View, ScrollView, Alert, SafeAreaView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { AppButton } from "../../../utils/buttons.js";
 
 import uuid from 'react-native-uuid';
+import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
+import { HeaderWithBackArrow } from "../../../utils/headers.js";
 
 
 export class EditPetDetailsScreen extends React.Component {
@@ -76,25 +78,9 @@ export class EditPetDetailsScreen extends React.Component {
             });
         }
 
-        confirmDeletePet = () =>
-            Alert.alert(
-            "Atención!",
-            "Si presionás OK se eliminará el perfil de esta mascota!",
-            [
-                {
-                    text: "Cancelar",
-                    onPress: () => console.log("Cancel delete pet pressed"),
-                    style: "cancel"
-                },
-                { 
-                    text: "OK", 
-                    onPress: () => handleDeletePet()
-                }
-            ]
-        );
-
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={commonStyles.container}>
+                <HeaderWithBackArrow headerText={"Editar mascota"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} />
                 <ScrollView style={styles.scrollView} >
                     <Text style={styles.optionTitle}>Nombre</Text>
                     <TextInput 
@@ -194,7 +180,7 @@ export class EditPetDetailsScreen extends React.Component {
                     
 
                     <AppButton
-                        buttonText={"Guardar Cambios"} 
+                        buttonText={"Guardar cambios"} 
                         onPress={handleEditPetDetails} 
                         additionalButtonStyles={[styles.button, {backgroundColor: colors.primary, marginTop: 40}]} /> 
                     <AppButton
@@ -202,18 +188,12 @@ export class EditPetDetailsScreen extends React.Component {
                         onPress={handleDeletePet} 
                         additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 20, marginBottom: 60}]} /> 
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         )
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection: 'column',    // main axis: vertical
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
-    },
     scrollView: {
         flex: 1,
         marginHorizontal: 20,

@@ -253,6 +253,7 @@ export class ReportViewScreen extends React.Component {
                     email={this.state.contactInfo.email}
                     phoneNumber={this.state.contactInfo.phoneNumber}
                     onContactInfoOk={changeModalVisibility}/> 
+                <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
                 <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
 
                 <View style={{flex: 2}}>
@@ -471,7 +472,7 @@ const ContactButton = ({showContactInfo}) => {
 
 const MyReportButtons = ({resolveReport}) => {
     return (<>
-        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, marginHorizontal: 0, marginTop: 40 }}/>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
     </>);
 }
 
