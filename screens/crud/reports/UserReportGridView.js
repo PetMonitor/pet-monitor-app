@@ -23,12 +23,27 @@ export class UserReportGridView extends React.PureComponent {
         this.props.onReportCreated();
     }
 
+    onReportDeleted = (deletedNoticeId) => {
+        this.props.onReportDeleted(deletedNoticeId);
+    }
+
+    componentDidUpdate(prevProps) {
+        const updatedReportNumber = this.props.reports.length !== prevProps.reports.length;
+        if (updatedReportNumber) {
+          this.setState({ reports: this.props.reports });
+        }
+    }
+
     render() {
 
         const { navigation } = this.props;
 
         const handleNavigateToReportView = (noticeId) => {
-            navigation.push("ReportView", { noticeUserId: this.props.userId, noticeId: noticeId });
+            navigation.push("ReportView", { 
+                noticeUserId: this.props.userId, 
+                noticeId: noticeId,
+                onReportDeleted: this.onReportDeleted 
+            });
         }
 
         const handleCreateNewReport = () => {

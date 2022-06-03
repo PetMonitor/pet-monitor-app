@@ -134,8 +134,12 @@ export class ViewUserDetailsScreen extends Component {
         this.fetchUserData();
     }
 
+    onReportDeleted = (deletedNoticeId) => {
+        const remainingNotices = this.state.reports.filter(report => report.id != deletedNoticeId)
+        this.setState({ reports: remainingNotices })
+    }
+
     onReportCreated = () => {
-        console.log(`NEW REPORT created. Updating view...`);
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getSecureStoreValueFor("userId").then(userId => {
                 this.fetchUserDetails(sessionToken, userId);
@@ -212,7 +216,7 @@ export class ViewUserDetailsScreen extends Component {
                     </View>
                     { this.state.petView 
                         ? <UserPetGridView userId={this.state.userData.userId} pets={this.state.pets} navigation={navigation} /> 
-                        : <UserReportGridView userId={this.state.userData.userId} reports={this.state.reports} onReportCreated={this.onReportCreated} navigation={navigation}/> }
+                        : <UserReportGridView userId={this.state.userData.userId} reports={this.state.reports} onReportCreated={this.onReportCreated} onReportDeleted={this.onReportDeleted} navigation={navigation}/> }
                                 
                 </View>
             </SafeAreaView>

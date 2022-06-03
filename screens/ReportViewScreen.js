@@ -16,7 +16,6 @@ import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, map
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
-var HttpStatus = require('http-status-codes');
 
 const { height, width } = Dimensions.get("screen")
 
@@ -89,13 +88,10 @@ export class ReportViewScreen extends React.Component {
             {
                 'Authorization': 'Basic ' + sessionToken 
             }).then(response => {
+                console.log(`Delete pet endpoint returned ${response}`)
 
-                if (response.status != HttpStatus.StatusCodes.OK) {
-                    console.log(`Delete pet endpoint returned error ${response}`)
-                    alert('Error occured attempting to delete pet!')
-                }
-                
                 this.props.navigation.navigate('ViewUserDetails');
+                this.props.route.params.onReportDeleted(this.state.noticeId);
             }).catch(err => {
                 console.log(err);
                 alert(err)
