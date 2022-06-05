@@ -39,9 +39,7 @@ export class ViewPetDetailsScreen extends React.Component {
     }
 
     onPetDataUpdated = (updatedPetData) => {
-        this.setState({
-            ...updatedPetData
-        });
+        this.getPetDetails()
     };
 
     editPetsDetails = () => {
@@ -53,7 +51,7 @@ export class ViewPetDetailsScreen extends React.Component {
         })
     }
 
-    componentDidMount() {
+    getPetDetails = () => {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId + '/pets/' + this.props.route.params.petId, 
             {
@@ -78,6 +76,10 @@ export class ViewPetDetailsScreen extends React.Component {
             });
         });
         getSecureStoreValueFor("userId").then(userId => this.setState({ isMyPet: userId === this.props.route.params.userId}));
+    }
+
+    componentDidMount() {
+        this.getPetDetails()
     }
 
     render() {

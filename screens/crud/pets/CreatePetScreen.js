@@ -16,6 +16,8 @@ import { AppButton } from '../../../utils/buttons.js';
 
 export class CreatePetScreen extends React.Component {
 
+    MIN_PROFILE_PHOTOGRAPHS = 2
+
     constructor(props) {
         super(props);
 
@@ -36,7 +38,6 @@ export class CreatePetScreen extends React.Component {
 
     componentDidMount() {
         this.listener = EventRegister.addEventListener("SET_IMAGES",(selectedImages) => {
-            // console.log(`Setting pet images to ${JSON.stringify(selectedImages)}`);
             this.setState({ photos: selectedImages });
         })
     }
@@ -76,16 +77,17 @@ export class CreatePetScreen extends React.Component {
         };
 
         const handleFinishInitialSetup = () => {
-            this.setState({ isLoading: true });
 
             if (!initialSetup) {
                 alert('Method not allowed outside initial setup context!');
             }
 
-            if (this.state.photos.length == 0) {
-                alert('At least one photo is required!');
+            if (this.state.photos.length < this.MIN_PROFILE_PHOTOGRAPHS) {
+                alert(`Se requieren al menos ${this.MIN_PROFILE_PHOTOGRAPHS} fotos!`);
                 return;
             }
+
+            this.setState({ isLoading: true });
 
             const newPet = Object.assign({}, this.state) 
             delete newPet.isLoading
@@ -98,12 +100,12 @@ export class CreatePetScreen extends React.Component {
             
             postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
                 console.log(response);
-                alert('Successfully created user!')
+                alert('Usuario creado con éxito!')
                 // go back to login page
                 this.props.navigation.popToTop();
             }).catch(err => {
                 console.error(err);
-                alert(`Failed to create user profile!`);
+                alert(`Error al crear perfil de usuario!`);
                 this.props.navigation.popToTop();
             });      
         };

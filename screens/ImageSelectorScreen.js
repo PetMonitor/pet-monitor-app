@@ -26,7 +26,6 @@ const ImageSelectorScreen = ({ route, navigation }) => {
     const images = data.map((image, index) => { 
         return image["base64"];
     });
-    //console.log(`Set selected images to ${JSON.stringify(images)}`);
 
     EventRegister.emit("SET_IMAGES", images);
 
