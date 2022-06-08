@@ -1,21 +1,24 @@
 import React from 'react';
 
 import { getSecureStoreValueFor } from '../utils/store';
-import { getJsonData, deleteJsonData } from '../utils/requests.js';
-import { OptionTitle } from '../utils/editionHelper.js';
+import { getJsonData, deleteJsonData, postJsonData} from '../utils/requests.js';
+import { CheckBoxItem, getDatePicker, OptionTextInput, OptionTitle } from '../utils/editionHelper.js';
 import { HeaderWithBackArrow } from '../utils/headers';
 import { PetImagesHeader } from '../utils/images.js';
 import { AppButton } from '../utils/buttons.js';
 
 import {  Alert, Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 
+import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 
-import { mapReportTypeToLabel, mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
+import { mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { validateEmail } from '../utils/commons';
 var HttpStatus = require('http-status-codes');
 
 const { height, width } = Dimensions.get("screen")
@@ -56,9 +59,21 @@ export class ReportViewScreen extends React.Component {
             },
             selectedIndex: 0,
             contactInfoModalVisible: false,
+            newFosteringHomeModalVisible: false,
             isMyReport: this.props.route.params.isMyReport,
             noticeId: this.props.route.params.noticeId,
-            fosterHistory: []
+            newHomeSinceSelectedDate: new Date(),
+            newHomeUntilSelectedDate: new Date(),
+            volunteers: [],
+            openDropdown: false,
+            dropdownValue: null,
+            existingVolunteer: true,
+            fosterHistory: [],
+            manualVolunteerData: {
+                name: '',
+                email: '',
+                phoneNumber: ''
+            }
         };
     }
 
@@ -68,8 +83,12 @@ export class ReportViewScreen extends React.Component {
         )
     }
 
-    setModalVisible = (visible) => {
+    setContactModalVisible = (visible) => {
         this.setState({ contactInfoModalVisible: visible });
+    }
+
+    setFosteringHomeModalVisible = (visible) => {
+        this.setState({ newFosteringHomeModalVisible: visible });
     }
 
     handleTabSegmenterIndexChange = index => {
@@ -79,7 +98,7 @@ export class ReportViewScreen extends React.Component {
     };
 
     showContactInfo = () => {
-        this.setModalVisible(true);
+        this.setContactModalVisible(true);
     }
 
     resolveReport = () => {
@@ -141,13 +160,68 @@ export class ReportViewScreen extends React.Component {
         }
     }
 
+    showHistoryInfo = () => {
+        const reportType = this.state.reportType.toLowerCase();
+        return (reportType == 'found') || (reportType == 'for_adoption');
+    }
+
+    addNewHome = () => {
+        this.setFosteringHomeModalVisible(true);
+    }
+
+    fetchFosterVolunteerProfiles() {
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            getSecureStoreValueFor("userId").then(userId => {
+                getJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles', { 'Authorization': 'Basic ' + sessionToken }
+                ).then(profilesInfo => {
+                    let volunteers = []
+                    let promises = []
+                    for (let i = 0; i < profilesInfo.length; i++) {
+                        promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profilesInfo[i].userId + '/contactInfo',
+                        ).then(userInfo => {
+                            let volunteerInfo = {
+                                label: userInfo.name,
+                                value: userInfo
+                            }
+                            if (userId !== userInfo.userId) {
+                                volunteers.push(volunteerInfo)
+                            } 
+                        }).catch(err => {
+                            console.log(err);
+                            alert(err);
+                        }))
+                    }
+                    Promise.all(promises)
+                    .then(() => {
+                        let dropdownValue = null
+                        if (volunteers.length > 0) {
+                            dropdownValue = volunteers[0].value
+                        }
+                        this.setState({ 
+                            volunteers: volunteers,
+                            dropdownValue: dropdownValue
+                        })
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        alert(err);
+                    });
+                }).catch(err => {
+                    console.log(err);
+                    alert(err);
+                });
+            });
+        });
+    }
+
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             this.fetchReportInfo(sessionToken);
-            this.fetchContactInfo(sessionToken);
+            this.fetchContactInfo();
         });
         getSecureStoreValueFor("userId").then(userId => this.setState({ isMyReport: userId === this.props.route.params.noticeUserId}));
+        this.fetchFosterVolunteerProfiles();
     }
 
     fetchReportInfo(sessionToken) {
@@ -157,6 +231,7 @@ export class ReportViewScreen extends React.Component {
             }
         ).then(notice => {
             let datetime = new Date(notice.eventTimestamp)
+            console.log(notice)
             this.setState({
                 reportType: notice.noticeType,
                 eventDescription: notice.description,
@@ -165,7 +240,7 @@ export class ReportViewScreen extends React.Component {
                 province: notice.locality,
                 city: notice.neighbourhood,
                 location: notice.street,
-                petId: notice.petId,
+                petId: notice.pet.id,
                 latitude:  notice.eventLocation.lat,
                 longitude: notice.eventLocation.long
             });
@@ -207,23 +282,18 @@ export class ReportViewScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken
             }
         ).then(history => {
-            console.log(history)
             this.setState({
                 fosterHistory: history
             });
-
         }).catch(err => {
             console.log(err);
             alert(err);
         });
     }
 
-    fetchContactInfo(sessionToken) {
-        getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId,
-            {
-                'Authorization': 'Basic ' + sessionToken
-            }
-        ).then(user => {
+    fetchContactInfo() {
+        getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/contactInfo')
+        .then(user => {
             this.setState({
                 contactInfo: {
                     name: user.name,
@@ -237,22 +307,112 @@ export class ReportViewScreen extends React.Component {
         });
     }
 
+    changeNewHomeModalVisibility = () => {
+        this.setFosteringHomeModalVisible(!this.state.newFosteringHomeModalVisible);
+    }
+
+    cleanNewHomeParams = () => {
+        this.setState({
+            manualVolunteerData: {
+                name: '',
+                email: '',
+                phoneNumber: ''
+            },
+            existingVolunteer: true,
+        });
+    }
+
+    cancelAddHomeAction = () => {
+        this.changeNewHomeModalVisibility();
+        this.cleanNewHomeParams();
+    }
+
+    addFosterHome = () => {
+        let petId = this.state.petId;
+        let name, email, phoneNumber;
+        if (this.state.existingVolunteer) {
+            let volunteer = this.state.dropdownValue
+            name = volunteer.name
+            email = volunteer.email
+            phoneNumber = volunteer.phoneNumber
+        } else {
+            name = this.state.manualVolunteerData.name
+            email = this.state.manualVolunteerData.email
+            phoneNumber = this.state.manualVolunteerData.phoneNumber
+
+            if (!validateEmail(email)) {
+                alert('Ingrese un email válido por favor!');
+                return;
+            }
+        }
+
+        postJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory', {
+            petId: petId,
+            contactEmail: email,
+            contactPhone: phoneNumber,
+            contactName: name,
+            sinceDate: this.state.newHomeSinceSelectedDate.toISOString()
+        }).then(response => {
+            console.log(response);
+          }).catch(err => {
+            alert(err);
+            return;
+        });
+    }
+
+    addHomeAction = () => {
+        this.addFosterHome()
+        this.changeNewHomeModalVisibility();
+    }
+
     render() {
-        
         const reportTypeText = mapReportTypeToReportLabel(this.state.reportType);
         const reportTypeLabel = mapReportTypeToLabelColor(this.state.reportType);
-        const isFoundPet = mapReportTypeToLabel(this.state.reportType) == 'Encontrado';
-        const changeModalVisibility = () => this.setModalVisible(!this.state.contactInfoModalVisible);
-        
+        const showHistoryInfo = this.showHistoryInfo();
+        const changeContactModalVisibility = () => this.setContactModalVisible(!this.state.contactInfoModalVisible);
+        const changeNewHomeModalVisibility = () => this.setFosteringHomeModalVisible(!this.state.newFosteringHomeModalVisible);
+        const changeExistingVolunteer = (value) => this.setState({ existingVolunteer: value });
+
         return (
             <SafeAreaView style={commonStyles.container}>
                 <ContactInfoModal 
                     isVisible={this.state.contactInfoModalVisible}
-                    onModalClose={changeModalVisibility}
+                    onModalClose={changeContactModalVisibility}
                     name={this.state.contactInfo.name}
                     email={this.state.contactInfo.email}
                     phoneNumber={this.state.contactInfo.phoneNumber}
-                    onContactInfoOk={changeModalVisibility}/> 
+                    onContactInfoOk={changeContactModalVisibility}/> 
+                <NewFosteringHomeModal 
+                    isVisible={this.state.newFosteringHomeModalVisible} 
+                    onModalClose={changeNewHomeModalVisibility}
+                    onAddHomePress={this.addHomeAction}
+                    onCancelPress={this.cancelAddHomeAction}
+                    sinceDate={this.state.newHomeSinceSelectedDate}
+                    onSinceDateSelect={(selectedDate) => this.setState({ newHomeSinceSelectedDate: selectedDate })}
+                    untilDate={this.state.newHomeUntilSelectedDate}
+                    onUntilDateSelect={(selectedDate) => this.setState({ newHomeUntilSelectedDate: selectedDate })} 
+                    openDropdown={this.state.openDropdown}
+                    onSetOpen={(open) => this.setState({ openDropdown: open })}
+                    dropdownValue={this.state.dropdownValue}
+                    onSetValue={(callback) => this.setState(state => ({ dropdownValue: callback(state.dropdownValue) }))}
+                    volunteers={this.state.volunteers}
+                    existingVolunteer={this.state.existingVolunteer}
+                    onButtonPress={changeExistingVolunteer}
+                    name={this.state.manualVolunteerData.name}
+                    phoneNumber={this.state.manualVolunteerData.phoneNumber}
+                    email={this.state.manualVolunteerData.email}
+                    onNameChange={text => { this.setState({ manualVolunteerData: {
+                        ...this.state.manualVolunteerData,
+                        name: text
+                    }})}}
+                    onEmailChange={text => { this.setState({ manualVolunteerData: {
+                        ...this.state.manualVolunteerData,
+                        email: text
+                    }})}}
+                    onPhoneNumberChange={text => { this.setState({ manualVolunteerData: {
+                        ...this.state.manualVolunteerData,
+                        phoneNumber: text
+                    }})}} />
                 <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
                 <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
 
@@ -267,9 +427,9 @@ export class ReportViewScreen extends React.Component {
                             segmentedTabTitles={segmentedTabTitles} 
                             selectedIndex={this.state.selectedIndex} 
                             onSelectedTabPress={this.handleTabSegmenterIndexChange}
-                            isFoundPet={isFoundPet}/>
+                            showHistoryInfo={showHistoryInfo}/>
                     </View>
-                    <ScrollView style={{flex:1, paddingHorizontal: 35}}>
+                    <ScrollView style={{flex:1, paddingHorizontal: 35}} showsVerticalScrollIndicator={false}>
                         <ReportContent
                             selectedIndex={this.state.selectedIndex}
                             reportInfo={{
@@ -293,10 +453,7 @@ export class ReportViewScreen extends React.Component {
                                 }
                             }}
                             fosterInfo={{
-                                // TODO: change this
-                                sinceDate: this.state.date,
-                                untilDate: this.state.date,
-                                contactEmail: this.state.contactInfo.email
+                                fosterHistory: this.state.fosterHistory
                             }}/>
                         <ActionButtons 
                             selectedIndex={this.state.selectedIndex}
@@ -306,7 +463,11 @@ export class ReportViewScreen extends React.Component {
                             }}
                             myReportButtonHandler={{
                                 resolveReport: this.confirmResolveReport
-                            }}/>
+                            }} 
+                            fosterInfoButtonHandler={{
+                                addNewHome: this.addNewHome
+                            }}
+                        />
                     </ScrollView>
                 </View>
             </SafeAreaView>
@@ -331,8 +492,8 @@ const Title = ({text, textColor, isMyReport, onEditModePress}) => {
     );
 }
 
-const FosteringHistoryTabSeletor = ({segmentedTabTitles, selectedIndex, onSelectedTabPress, isFoundPet}) => {
-    return isFoundPet && (
+const FosteringHistoryTabSeletor = ({segmentedTabTitles, selectedIndex, onSelectedTabPress, showHistoryInfo}) => {
+    return showHistoryInfo && (
         <SegmentedControlTab
             values={segmentedTabTitles}
             selectedIndex={selectedIndex}
@@ -377,24 +538,152 @@ const ContactInfoModal = ({isVisible, onModalClose, name, email, phoneNumber, on
     );
 }
 
-const FosteringInfo = ({sinceDate, untilDate, contactEmail}) => {
-    return (<>
-        <Text style={{fontSize: 16, color: colors.secondary, paddingTop: 10, fontWeight: 'bold'}}>Información de tránsito</Text>
-        <View style={[commonStyles.alignedContent]}>
-            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
-                <OptionTitle text={"Desde"} additionalStyle={styles.optionTitle} />
-                <Text style={[styles.textInput, { fontSize: 13 }]}>{sinceDate.getDate() + '/' + parseInt(sinceDate.getMonth() + 1) + '/' + sinceDate.getFullYear()}</Text>
-            </View>
-            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
-                <OptionTitle text={"Hasta"} additionalStyle={styles.optionTitle} />
-                <Text style={[styles.textInput, { fontSize: 13 }]}>20/11/2023</Text>
-            </View>
-            <View style={{ flexDirection: 'column', flex: 2.3, alignSelf: 'stretch' }}>
-                <OptionTitle text={"Contacto"} additionalStyle={styles.optionTitle} />
-                <Text style={[styles.textInput, { fontSize: 13 }]}>email_example@gmail.com</Text>
+const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCancelPress, sinceDate, onSinceDateSelect, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onPhoneNumberChange, onEmailChange}) => {
+    return (
+        <View>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isVisible}
+                onRequestClose={onModalClose}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}>
+                   <FosterEntryInfo sinceDate={sinceDate} onSinceDateSelect={onSinceDateSelect} onAddHomePress={onAddHomePress} onCancelPress={onCancelPress} untilDate={untilDate} onUntilDateSelect={onUntilDateSelect} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} onButtonPress={onButtonPress} name={name} email={email} phoneNumber={phoneNumber} onNameChange={onNameChange} onPhoneNumberChange={onPhoneNumberChange} onEmailChange={onEmailChange}/>
+                </View>
+            </Modal>
+        </View>
+    );
+}
+
+const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancelPress, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onEmailChange, onPhoneNumberChange}) => {
+    return (
+        <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Crear nuevo hogar</Text>
+            {/* <View style={commonStyles.alignedContent}> */}
+                {/* <View style={{flex: 1}}> */}
+                    <Text style={[styles.modalText, {fontWeight: 'bold', marginBottom: 0}]}>Fecha de entrada</Text>
+                    <View style={{alignItems: 'center', width: '100%'}}>
+                        {getDatePicker(sinceDate, onSinceDateSelect, {width: 230})}
+                    </View>
+                {/* </View> */}
+                {/* <View style={{flex: 1}}>
+                    <Text style={[styles.modalText, {fontWeight: 'bold'}]}>Fecha de salida</Text>
+                    {getDatePicker(untilDate, onUntilDateSelect)}
+                </View> */}
+            {/* </View> */}
+            <Text style={[styles.modalText, {fontWeight: 'bold', marginTop: 10, marginBottom: 5}]}>Voluntario para alojamiento transitorio</Text>
+            
+            <CheckBoxItem 
+                optionIsSelected={existingVolunteer} 
+                checkBoxTitle={"Elegir voluntario"} 
+                onPress={() => onButtonPress(true)} 
+                additionalStyle={{marginBottom: 10}}/>
+            
+            <DropDownPicker
+                open={openDropdown}
+                value={dropdownValue}
+                items={volunteers}
+                setOpen={onSetOpen}
+                setValue={onSetValue}
+                onSelectItem={item => console.log(item)}
+                disabled={!existingVolunteer}
+                style={{
+                    borderColor: colors.secondary,
+                    marginBottom: 10
+                }}
+                textStyle={{
+                    color: colors.clearBlack,
+                    fontWeight: 'bold'
+                }}
+                dropDownContainerStyle={{
+                    borderColor: colors.secondary,
+                }}
+                disabledStyle={{
+                    opacity: 0.5
+                }}
+            />
+            <CheckBoxItem 
+                optionIsSelected={!existingVolunteer} 
+                checkBoxTitle={"Ingresar voluntario manualmente"} 
+                onPress={() => onButtonPress(false)} />
+            {!existingVolunteer && <>
+                <Text style={styles.optionTitle}>Nombre</Text>           
+                <OptionTextInput onChangeText={onNameChange} value={name} />
+                <Text style={styles.optionTitle}>Teléfono</Text>
+                <OptionTextInput onChangeText={onPhoneNumberChange} value={phoneNumber} />
+                <Text style={styles.optionTitle}>Correo electrónico</Text>
+                <OptionTextInput onChangeText={onEmailChange} value={email} autoCapitalize={"none"} />
+            </>}
+
+            <View style={[commonStyles.alignedContent, {marginTop: 10}]}>
+                <AppButton buttonText={"Cancelar"} onPress={onCancelPress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.pink }}/>
+                <AppButton buttonText={"Agregar"} onPress={onAddHomePress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.primary }}/>
             </View>
         </View>
+    );
+}
+
+const FosteringInfo = ({historyData}) => {
+    let row = []
+    row.push(<FosterInfoRow key={"title"}
+        sinceDate={<OptionTitle text={"Desde"} additionalStyle={styles.optionTitle} />}
+        untilDate={<OptionTitle text={"Hasta"} additionalStyle={styles.optionTitle} />}
+        contactInfo={<OptionTitle text={"Contacto"} additionalStyle={styles.optionTitle} />} />
+    )
+    for (let i = 0; i < historyData.length; i++) {
+        row.push(<FosterInfoRow key={"row" + i}
+            sinceDate={<DateToDisplay date={historyData[i].sinceDate} />} 
+            untilDate={historyData[i].untilDate ? <DateToDisplay date={historyData[i].untilDate} /> : <Text style={[styles.textInput, { fontSize: 13, alignSelf: 'center' }]}>-</Text>} 
+            contactInfo={<ContactInfoText data={historyData[i]} />} />)
+    }
+    return row;
+}
+
+const DateToDisplay = ({date}) => {
+    return (
+        <Text style={[styles.textInput, { fontSize: 13 }]}>{getDate(new Date(date))}</Text>
+    );
+}
+
+const FosterInfoRow = ({sinceDate, untilDate, contactInfo}) => {
+    return (<>
+        <View style={[commonStyles.alignedContent]}>
+            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
+                {sinceDate}
+            </View>
+            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch', paddingLeft: 2 }}>
+                {untilDate}
+            </View>
+            <View style={{ flexDirection: 'column', flex: 2, alignSelf: 'stretch', paddingLeft: 10}}>
+            {/* <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} > */}
+
+                {contactInfo}
+               
+            {/* </ScrollView> */}
+            </View>
+        </View>
+        <View style={{
+            marginTop: 3,
+            borderBottomColor: colors.secondary,
+            borderBottomWidth: 1,
+        }} />
     </>);
+}
+
+
+const ContactInfoText = ({data}) => {
+    return (<>
+        <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactName}</Text>
+        <Text style={[styles.textInput, { fontSize: 13 }]} numberOfLines={1} ellipsizeMode="tail">{data.contactEmail}</Text>
+        <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactPhone}</Text>
+    </>);
+}
+
+function getDate(date) {
+    return fillDateWithZero(date.getDate()) + '/' + fillDateWithZero(parseInt(date.getMonth() + 1)) + '/' + date.getFullYear();
+}
+
+function fillDateWithZero(date) {
+    return ("0" + date).slice(-2);
 }
 
 const EventInfo = ({petLocationTitle, eventLocation, eventCity, eventProvince, eventDate, eventHour, eventDescription}) => {
@@ -406,11 +695,11 @@ const EventInfo = ({petLocationTitle, eventLocation, eventCity, eventProvince, e
         <View style={[commonStyles.alignedContent, {justifyContent: 'center'}]}>
             <View style={{ flexDirection: 'column', flex: 0.5 }}>
                 <OptionTitle text={"Fecha"} additionalStyle={styles.optionTitle} />
-                <Text style={styles.textInput}>{eventDate.getDate() + '/' + parseInt(eventDate.getMonth() + 1) + '/' + eventDate.getFullYear()}</Text>
+                <Text style={styles.textInput}>{eventDate.getDate() + '/' + fillDateWithZero(parseInt(eventDate.getMonth() + 1)) + '/' + eventDate.getFullYear()}</Text>
             </View>
             <View style={{ flexDirection: 'column', flex: 0.5 }}>
                 <OptionTitle text={"Hora"} additionalStyle={styles.optionTitle} />
-                <Text style={styles.textInput}>{("0" + eventHour.getHours()).slice(-2) + ':' + ("0" + eventHour.getMinutes()).slice(-2)}</Text>
+                <Text style={styles.textInput}>{fillDateWithZero(eventHour.getHours()) + ':' + fillDateWithZero(eventHour.getMinutes())}</Text>
             </View>
         </View>
 
@@ -461,7 +750,16 @@ const ReportContent = ({selectedIndex, reportInfo, fosterInfo}) => {
         return <ReportInfo eventInfo={reportInfo.eventInfo} petInfo={reportInfo.petInfo} />;
     } else if (selectedIndex == segmentedTabTitles.indexOf(historyTitle)) {
         // Show history tab data: places where the pet has been fostered
-        return <FosteringInfo sinceDate={fosterInfo.sinceDate} untilDate={fosterInfo.untilDate} contactEmail={fosterInfo.contactEmail}/>;
+        let historyData = fosterInfo.fosterHistory
+
+        const title = <Text style={{fontSize: 16, color: colors.secondary, paddingTop: 10, fontWeight: 'bold'}}>
+            {historyData.length == 0 ? "No hay hogares registrados para esta mascota por el momento": "Hogares de tránsito de la mascota"}
+            </Text>;
+
+        let history = []
+        history.push(title)
+        history.push(<FosteringInfo historyData={historyData}/>)
+        return history;
     }
     return null;
 }
@@ -472,7 +770,7 @@ const ContactButton = ({showContactInfo}) => {
 
 const MyReportButtons = ({resolveReport}) => {
     return (<>
-        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>
     </>);
 }
 
@@ -484,9 +782,25 @@ const ReportButtons = ({isMyReport, guestButtonHandler, myReportButtonHandler}) 
     }
 }
 
-const ActionButtons = ({selectedIndex, isMyReport, guestButtonHandler, myReportButtonHandler}) => {
+const FosterButtons = ({isMyReport, fosterInfoButtonHandler}) => {
+    if (isMyReport) {
+        return (
+            <AppButton 
+                buttonText={"Nuevo hogar"} 
+                onPress={fosterInfoButtonHandler.addNewHome} 
+                additionalButtonStyles={[styles.button, {alignSelf: 'center', marginTop: 30, marginBottom: 50}]} 
+                additionalTextStyles={{ paddingLeft: 10 }}
+                additionalElement={<FeatherIcon name='plus' size={20} color={colors.white} />} />
+        );
+    }
+    return null;
+}
+
+const ActionButtons = ({selectedIndex, isMyReport, guestButtonHandler, myReportButtonHandler, fosterInfoButtonHandler}) => {
     if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
         return <ReportButtons isMyReport={isMyReport} guestButtonHandler={guestButtonHandler} myReportButtonHandler={myReportButtonHandler}/>
+    } else if (selectedIndex == segmentedTabTitles.indexOf(historyTitle)) {
+        return <FosterButtons isMyReport={isMyReport} fosterInfoButtonHandler={fosterInfoButtonHandler} />
     }
     return null;
 }
@@ -494,7 +808,8 @@ const ActionButtons = ({selectedIndex, isMyReport, guestButtonHandler, myReportB
 const styles = StyleSheet.create({
     optionTitle: {
         paddingTop: 20, 
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: colors.clearBlack
     },
     textInput: {
         paddingTop: 10, 
