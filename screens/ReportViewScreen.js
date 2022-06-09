@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { getSecureStoreValueFor } from '../utils/store';
-import { getJsonData, deleteJsonData, postJsonData} from '../utils/requests.js';
+import { getJsonData, deleteJsonData, postJsonData, putJsonData } from '../utils/requests.js';
 import { CheckBoxItem, getDatePicker, OptionTextInput, OptionTitle } from '../utils/editionHelper.js';
 import { HeaderWithBackArrow } from '../utils/headers';
 import { PetImagesHeader } from '../utils/images.js';
@@ -62,13 +62,15 @@ export class ReportViewScreen extends React.Component {
             newFosteringHomeModalVisible: false,
             isMyReport: this.props.route.params.isMyReport,
             noticeId: this.props.route.params.noticeId,
-            newHomeSinceSelectedDate: new Date(),
-            newHomeUntilSelectedDate: new Date(),
+            homeSinceSelectedDate: new Date(),
+            homeUntilSelectedDate: new Date(),
             volunteers: [],
             openDropdown: false,
             dropdownValue: null,
             existingVolunteer: true,
             fosterHistory: [],
+            refresh: false,
+            historyDataToEdit: null,
             manualVolunteerData: {
                 name: '',
                 email: '',
@@ -169,6 +171,21 @@ export class ReportViewScreen extends React.Component {
         this.setFosteringHomeModalVisible(true);
     }
 
+    editHomeButton = (historyData) => {
+        console.log("executed")
+        this.setFosteringHomeModalVisible(true);
+        this.setState({ 
+            historyDataToEdit: historyData,
+            manualVolunteerData: {
+                name: historyData.contactName,
+                email: historyData.contactEmail,
+                phoneNumber: historyData.contactPhone,
+            },
+            homeSinceSelectedDate: new Date(historyData.sinceDate),
+            homeUntilSelectedDate: new Date(historyData.untilDate ? historyData.untilDate : new Date()),
+         });
+    }
+
     fetchFosterVolunteerProfiles() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getSecureStoreValueFor("userId").then(userId => {
@@ -214,7 +231,6 @@ export class ReportViewScreen extends React.Component {
         });
     }
 
-
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             this.fetchReportInfo(sessionToken);
@@ -222,6 +238,15 @@ export class ReportViewScreen extends React.Component {
         });
         getSecureStoreValueFor("userId").then(userId => this.setState({ isMyReport: userId === this.props.route.params.noticeUserId}));
         this.fetchFosterVolunteerProfiles();
+    }
+
+    componentDidUpdate() {
+        if (this.state.refresh) {
+            this.setState({ refresh: false });
+            getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+                this.fetchReportInfo(sessionToken);
+            });
+        }
     }
 
     fetchReportInfo(sessionToken) {
@@ -282,6 +307,8 @@ export class ReportViewScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken
             }
         ).then(history => {
+            history.sort((a, b) => a.sinceDate > b.sinceDate ? 1 : -1)
+
             this.setState({
                 fosterHistory: history
             });
@@ -311,7 +338,7 @@ export class ReportViewScreen extends React.Component {
         this.setFosteringHomeModalVisible(!this.state.newFosteringHomeModalVisible);
     }
 
-    cleanNewHomeParams = () => {
+    cleanHomeParams = () => {
         this.setState({
             manualVolunteerData: {
                 name: '',
@@ -319,12 +346,13 @@ export class ReportViewScreen extends React.Component {
                 phoneNumber: ''
             },
             existingVolunteer: true,
+            historyDataToEdit: null,
         });
     }
 
-    cancelAddHomeAction = () => {
+    cancelHomeAction = () => {
         this.changeNewHomeModalVisibility();
-        this.cleanNewHomeParams();
+        this.cleanHomeParams();
     }
 
     addFosterHome = () => {
@@ -351,13 +379,43 @@ export class ReportViewScreen extends React.Component {
             contactEmail: email,
             contactPhone: phoneNumber,
             contactName: name,
-            sinceDate: this.state.newHomeSinceSelectedDate.toISOString()
+            sinceDate: this.state.homeSinceSelectedDate.toISOString()
         }).then(response => {
-            console.log(response);
-          }).catch(err => {
+            console.log(`History data successfully created!`);
+            this.setState({ refresh: true })
+            Alert.alert('', `Hogar de tránsito agregado!`);
+        }).catch(err => {
             alert(err);
             return;
         });
+    }
+
+    editFosterHomeData(historyData) {
+        let petId = this.state.petId;
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            putJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory/' + historyData.historyId,
+                {
+                    _ref: historyData._ref,
+                    petId: historyData.petId,
+                    contactEmail: this.state.manualVolunteerData.email,
+                    contactName: this.state.manualVolunteerData.name,
+                    contactPhone: this.state.manualVolunteerData.phoneNumber,
+                    sinceDate: this.state.homeSinceSelectedDate.toISOString(),
+                    untilDate: this.state.homeUntilSelectedDate.toISOString(),
+                },
+                {
+                    'Authorization': 'Basic ' + sessionToken
+                }).then(response => {
+                    console.log(`History data successfully updated!`);
+                    this.setState({ refresh: true })
+                    Alert.alert('', `Hogar de tránsito actualizado!`);
+                }).catch(err => {
+                    console.log(err);
+                    alert(err);
+                });
+        });
+        this.cleanHomeParams();
+        this.changeNewHomeModalVisibility();
     }
 
     addHomeAction = () => {
@@ -386,11 +444,11 @@ export class ReportViewScreen extends React.Component {
                     isVisible={this.state.newFosteringHomeModalVisible} 
                     onModalClose={changeNewHomeModalVisibility}
                     onAddHomePress={this.addHomeAction}
-                    onCancelPress={this.cancelAddHomeAction}
-                    sinceDate={this.state.newHomeSinceSelectedDate}
-                    onSinceDateSelect={(selectedDate) => this.setState({ newHomeSinceSelectedDate: selectedDate })}
-                    untilDate={this.state.newHomeUntilSelectedDate}
-                    onUntilDateSelect={(selectedDate) => this.setState({ newHomeUntilSelectedDate: selectedDate })} 
+                    onCancelPress={this.cancelHomeAction}
+                    sinceDate={this.state.homeSinceSelectedDate}
+                    onSinceDateSelect={(selectedDate) => this.setState({ homeSinceSelectedDate: selectedDate })}
+                    untilDate={this.state.homeUntilSelectedDate}
+                    onUntilDateSelect={(selectedDate) => this.setState({ homeUntilSelectedDate: selectedDate })} 
                     openDropdown={this.state.openDropdown}
                     onSetOpen={(open) => this.setState({ openDropdown: open })}
                     dropdownValue={this.state.dropdownValue}
@@ -412,7 +470,9 @@ export class ReportViewScreen extends React.Component {
                     onPhoneNumberChange={text => { this.setState({ manualVolunteerData: {
                         ...this.state.manualVolunteerData,
                         phoneNumber: text
-                    }})}} />
+                    }})}}
+                    dataToEdit={this.state.historyDataToEdit}
+                    onEditHomePress={() => this.editFosterHomeData(this.state.historyDataToEdit)} />
                 <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
                 <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
 
@@ -421,7 +481,7 @@ export class ReportViewScreen extends React.Component {
                         <Title 
                             text={reportTypeText} 
                             textColor={reportTypeLabel}
-                            isMyReport={this.state.isMyReport}
+                            isMyReport={this.state.isMyReport && this.state.selectedIndex == segmentedTabTitles.indexOf(infoTitle)}
                             onEditModePress={this.goToEdit}/>
                         <FosteringHistoryTabSeletor 
                             segmentedTabTitles={segmentedTabTitles} 
@@ -454,7 +514,8 @@ export class ReportViewScreen extends React.Component {
                             }}
                             fosterInfo={{
                                 fosterHistory: this.state.fosterHistory
-                            }}/>
+                            }}
+                            onEditPress={(dataToEdit) => this.editHomeButton(dataToEdit)} />
                         <ActionButtons 
                             selectedIndex={this.state.selectedIndex}
                             isMyReport={this.state.isMyReport}
@@ -538,7 +599,7 @@ const ContactInfoModal = ({isVisible, onModalClose, name, email, phoneNumber, on
     );
 }
 
-const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCancelPress, sinceDate, onSinceDateSelect, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onPhoneNumberChange, onEmailChange}) => {
+const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCancelPress, sinceDate, onSinceDateSelect, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onPhoneNumberChange, onEmailChange, dataToEdit, onEditHomePress}) => {
     return (
         <View>
             <Modal
@@ -547,31 +608,44 @@ const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCance
                 visible={isVisible}
                 onRequestClose={onModalClose}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}>
-                   <FosterEntryInfo sinceDate={sinceDate} onSinceDateSelect={onSinceDateSelect} onAddHomePress={onAddHomePress} onCancelPress={onCancelPress} untilDate={untilDate} onUntilDateSelect={onUntilDateSelect} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} onButtonPress={onButtonPress} name={name} email={email} phoneNumber={phoneNumber} onNameChange={onNameChange} onPhoneNumberChange={onPhoneNumberChange} onEmailChange={onEmailChange}/>
+                   <FosterEntryInfo sinceDate={sinceDate} onSinceDateSelect={onSinceDateSelect} onAddHomePress={onAddHomePress} onCancelPress={onCancelPress} untilDate={untilDate} onUntilDateSelect={onUntilDateSelect} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} onButtonPress={onButtonPress} name={name} email={email} phoneNumber={phoneNumber} onNameChange={onNameChange} onPhoneNumberChange={onPhoneNumberChange} onEmailChange={onEmailChange} dataToEdit={dataToEdit} onEditHomePress={onEditHomePress} />
                 </View>
             </Modal>
         </View>
     );
 }
 
-const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancelPress, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onEmailChange, onPhoneNumberChange}) => {
+const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancelPress, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onEmailChange, onPhoneNumberChange, dataToEdit, onEditHomePress}) => {
     return (
         <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Crear nuevo hogar</Text>
-            {/* <View style={commonStyles.alignedContent}> */}
-                {/* <View style={{flex: 1}}> */}
-                    <Text style={[styles.modalText, {fontWeight: 'bold', marginBottom: 0}]}>Fecha de entrada</Text>
-                    <View style={{alignItems: 'center', width: '100%'}}>
-                        {getDatePicker(sinceDate, onSinceDateSelect, {width: 230})}
+            <Text style={styles.modalTitle}>{dataToEdit ? "Editar hogar" : "Crear nuevo hogar"}</Text>
+            {dataToEdit ? 
+                <View style={[commonStyles.alignedContent, {marginTop: 5}]}>
+                    <View style={{flex: 1}}>
+                        <Text style={[styles.modalText, {fontWeight: 'bold', marginBottom: 0}]}>Fecha de entrada</Text>
+                        {getDatePicker(sinceDate, onSinceDateSelect)}
                     </View>
-                {/* </View> */}
-                {/* <View style={{flex: 1}}>
-                    <Text style={[styles.modalText, {fontWeight: 'bold'}]}>Fecha de salida</Text>
-                    {getDatePicker(untilDate, onUntilDateSelect)}
-                </View> */}
-            {/* </View> */}
-            <Text style={[styles.modalText, {fontWeight: 'bold', marginTop: 10, marginBottom: 5}]}>Voluntario para alojamiento transitorio</Text>
-            
+                    <View style={{flex: 1}}>
+                        <Text style={[styles.modalText, {fontWeight: 'bold', marginBottom: 0}]}>Fecha de salida</Text>
+                        {getDatePicker(untilDate, onUntilDateSelect)}
+                    </View>
+                </View> 
+                : <>
+                <Text style={[styles.modalText, {fontWeight: 'bold', marginBottom: 0}]}>Fecha de entrada</Text>
+                <View style={{alignItems: 'center', width: '100%'}}>
+                    {getDatePicker(sinceDate, onSinceDateSelect, {width: 110})}
+                </View>
+            </> }
+            <Text style={[styles.modalText, {fontWeight: 'bold', marginTop: 20, marginBottom: 5}]}>Voluntario para alojamiento transitorio</Text>
+            {dataToEdit ? <>
+                <Text style={[styles.optionTitle, {paddingTop: 5, fontWeight: '500'}]}>Nombre</Text>           
+                <OptionTextInput onChangeText={onNameChange} value={name} />
+                <Text style={[styles.optionTitle, {fontWeight: '500'}]}>Teléfono</Text>
+                <OptionTextInput onChangeText={onPhoneNumberChange} value={phoneNumber} />
+                <Text style={[styles.optionTitle, {fontWeight: '500'}]}>Correo electrónico</Text>
+                <OptionTextInput onChangeText={onEmailChange} value={email} autoCapitalize={"none"} />
+            </>
+            : <>
             <CheckBoxItem 
                 optionIsSelected={existingVolunteer} 
                 checkBoxTitle={"Elegir voluntario"} 
@@ -613,16 +687,17 @@ const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancel
                 <Text style={styles.optionTitle}>Correo electrónico</Text>
                 <OptionTextInput onChangeText={onEmailChange} value={email} autoCapitalize={"none"} />
             </>}
+            </>}
 
             <View style={[commonStyles.alignedContent, {marginTop: 10}]}>
                 <AppButton buttonText={"Cancelar"} onPress={onCancelPress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.pink }}/>
-                <AppButton buttonText={"Agregar"} onPress={onAddHomePress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.primary }}/>
+                <AppButton buttonText={dataToEdit ? "Actualizar" : "Agregar"} onPress={dataToEdit ? onEditHomePress : onAddHomePress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.primary }}/>
             </View>
         </View>
     );
 }
 
-const FosteringInfo = ({historyData}) => {
+const FosteringInfo = ({historyData, onEditPress}) => {
     let row = []
     row.push(<FosterInfoRow key={"title"}
         sinceDate={<OptionTitle text={"Desde"} additionalStyle={styles.optionTitle} />}
@@ -633,7 +708,9 @@ const FosteringInfo = ({historyData}) => {
         row.push(<FosterInfoRow key={"row" + i}
             sinceDate={<DateToDisplay date={historyData[i].sinceDate} />} 
             untilDate={historyData[i].untilDate ? <DateToDisplay date={historyData[i].untilDate} /> : <Text style={[styles.textInput, { fontSize: 13, alignSelf: 'center' }]}>-</Text>} 
-            contactInfo={<ContactInfoText data={historyData[i]} />} />)
+            contactInfo={<ContactInfoText data={historyData[i]} />} 
+            dataToEdit={historyData[i]} 
+            onEditPress={onEditPress}/>)
     }
     return row;
 }
@@ -644,27 +721,35 @@ const DateToDisplay = ({date}) => {
     );
 }
 
-const FosterInfoRow = ({sinceDate, untilDate, contactInfo}) => {
+const FosterInfoRow = ({sinceDate, untilDate, contactInfo, dataToEdit = null, onEditPress}) => {
     return (<>
-        <View style={[commonStyles.alignedContent]}>
+        <View style={[commonStyles.alignedContent, {marginHorizontal: -25}]}>
             <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
                 {sinceDate}
             </View>
-            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch', paddingLeft: 2 }}>
+            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch'}}>
                 {untilDate}
             </View>
-            <View style={{ flexDirection: 'column', flex: 2, alignSelf: 'stretch', paddingLeft: 10}}>
+            <View style={{ flexDirection: 'column', flex: 2.5, alignSelf: 'stretch', marginLeft: 10}}>
             {/* <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} > */}
 
                 {contactInfo}
                
             {/* </ScrollView> */}
             </View>
+            {dataToEdit &&
+                <View style={{ flexDirection: 'column', flex: 1/3, alignSelf: 'stretch', justifyContent: 'center',  marginLeft: 2}}>
+                    <TouchableOpacity onPress={() => onEditPress(dataToEdit)}>
+                        <MaterialIcon name='pencil' size={20} color={colors.secondary} />
+                    </TouchableOpacity>
+                </View>
+            }
         </View>
         <View style={{
             marginTop: 3,
             borderBottomColor: colors.secondary,
             borderBottomWidth: 1,
+            marginHorizontal: -25
         }} />
     </>);
 }
@@ -673,7 +758,7 @@ const FosterInfoRow = ({sinceDate, untilDate, contactInfo}) => {
 const ContactInfoText = ({data}) => {
     return (<>
         <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactName}</Text>
-        <Text style={[styles.textInput, { fontSize: 13 }]} numberOfLines={1} ellipsizeMode="tail">{data.contactEmail}</Text>
+        <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactEmail}</Text>
         <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactPhone}</Text>
     </>);
 }
@@ -744,7 +829,7 @@ const ReportInfo = ({eventInfo, petInfo}) => {
     </>);
 }
 
-const ReportContent = ({selectedIndex, reportInfo, fosterInfo}) => {
+const ReportContent = ({selectedIndex, reportInfo, fosterInfo, onEditPress}) => {
     if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
         // Show information tab data: event and pet details
         return <ReportInfo eventInfo={reportInfo.eventInfo} petInfo={reportInfo.petInfo} />;
@@ -758,7 +843,7 @@ const ReportContent = ({selectedIndex, reportInfo, fosterInfo}) => {
 
         let history = []
         history.push(title)
-        history.push(<FosteringInfo historyData={historyData}/>)
+        history.push(<FosteringInfo historyData={historyData} onEditPress={onEditPress}/>)
         return history;
     }
     return null;
