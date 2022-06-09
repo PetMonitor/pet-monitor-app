@@ -38,7 +38,7 @@ export class ViewPetDetailsScreen extends React.Component {
         )
     }
 
-    onPetDataUpdated = (updatedPetData) => {
+    onPetDataUpdated = () => {
         this.getPetDetails()
     };
 

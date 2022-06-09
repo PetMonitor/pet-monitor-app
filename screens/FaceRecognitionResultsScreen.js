@@ -2,7 +2,7 @@ import React from 'react';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions, SafeAreaView } from 'react-native';
+import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions, SafeAreaView, ActivityIndicator } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Modal from "react-native-modal";
 import { Buffer } from 'buffer'
@@ -11,6 +11,7 @@ import { getJsonData, postJsonData, deleteJsonData } from '../utils/requests.js'
 import { getSecureStoreValueFor } from '../utils/store';
 import { mapReportTypeToLabel, mapReportTypeToLabelColor } from '../utils/mappers';
 import { HeaderWithBackArrow } from '../utils/headers';
+import { AppButton } from "../utils/buttons.js";
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
@@ -36,7 +37,8 @@ export class FaceRecognitionResultsScreen extends React.Component {
             userId: props.route.params.userId,
             alertsActivated: false,
             alertFrequency: 1,
-            alertLimitDate: new Date()
+            alertLimitDate: new Date(),
+            feedbackDisabled: false
         };
     }
     
@@ -56,6 +58,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
     }
 
     componentDidMount() {
+        this.setState({ isLoading : true })
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getJsonData(global.noticeServiceBaseUrl + '/similarPets/' + this.state.searchedNoticeId, 
             {
@@ -65,7 +68,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 this.setState({ notices : response });
             }).catch(err => {
                 console.log(err);
-                alert(err)
+                this.setState({ notices : [] });
             }).finally(() => this.setState({ isLoading : false }));
         });
     }
@@ -114,6 +117,28 @@ export class FaceRecognitionResultsScreen extends React.Component {
             this.setState({ contactInfoModalVisible: false, pressedOK: true });
         };
 
+        const sendPredictionFeedback = async () => {
+            if (this.state.notices.length == 0) {
+                return;
+            }
+
+            noticeIdsList = this.state.notices.map(notice => notice.noticeId)
+            console.log(`Sending feedback with notices ${noticeIdsList}`)
+
+            postJsonData(global.noticeServiceBaseUrl + '/prediction/result/failure/' + this.state.searchedNoticeId, 
+                { predictedNoticeIds: [...noticeIdsList] }
+            )
+            .then(response => {
+                console.log(response);
+                alert('Registramos tu respuesta! Sentimos no haber encontrado a tu mascota!')
+                this.setState({ feedbackDisabled: true });
+                this.props.navigation.goBack();
+            }).catch(err => {
+                console.error(err);
+                this.props.navigation.goBack();
+            });  
+        };
+
         const closeModal = async () => {
             this.setState({ contactInfoModalVisible: false });
         };
@@ -130,7 +155,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
         }
 
         return (<>
-            <SafeAreaView
+        <SafeAreaView
                 edges={["top"]}
                 style={{ flex: 0, backgroundColor: colors.primary }}/>
             <SafeAreaView
@@ -195,21 +220,50 @@ export class FaceRecognitionResultsScreen extends React.Component {
                         </View>
                     </Modal>
                 </View>
-                <FlatList 
-                    data={this.state.notices} 
-                    numColumns={2}
-                    keyExtractor={(_, index) => index.toString()}
-                    initialNumToRender={this.state.notices.length}
-                    renderItem={this.renderItem}
-                    style={{margin: 20}}
-                />
+
+                { this.state.isLoading?
+                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
+                        <ActivityIndicator size="large" color={colors.clearBlack}/>
+                    </View> :
+                    <View>
+                    { this.state.notices.length > 0 ? 
+                        <View>
+                            <FlatList 
+                                data={this.state.notices} 
+                                numColumns={2}
+                                keyExtractor={(_, index) => index.toString()}
+                                initialNumToRender={this.state.notices.length}
+                                renderItem={this.renderItem}
+                                style={{margin: 20}}
+                            />
+                            <AppButton
+                                buttonText={"Mi mascota no está en esta lista!"} 
+                                onPress={sendPredictionFeedback} 
+                                isDisabled={this.state.feedbackDisabled}
+                                additionalButtonStyles={[styles.button, { backgroundColor: colors.pink, marginTop: 20, marginBottom: 60}]} /> 
+                        </View>: 
+                        <View>
+                            <Text style={{textAlign: 'center', color: colors.yellow, fontSize: 20 }}>
+                                Oops!
+                            </Text>
+                            <Text style={{textAlign: 'center', color: colors.yellow, fontSize: 20, paddingBottom:'80%' }}>
+                                No encontramos resultados para tu búsqueda!
+                            </Text>
+                        </View>
+                    }
+                    </View>
+                }
                 </SafeAreaView>
                 </>
-        )
+            )
     }
 }
 
 const styles = StyleSheet.create({
+    button: {
+        margin: 10,
+        alignSelf: 'stretch',
+    },
     titleText: {
         color: colors.clearBlack, 
         fontSize: 24,

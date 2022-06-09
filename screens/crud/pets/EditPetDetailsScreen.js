@@ -1,15 +1,17 @@
 import React from "react";
 
-import Icon from 'react-native-vector-icons/Feather';
+//import Icon from 'react-native-vector-icons/Feather';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { putJsonData, deleteJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import { Image, ImageBackground, Text, TextInput, TouchableOpacity, StyleSheet, View, ScrollView, Alert } from 'react-native';
+import { ImageBackground, Text, TextInput, TouchableOpacity, StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { AppButton } from "../../../utils/buttons.js";
 import { EventRegister } from 'react-native-event-listeners';
 
 import uuid from 'react-native-uuid';
 import colors from '../../../config/colors';
+import Loader  from '../../../utils/Loader.js';
 
 
 export class EditPetDetailsScreen extends React.Component {
@@ -22,7 +24,8 @@ export class EditPetDetailsScreen extends React.Component {
             ...this.props.route.params.petData,
             photos: this.props.route.params.petData.petPhotos,
             newPhotos: [],
-            deletedPhotos: []
+            deletedPhotos: [],
+            isLoading: false
         }     
     }
 
@@ -74,6 +77,8 @@ export class EditPetDetailsScreen extends React.Component {
                 return;
             }
 
+            this.setState({ isLoading: true })
+
             const editedPet = Object.assign({}, { 
                 petData: {
                     _ref: uuid.v4(),
@@ -98,9 +103,10 @@ export class EditPetDetailsScreen extends React.Component {
                 {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(responsePet => {
-                    console.log(`Edit pet endpoint returned error ${responsePet}`);
+                    console.log(`Edit pet endpoint returned ${responsePet}`);
+                    this.setState({ isLoading: false })
                     this.props.navigation.pop();
-                    this.props.route.params.onUpdate(this.state);
+                    this.props.route.params.onUpdate();
                 }).catch(err => {
                     console.error(err);
                     alert(err);
@@ -143,6 +149,8 @@ export class EditPetDetailsScreen extends React.Component {
 
         return (
             <View style={styles.container}>
+                { this.state.isLoading ? 
+                <Loader /> :
                 <ScrollView style={styles.scrollView} >
                     <Text style={styles.optionTitle}>Nombre</Text>
                     <TextInput 
@@ -218,13 +226,22 @@ export class EditPetDetailsScreen extends React.Component {
 
                             return <ImageBackground key={item.photoId} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}  
                                 style={{width: 60, height: 60, margin: 4}}>
-                                    <View>
+                                    <View style={{ margin: 0, padding:0, width: 64, height: 64 }}>
                                         <Icon.Button
                                             onPress={() => handleDeleteImage(item.photoId)}
                                             size={30}
-                                            name='x'
-                                            backgroundColor='transparent'
-                                            color={colors.white}/>
+                                            name='delete'
+                                            underlayColor="transparent"
+                                            backgroundColor="transparent"
+                                            color={colors.lightGrey}
+                                            style={{ margin: 0, padding:0 }}
+                                            iconStyle={{
+                                                textAlign:'center',
+                                                margin: 0,
+                                                paddingTop:30,
+                                                paddingLeft:30,
+                                            }}
+                                        />
                                     </View>
                             </ImageBackground>
                         })}
@@ -232,13 +249,23 @@ export class EditPetDetailsScreen extends React.Component {
                         {this.state.newPhotos.map((imageBase64, index) => {
                             return <ImageBackground key={index} source={{ uri: "data:image/png;base64," + imageBase64 }}  
                                 style={{width: 60, height: 60, margin: 4}}>
-                                    <View>
+                                    <View  style={{ margin: 0, padding:0, width: 64, height: 64 }}>
                                         <Icon.Button
                                             onPress={() => handleDeleteRecentlyAddedImage(index)}
                                             size={30}
-                                            name='x'
-                                            backgroundColor='transparent'
-                                            color={colors.white}/>
+                                            name='delete'
+                                            underlayColor="transparent"
+                                            backgroundColor="transparent"
+                                            color={colors.lightGrey}
+                                            style={{ margin: 0, padding:0 }}
+                                            iconStyle={{
+                                                textAlign:'center',
+                                                margin: 0,
+                                                paddingTop:30,
+                                                paddingLeft:30,
+                                            }}
+                                           
+                                        />
                                     </View>
                             </ImageBackground>
                         })}
@@ -247,7 +274,7 @@ export class EditPetDetailsScreen extends React.Component {
                             <Icon
                                 style={{margin: 4}}
                                 size={60}
-                                name='plus'
+                                name='add'
                                 color={colors.yellow}
                                 backgroundColor={colors.white}
                             />
@@ -276,6 +303,7 @@ export class EditPetDetailsScreen extends React.Component {
                         onPress={handleDeletePet} 
                         additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 20, marginBottom: 60}]} /> 
                 </ScrollView>
+                }
             </View>
         )
     }
