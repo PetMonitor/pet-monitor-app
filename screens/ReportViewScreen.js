@@ -467,7 +467,7 @@ const ContactButton = ({showContactInfo}) => {
 
 const MyReportButtons = ({resolveReport}) => {
     return (<>
-        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.pink, marginHorizontal: 0, marginTop: 40 }}/>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40 }}/>
     </>);
 }
 
