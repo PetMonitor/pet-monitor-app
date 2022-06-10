@@ -92,7 +92,7 @@ export class FosteringVolunteersScreen extends React.Component {
                     let promises = []
                     let myVolunteerProfile = null
                     for (let i = 0; i < profilesInfo.length; i++) {
-                        promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profilesInfo[i].userId, { 'Authorization': 'Basic ' + sessionToken }
+                        promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profilesInfo[i].userId + '/contactInfo'
                         ).then(userInfo => {
                             let volunteerInfo = {
                                 ...profilesInfo[i],

@@ -1,25 +1,49 @@
 import React from "react";
 
-import Icon from 'react-native-vector-icons/AntDesign';
+//import Icon from 'react-native-vector-icons/Feather';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { putJsonData, deleteJsonData } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
-import { Image, Text, TextInput, TouchableOpacity, StyleSheet, View, ScrollView, Alert, SafeAreaView } from 'react-native';
+import { ImageBackground, Text, TextInput, TouchableOpacity, StyleSheet, View, ScrollView, Alert, SafeAreaView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { AppButton } from "../../../utils/buttons.js";
+import { EventRegister } from 'react-native-event-listeners';
 
 import uuid from 'react-native-uuid';
 import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
+import Loader  from '../../../utils/Loader.js';
 import { HeaderWithBackArrow } from "../../../utils/headers.js";
 
 
 export class EditPetDetailsScreen extends React.Component {
 
+    MIN_PROFILE_PHOTOGRAPHS = 2
+
     constructor(props) {
         super(props);
         this.state = { 
-            ...this.props.route.params.petData
+            ...this.props.route.params.petData,
+            photos: this.props.route.params.petData.petPhotos,
+            newPhotos: [],
+            deletedPhotos: [],
+            isLoading: false
         }     
+    }
+
+    componentDidMount() {
+        this.listener = EventRegister.addEventListener("SET_IMAGES",(selectedImages) => {
+            //console.log(`Selected images ${selectedImages}`)
+            const addedPhotos = [
+                ...this.state.newPhotos,
+                selectedImages
+            ].flat()
+            this.setState({ newPhotos: addedPhotos })
+        })
+    }
+
+    componentWillUnmount() {
+        EventRegister.removeEventListener(this.listener);
     }
 
     render() {
@@ -35,8 +59,9 @@ export class EditPetDetailsScreen extends React.Component {
                 {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(response => {
-                    console.log(`Delete pet endpoint returned error ${response}`)
+                    console.log(`Delete pet endpoint returned ${JSON.stringify(response)}`)
                     this.props.navigation.navigate('ViewUserDetails');
+                    this.props.route.params.onPetDeleted(this.state.petId);
                 }).catch(err => {
                     console.log(err);
                     alert(err)
@@ -46,20 +71,33 @@ export class EditPetDetailsScreen extends React.Component {
         }
 
         const handleEditPetDetails = () => {
-            const editedPet = Object.assign({}, { 
-                _ref: uuid.v4(),
-                userId: this.props.route.params.userId,
-                name: this.state.name,
-                sex: this.state.sex,
-                type: this.state.type,
-                furColor: this.state.furColor,
-                age: undefined,
-                breed: this.state.breed,
-                size: this.state.size,
-                lifeStage: this.state.lifeStage,
-                description: this.state.petDescription,
-            })
 
+            // check at least two photos remain
+            const remainingPhotosCount = this.state.photos.length + this.state.newPhotos.length
+            if (remainingPhotosCount < this.MIN_PROFILE_PHOTOGRAPHS) {
+                alert(`El perfil debe contener al menos ${this.MIN_PROFILE_PHOTOGRAPHS} fotografías!`);
+                return;
+            }
+
+            this.setState({ isLoading: true })
+
+            const editedPet = Object.assign({}, { 
+                petData: {
+                    _ref: uuid.v4(),
+                    userId: this.props.route.params.userId,
+                    name: this.state.name,
+                    sex: this.state.sex,
+                    type: this.state.type,
+                    furColor: this.state.furColor,
+                    age: undefined,
+                    breed: this.state.breed,
+                    size: this.state.size,
+                    lifeStage: this.state.lifeStage,
+                    description: this.state.petDescription,
+                },
+                newPhotos: this.state.newPhotos,
+                deletedPhotos: this.state.deletedPhotos 
+            })
 
             getSecureStoreValueFor('sessionToken').then((sessionToken) => {
                 putJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.userId + '/pets/' + this.state.petId, 
@@ -67,9 +105,10 @@ export class EditPetDetailsScreen extends React.Component {
                 {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(responsePet => {
-                    console.log(`Edit pet endpoint returned error ${responsePet}`);
+                    console.log(`Edit pet endpoint returned ${responsePet}`);
+                    this.setState({ isLoading: false })
                     this.props.navigation.pop();
-                    this.props.route.params.onUpdate(this.state);
+                    this.props.route.params.onUpdate();
                 }).catch(err => {
                     console.error(err);
                     alert(err);
@@ -78,9 +117,44 @@ export class EditPetDetailsScreen extends React.Component {
             });
         }
 
+        const handleDeleteImage = (deletedPhotoId) => {
+            const deleted = [
+                ...this.state.deletedPhotos,
+                deletedPhotoId
+            ]
+            const photos = this.state.photos.filter(photo => photo.photoId != deletedPhotoId)
+            this.setState({ deletedPhotos: deleted, photos: photos })
+        }
+
+        const handleDeleteRecentlyAddedImage = (deletedPhotoIndex) => {
+            var addedPhotos = [ ...this.state.newPhotos ]
+            addedPhotos.splice(deletedPhotoIndex, 1);
+            this.setState({ newPhotos: addedPhotos })
+        }
+
+        confirmDeletePet = () =>
+            Alert.alert(
+            "Atención!",
+            "Si presionás OK se eliminará el perfil de esta mascota!",
+            [
+                {
+                    text: "Cancelar",
+                    onPress: () => console.log("Cancel delete pet pressed"),
+                    style: "cancel"
+                },
+                { 
+                    text: "OK", 
+                    onPress: () => handleDeletePet()
+                }
+            ]
+        );
+
+
         return (
             <SafeAreaView style={commonStyles.container}>
                 <HeaderWithBackArrow headerText={"Editar mascota"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={() => this.props.navigation.goBack()} />
+                { this.state.isLoading ? 
+                <Loader /> :
                 <ScrollView style={styles.scrollView} >
                     <Text style={styles.optionTitle}>Nombre</Text>
                     <TextInput 
@@ -151,17 +225,62 @@ export class EditPetDetailsScreen extends React.Component {
                     <Text style={styles.optionTitle}>Fotos</Text>
                     
                     {/* Render uploaded images here */}
-                    <View style={{flexDirection:'row', marginTop: 10, marginLeft: 10}}>
-                        {this.state.petPhotos.map((item, index) => {
-                            return <Image key={index} style={{width: 60, height: 60, margin: 2}} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}/>
+                    <View style={{flexDirection:'row', flexWrap: 'wrap', marginTop: 10, marginLeft: 10}}>
+                        {this.state.photos.map((item, index) => {
+
+                            return <ImageBackground key={item.photoId} source={{ uri: global.noticeServiceBaseUrl + '/photos/' + item.photoId }}  
+                                style={{width: 60, height: 60, margin: 4}}>
+                                    <View style={{ margin: 0, padding:0, width: 64, height: 64 }}>
+                                        <Icon.Button
+                                            onPress={() => handleDeleteImage(item.photoId)}
+                                            size={30}
+                                            name='delete'
+                                            underlayColor="transparent"
+                                            backgroundColor="transparent"
+                                            color={colors.lightGrey}
+                                            style={{ margin: 0, padding:0 }}
+                                            iconStyle={{
+                                                textAlign:'center',
+                                                margin: 0,
+                                                paddingTop:30,
+                                                paddingLeft:30,
+                                            }}
+                                        />
+                                    </View>
+                            </ImageBackground>
                         })}
-                        <TouchableOpacity style={[styles.buttonUpload, {flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}]} onPress={handleImagePickerPress} >
+
+                        {this.state.newPhotos.map((imageBase64, index) => {
+                            return <ImageBackground key={index} source={{ uri: "data:image/png;base64," + imageBase64 }}  
+                                style={{width: 60, height: 60, margin: 4}}>
+                                    <View  style={{ margin: 0, padding:0, width: 64, height: 64 }}>
+                                        <Icon.Button
+                                            onPress={() => handleDeleteRecentlyAddedImage(index)}
+                                            size={30}
+                                            name='delete'
+                                            underlayColor="transparent"
+                                            backgroundColor="transparent"
+                                            color={colors.lightGrey}
+                                            style={{ margin: 0, padding:0 }}
+                                            iconStyle={{
+                                                textAlign:'center',
+                                                margin: 0,
+                                                paddingTop:30,
+                                                paddingLeft:30,
+                                            }}
+                                           
+                                        />
+                                    </View>
+                            </ImageBackground>
+                        })}
+
+                        <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}} onPress={handleImagePickerPress} >
                             <Icon
-                                style={{margin: 10, padding: 10}}
-                                size={4}
-                                name="add"
+                                style={{margin: 4}}
+                                size={60}
+                                name='add'
+                                color={colors.yellow}
                                 backgroundColor={colors.white}
-                                color={colors.secondary}
                             />
                         </TouchableOpacity>
                     </View>
@@ -188,6 +307,7 @@ export class EditPetDetailsScreen extends React.Component {
                         onPress={handleDeletePet} 
                         additionalButtonStyles={[styles.button, {backgroundColor: colors.pink, marginTop: 20, marginBottom: 60}]} /> 
                 </ScrollView>
+                }
             </SafeAreaView>
         )
     }
