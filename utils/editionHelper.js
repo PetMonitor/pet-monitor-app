@@ -20,7 +20,7 @@ export function getReportTypePickerItems() {
     ];
 }
 
-export function getDatePicker(value, onValueChange) {
+export function getDatePicker(value, onValueChange, additionalStyle = {}) {
     return <DateTimePicker
         testID="dateTimePicker"
         value={value}
@@ -29,7 +29,7 @@ export function getDatePicker(value, onValueChange) {
         display="default"
         maximumDate={Date.now()}
         onChange={(event, selectedDate) => onValueChange(selectedDate)}
-        style={{paddingTop: 50, marginRight: 10}}
+        style={{paddingTop: 50, marginRight: 10, ...additionalStyle}}
     />
 }
 
@@ -88,10 +88,11 @@ export const PickerOnValue = ({value, onValueChange, pickerItems}) => {
     </Picker>;
 }
 
-export const OptionTextInput = ({onChangeText, value = '', isMultiline = false }) => {
+export const OptionTextInput = ({onChangeText, value = '', isMultiline = false, autoCapitalize="sentences" }) => {
     return <TextInput
         onChangeText = {onChangeText}
         autoCorrect = { false }
+        autoCapitalize={autoCapitalize}
         style = {[editionStyles.textInput, isMultiline ? {height: 120, paddingTop: 10, paddingBottom: 10} : {}]}
         maxLength = { isMultiline ? 300 : 50 }
         multiline = {isMultiline}
