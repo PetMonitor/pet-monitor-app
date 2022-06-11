@@ -74,7 +74,8 @@ export class ReportViewScreen extends React.Component {
             manualVolunteerData: {
                 name: '',
                 email: '',
-                phoneNumber: ''
+                phoneNumber: '',
+                userId: ''
             }
         };
     }
@@ -164,12 +165,11 @@ export class ReportViewScreen extends React.Component {
         return (reportType == 'found') || (reportType == 'for_adoption');
     }
 
-    addNewHome = () => {
+    addNewHomeButton = () => {
         this.setFosteringHomeModalVisible(true);
     }
 
     editHomeButton = (historyData) => {
-        console.log("executed")
         this.setFosteringHomeModalVisible(true);
         this.setState({ 
             historyDataToEdit: historyData,
@@ -177,6 +177,7 @@ export class ReportViewScreen extends React.Component {
                 name: historyData.contactName,
                 email: historyData.contactEmail,
                 phoneNumber: historyData.contactPhone,
+                userId: historyData.userId,
             },
             homeSinceSelectedDate: new Date(historyData.sinceDate),
             homeUntilSelectedDate: new Date(historyData.untilDate ? historyData.untilDate : new Date()),
@@ -191,11 +192,15 @@ export class ReportViewScreen extends React.Component {
                     let volunteers = []
                     let promises = []
                     for (let i = 0; i < profilesInfo.length; i++) {
-                        promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profilesInfo[i].userId + '/contactInfo',
+                        let profileUserId = profilesInfo[i].userId
+                        promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profileUserId + '/contactInfo',
                         ).then(userInfo => {
                             let volunteerInfo = {
                                 label: userInfo.name,
-                                value: userInfo
+                                value: {
+                                    ...userInfo, 
+                                    userId: profileUserId
+                                }
                             }
                             if (userId !== userInfo.userId) {
                                 volunteers.push(volunteerInfo)
@@ -253,7 +258,6 @@ export class ReportViewScreen extends React.Component {
             }
         ).then(notice => {
             let datetime = new Date(notice.eventTimestamp)
-            console.log(notice)
             this.setState({
                 reportType: notice.noticeType,
                 eventDescription: notice.description,
@@ -304,10 +308,54 @@ export class ReportViewScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken
             }
         ).then(history => {
-            history.sort((a, b) => a.sinceDate > b.sinceDate ? 1 : -1)
+            history.sort((a, b) => {
+                if (a.sinceDate > b.sinceDate) {
+                    return 1;
+                } else if (a.sinceDate < b.sinceDate) {
+                    return -1;
+                } else if (a.untilDate && b.untilDate) {
+                    if (a.untilDate > b.untilDate) {
+                        return 1;
+                    }
+                    return -1;
+                } else if (b.untilDate) {
+                    return 1;
+                }
+                return -1;
+            });
 
-            this.setState({
-                fosterHistory: history
+            let promises = []
+
+            for (let i = 0; i < history.length; i++) {
+                let userId = history[i].userId
+
+                if (!userId) {
+                    continue;
+                }
+
+                promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/contactInfo',
+                ).then(userInfo => {
+                    history[i] = {
+                        ...history[i],
+                        contactName: userInfo.name,
+                        contactPhone: userInfo.phoneNumber,
+                        contactEmail: userInfo.email
+
+                    }
+                }).catch(err => {
+                    console.log(err);
+                    alert(err);
+                }))
+            }
+            Promise.all(promises)
+            .then(() => {
+                this.setState({
+                    fosterHistory: history
+                });
+            })
+            .catch(err => {
+                console.log(err);
+                alert(err);
             });
         }).catch(err => {
             console.log(err);
@@ -340,7 +388,8 @@ export class ReportViewScreen extends React.Component {
             manualVolunteerData: {
                 name: '',
                 email: '',
-                phoneNumber: ''
+                phoneNumber: '',
+                userId: ''
             },
             existingVolunteer: true,
             historyDataToEdit: null,
@@ -352,54 +401,101 @@ export class ReportViewScreen extends React.Component {
         this.cleanHomeParams();
     }
 
+    updateLastHistoryEntryUntilDate = (lastHistoryEntry) => {
+        let petId = this.state.petId;
+
+        let updatedHome = {
+            ...lastHistoryEntry,
+            untilDate: new Date().toISOString()
+        }
+        delete updatedHome['historyId']
+        console.log(updatedHome)
+        console.log(lastHistoryEntry)
+
+        getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            putJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory/' + lastHistoryEntry.historyId,
+                updatedHome,
+                {
+                    'Authorization': 'Basic ' + sessionToken
+                }).then(response => {
+                    console.log(`History data successfully updated!`);
+                }).catch(err => {
+                    console.log(err);
+                    alert(err);
+                });
+        });
+    }
+
     addFosterHome = () => {
         let petId = this.state.petId;
-        let name, email, phoneNumber;
+
+        let newHome = {
+            petId: petId,
+            sinceDate: this.state.homeSinceSelectedDate.toISOString()
+        }
         if (this.state.existingVolunteer) {
             let volunteer = this.state.dropdownValue
-            name = volunteer.name
-            email = volunteer.email
-            phoneNumber = volunteer.phoneNumber
+            newHome.userId = volunteer.userId
         } else {
-            name = this.state.manualVolunteerData.name
-            email = this.state.manualVolunteerData.email
-            phoneNumber = this.state.manualVolunteerData.phoneNumber
+            let email = this.state.manualVolunteerData.email
 
             if (!validateEmail(email)) {
                 alert('Ingrese un email válido por favor!');
                 return;
             }
+            newHome.contactName = this.state.manualVolunteerData.name
+            newHome.contactEmail = email
+            newHome.contactPhone = this.state.manualVolunteerData.phoneNumber
+            newHome.userId = null
         }
-
-        postJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory', {
-            petId: petId,
-            contactEmail: email,
-            contactPhone: phoneNumber,
-            contactName: name,
-            sinceDate: this.state.homeSinceSelectedDate.toISOString()
-        }).then(response => {
+        
+        postJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory', newHome).then(response => {
             console.log(`History data successfully created!`);
+
+            let fosterHistory = this.state.fosterHistory
+            if (fosterHistory.length > 0) {
+                let lastHistoryEntry = fosterHistory[fosterHistory.length - 1] 
+                if (!lastHistoryEntry.untilDate) {
+                    this.updateLastHistoryEntryUntilDate(lastHistoryEntry);
+                }
+            }
             this.setState({ refresh: true })
             Alert.alert('', `Hogar de tránsito agregado!`);
         }).catch(err => {
             alert(err);
-            return;
         });
+        this.changeNewHomeModalVisibility();
+        this.cleanHomeParams();
     }
 
     editFosterHomeData(historyData) {
         let petId = this.state.petId;
+
+        let existingProfileId = historyData.userId
+        let updatedHome = {
+            _ref: historyData._ref,
+            petId: historyData.petId,
+            sinceDate: this.state.homeSinceSelectedDate.toISOString(),
+            untilDate: this.state.homeUntilSelectedDate.toISOString(),
+        }
+
+        if (existingProfileId) {
+            updatedHome = {
+                ...updatedHome,
+                userId: historyData.userId,
+            }
+        } else {
+            updatedHome = {
+                ...updatedHome,
+                contactEmail: this.state.manualVolunteerData.email,
+                contactName: this.state.manualVolunteerData.name,
+                contactPhone: this.state.manualVolunteerData.phoneNumber,
+            }
+        }
+
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             putJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory/' + historyData.historyId,
-                {
-                    _ref: historyData._ref,
-                    petId: historyData.petId,
-                    contactEmail: this.state.manualVolunteerData.email,
-                    contactName: this.state.manualVolunteerData.name,
-                    contactPhone: this.state.manualVolunteerData.phoneNumber,
-                    sinceDate: this.state.homeSinceSelectedDate.toISOString(),
-                    untilDate: this.state.homeUntilSelectedDate.toISOString(),
-                },
+                updatedHome,
                 {
                     'Authorization': 'Basic ' + sessionToken
                 }).then(response => {
@@ -412,11 +508,6 @@ export class ReportViewScreen extends React.Component {
                 });
         });
         this.cleanHomeParams();
-        this.changeNewHomeModalVisibility();
-    }
-
-    addHomeAction = () => {
-        this.addFosterHome()
         this.changeNewHomeModalVisibility();
     }
 
@@ -440,7 +531,7 @@ export class ReportViewScreen extends React.Component {
                 <NewFosteringHomeModal 
                     isVisible={this.state.newFosteringHomeModalVisible} 
                     onModalClose={changeNewHomeModalVisibility}
-                    onAddHomePress={this.addHomeAction}
+                    onAddHomePress={this.addFosterHome}
                     onCancelPress={this.cancelHomeAction}
                     sinceDate={this.state.homeSinceSelectedDate}
                     onSinceDateSelect={(selectedDate) => this.setState({ homeSinceSelectedDate: selectedDate })}
@@ -523,7 +614,7 @@ export class ReportViewScreen extends React.Component {
                                 resolveReport: this.confirmResolveReport
                             }} 
                             fosterInfoButtonHandler={{
-                                addNewHome: this.addNewHome
+                                addNewHome: this.addNewHomeButton
                             }}
                         />
                     </ScrollView>
@@ -615,9 +706,9 @@ const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCance
 const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancelPress, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onEmailChange, onPhoneNumberChange, dataToEdit, onEditHomePress}) => {
     return (
         <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>{dataToEdit ? "Editar hogar" : "Crear nuevo hogar"}</Text>
+            <Text style={[styles.modalTitle, {marginBottom: 25}]}>{dataToEdit ? "Editar hogar" : "Crear nuevo hogar"}</Text>
             {dataToEdit ? 
-                <View style={[commonStyles.alignedContent, {marginTop: 5}]}>
+                <View style={commonStyles.alignedContent}>
                     <View style={{flex: 1}}>
                         <Text style={[styles.modalText, {fontWeight: 'bold', marginBottom: 0}]}>Fecha de entrada</Text>
                         {getDatePicker(sinceDate, onSinceDateSelect)}
@@ -630,19 +721,22 @@ const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancel
                 : <>
                 <Text style={[styles.modalText, {fontWeight: 'bold', marginBottom: 0}]}>Fecha de entrada</Text>
                 <View style={{alignItems: 'center', width: '100%'}}>
-                    {getDatePicker(sinceDate, onSinceDateSelect, {width: 110})}
+                    {getDatePicker(sinceDate, onSinceDateSelect, {width: 120, marginTop: 5})}
                 </View>
             </> }
-            <Text style={[styles.modalText, {fontWeight: 'bold', marginTop: 20, marginBottom: 5}]}>Voluntario para alojamiento transitorio</Text>
-            {dataToEdit ? <>
+            
+            {dataToEdit ? 
+                dataToEdit.userId == null ? <>
+                <Text style={[styles.modalText, {fontWeight: 'bold', marginTop: 20, marginBottom: 5}]}>Voluntario para alojamiento transitorio</Text>
                 <Text style={[styles.optionTitle, {paddingTop: 5, fontWeight: '500'}]}>Nombre</Text>           
                 <OptionTextInput onChangeText={onNameChange} value={name} />
                 <Text style={[styles.optionTitle, {fontWeight: '500'}]}>Teléfono</Text>
                 <OptionTextInput onChangeText={onPhoneNumberChange} value={phoneNumber} />
                 <Text style={[styles.optionTitle, {fontWeight: '500'}]}>Correo electrónico</Text>
                 <OptionTextInput onChangeText={onEmailChange} value={email} autoCapitalize={"none"} />
-            </>
+                </> : <></>
             : <>
+            <Text style={[styles.modalText, {fontWeight: 'bold', marginTop: 20, marginBottom: 5}]}>Voluntario para alojamiento transitorio</Text>
             <CheckBoxItem 
                 optionIsSelected={existingVolunteer} 
                 checkBoxTitle={"Elegir voluntario"} 
@@ -686,7 +780,7 @@ const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancel
             </>}
             </>}
 
-            <View style={[commonStyles.alignedContent, {marginTop: 10}]}>
+            <View style={[commonStyles.alignedContent, {marginTop: 20}]}>
                 <AppButton buttonText={"Cancelar"} onPress={onCancelPress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.pink }}/>
                 <AppButton buttonText={dataToEdit ? "Actualizar" : "Agregar"} onPress={dataToEdit ? onEditHomePress : onAddHomePress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.primary }}/>
             </View>
@@ -728,11 +822,7 @@ const FosterInfoRow = ({sinceDate, untilDate, contactInfo, dataToEdit = null, on
                 {untilDate}
             </View>
             <View style={{ flexDirection: 'column', flex: 2.5, alignSelf: 'stretch', marginLeft: 10}}>
-            {/* <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} > */}
-
                 {contactInfo}
-               
-            {/* </ScrollView> */}
             </View>
             {dataToEdit &&
                 <View style={{ flexDirection: 'column', flex: 1/3, alignSelf: 'stretch', justifyContent: 'center',  marginLeft: 2}}>

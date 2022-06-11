@@ -92,6 +92,23 @@ export class CreateReportScreen extends React.Component {
         this.setState({ petId: '' })
         this.props.navigation.navigate('CreatePet', { initialSetup: false }); 
     }
+    
+    createFosterHistoryEntry = (userId) => {
+        let petId = this.state.petId;
+
+        postJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory', {
+            petId: petId,
+            userId: userId,
+            // contactEmail: email,
+            // contactPhone: phoneNumber,
+            // contactName: name,
+            sinceDate: new Date().toISOString()
+        }).then(response => {
+            console.log(`History data successfully created!`);
+        }).catch(err => {
+            alert(err);
+        });
+    }
 
     createReport = () => {
 
@@ -123,6 +140,7 @@ export class CreateReportScreen extends React.Component {
                 eventTimestamp: timestamp.toISOString(),
             }).then(response => {
                 this.setState({ createdNoticeId: response.noticeId })
+                this.createFosterHistoryEntry(userId);
                 this.setModalVisible(true);
                 // go back to previous page
             }).catch(err => {
