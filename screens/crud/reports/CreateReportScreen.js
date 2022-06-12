@@ -50,6 +50,21 @@ export class CreateReportScreen extends React.Component {
         this.setState({ petId: selectedPet });
     }
 
+    cleanState = () => {
+        this.setState({
+            reportType: 'LOST',
+            country: '',
+            province: '',
+            city: '',
+            location: '',
+            date: new Date(),
+            hour: new Date(),
+            description: '',
+            petId: '',
+            eventMarker: null
+        })
+    }
+
     renderPet = ({item}) =>  {
         const petId = item.petId
         const photoId = item.photos[0].photoId
@@ -142,6 +157,7 @@ export class CreateReportScreen extends React.Component {
                     this.createFosterHistoryEntry(userId);
                 }
                 this.setModalVisible(true);
+                this.cleanState();
             }).catch(err => {
                 alert(err)
             }).finally(() => this.setState({ isLoading : false }));
