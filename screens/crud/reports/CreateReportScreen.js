@@ -50,6 +50,21 @@ export class CreateReportScreen extends React.Component {
         this.setState({ petId: selectedPet });
     }
 
+    cleanState = () => {
+        this.setState({
+            reportType: 'LOST',
+            country: '',
+            province: '',
+            city: '',
+            location: '',
+            date: new Date(),
+            hour: new Date(),
+            description: '',
+            petId: '',
+            eventMarker: null
+        })
+    }
+
     renderPet = ({item}) =>  {
         const petId = item.petId
         const photoId = item.photos[0].photoId
@@ -92,6 +107,20 @@ export class CreateReportScreen extends React.Component {
         this.setState({ petId: '' })
         this.props.navigation.navigate('CreatePet', { initialSetup: false }); 
     }
+    
+    createFosterHistoryEntry = (userId) => {
+        let petId = this.state.petId;
+
+        postJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory', {
+            petId: petId,
+            userId: userId,
+            sinceDate: new Date().toISOString()
+        }).then(response => {
+            console.log(`History data successfully created!`);
+        }).catch(err => {
+            alert(err);
+        });
+    }
 
     createReport = () => {
 
@@ -122,9 +151,13 @@ export class CreateReportScreen extends React.Component {
                 country: this.state.country,
                 eventTimestamp: timestamp.toISOString(),
             }).then(response => {
-                this.setState({ createdNoticeId: response.noticeId })
+                this.setState({ createdNoticeId: response.noticeId });
+                let reportType = this.state.reportType.toLowerCase();
+                if (reportType == "found" || reportType == "for_adoption") {
+                    this.createFosterHistoryEntry(userId);
+                }
                 this.setModalVisible(true);
-                // go back to previous page
+                this.cleanState();
             }).catch(err => {
                 alert(err)
             }).finally(() => this.setState({ isLoading : false }));
@@ -132,8 +165,10 @@ export class CreateReportScreen extends React.Component {
     }
 
     navigateToReport = () => {
-        this.props.route.params.onReportCreated()
-        this.props.navigation.navigate('ViewUserDetails')
+        if (this.props.route.params) {
+            this.props.route.params.onReportCreated();
+        }
+        this.props.navigation.navigate('ViewUserDetails');
     }
 
 
