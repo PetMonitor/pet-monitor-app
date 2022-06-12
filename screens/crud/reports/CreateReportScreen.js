@@ -99,9 +99,6 @@ export class CreateReportScreen extends React.Component {
         postJsonData(global.noticeServiceBaseUrl + '/pets/' + petId + '/fosterHistory', {
             petId: petId,
             userId: userId,
-            // contactEmail: email,
-            // contactPhone: phoneNumber,
-            // contactName: name,
             sinceDate: new Date().toISOString()
         }).then(response => {
             console.log(`History data successfully created!`);
@@ -139,10 +136,12 @@ export class CreateReportScreen extends React.Component {
                 country: this.state.country,
                 eventTimestamp: timestamp.toISOString(),
             }).then(response => {
-                this.setState({ createdNoticeId: response.noticeId })
-                this.createFosterHistoryEntry(userId);
+                this.setState({ createdNoticeId: response.noticeId });
+                let reportType = this.state.reportType.toLowerCase();
+                if (reportType == "found" || reportType == "for_adoption") {
+                    this.createFosterHistoryEntry(userId);
+                }
                 this.setModalVisible(true);
-                // go back to previous page
             }).catch(err => {
                 alert(err)
             }).finally(() => this.setState({ isLoading : false }));
@@ -150,8 +149,10 @@ export class CreateReportScreen extends React.Component {
     }
 
     navigateToReport = () => {
-        this.props.route.params.onReportCreated()
-        this.props.navigation.navigate('ViewUserDetails')
+        if (this.props.route.params) {
+            this.props.route.params.onReportCreated();
+        }
+        this.props.navigation.navigate('ViewUserDetails');
     }
 
 
