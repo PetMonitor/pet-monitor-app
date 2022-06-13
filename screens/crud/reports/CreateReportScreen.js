@@ -4,7 +4,6 @@ import { Text, View, Modal, StyleSheet, ScrollView, TouchableOpacity, Image, Fla
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/Feather';
 import * as Location from 'expo-location';
-import { useScrollToTop } from '@react-navigation/native';
 
 import { getJsonData, postJsonData, getLocationFromCoordinates } from '../../../utils/requests.js';
 import { getSecureStoreValueFor } from '../../../utils/store';
@@ -36,7 +35,7 @@ export class CreateReportScreen extends React.Component {
             isLoading: false,
             createdNoticeId: '',
             userLocation: null,
-            eventMarker: null,
+            eventMarker: null
         };
     }
 
