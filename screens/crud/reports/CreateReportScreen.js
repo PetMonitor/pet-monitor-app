@@ -18,6 +18,7 @@ export class CreateReportScreen extends React.Component {
 
     constructor(props) {
         super(props);
+        this.scrollRef = React.createRef();
         this.state = {
             reportType: 'LOST',
             country: '',
@@ -171,9 +172,18 @@ export class CreateReportScreen extends React.Component {
         this.props.navigation.navigate('ViewUserDetails');
     }
 
+    
+    // Called when our screen is focused
+    onScreenFocus = () => {
+        this.initializeScreen();
+        this.cleanState();
+        this.scrollRef.current?.scrollTo({
+            y: 0,
+            animated: true,
+        });
+    }
 
-    componentDidMount() {
-        console.log("Running ComponentDidMount in CreateReportScreen")
+    initializeScreen = () => {
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
@@ -206,6 +216,13 @@ export class CreateReportScreen extends React.Component {
         )
     }
 
+    componentDidMount() {
+        // Listen for screen focus event
+        this.props.navigation.addListener('focus', this.onScreenFocus)
+
+        this.initializeScreen();
+    }
+
     render() {
         return (
             <View style={commonStyles.container}> 
@@ -234,7 +251,7 @@ export class CreateReportScreen extends React.Component {
                     </View>
                 </Modal>  
                 </View>
-                <ScrollView style={{flex:1, paddingHorizontal: 35}}>
+                <ScrollView style={{flex:1, paddingHorizontal: 35}} ref={this.scrollRef} >
                     {/* Report type picker */}
                     {showSectionTitle("Tipo de reporte")}
                     <PickerOnValue 
