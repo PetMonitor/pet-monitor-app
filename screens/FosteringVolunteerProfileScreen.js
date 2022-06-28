@@ -45,7 +45,7 @@ export class FosteringVolunteerProfileScreen extends React.Component {
                     <Text style={styles.text}>{volunteer.additionalInformation}</Text>
 
                     <Text style={styles.titleText}>Tamaño mascota a transitar</Text>
-                    {volunteer.petSizesToFoster.map(size => <Text style={styles.text}>{this.mapPetSizeToLabel(size)}</Text>)}
+                    {volunteer.petSizesToFoster.map(size => <Text key={size} style={styles.text}>{this.mapPetSizeToLabel(size)}</Text>)}
 
                     <Text style={styles.titleText}>Disponibilidad</Text>
                     <Text style={styles.text}>{volunteer.available ? "Disponible" : "No disponible"}</Text>
