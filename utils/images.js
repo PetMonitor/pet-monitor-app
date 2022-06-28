@@ -19,14 +19,15 @@ export const PetImagesHeader = ({petPhotos, petName}) => {
                 initialNumToRender={petPhotos.length}
                 renderItem={renderPet}
             />
+            {petName && petName != "" ?
             <View style={{width: width, backgroundColor: colors.semiTransparent, position: 'absolute', height: 30, justifyContent: 'center'}}>
                 <Text style={{paddingLeft: 35, fontSize: 24, fontWeight: 'bold', color: colors.clearBlack}}>{petName}</Text>
-            </View>    
+            </View> : <></>}
         </View>
     );
 }
 
-export const ReportImagesList = ({notices, onItemPress, withLabel}) => {
+export const ReportImagesList = ({notices, onItemPress, withLabel, loadMoreData}) => {
     return (
         <View style={{flex: 1}}>
             <FlatList 
@@ -35,6 +36,8 @@ export const ReportImagesList = ({notices, onItemPress, withLabel}) => {
                 keyExtractor={(_, index) => index.toString()}
                 initialNumToRender={notices.length}
                 renderItem={(item) => renderReportItem(item, onItemPress, withLabel)}
+                onEndReachedThreshold={0}
+                onEndReached={loadMoreData}
             />
         </View>
     );
