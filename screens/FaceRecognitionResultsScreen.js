@@ -65,10 +65,10 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
-                this.setState({ notices : response });
+                this.setState({ notices: response });
             }).catch(err => {
                 console.log(err);
-                this.setState({ notices : [] });
+                this.setState({ notices: [] });
             }).finally(() => this.setState({ isLoading : false }));
         });
     }
@@ -222,25 +222,28 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 </View>
 
                 { this.state.isLoading?
-                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
+                    <View style={{position: 'absolute', top: 100, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
                         <ActivityIndicator size="large" color={colors.clearBlack}/>
-                    </View> :
-                    <View>
+                    </View> : <>
                     { this.state.notices.length > 0 ? 
-                        <View>
+                        <View style={{flex: 6}}>
+                            <View style={{flex: 5, marginTop: 10}}>
                             <FlatList 
                                 data={this.state.notices} 
                                 numColumns={2}
                                 keyExtractor={(_, index) => index.toString()}
                                 initialNumToRender={this.state.notices.length}
                                 renderItem={this.renderItem}
-                                style={{margin: 20}}
+                                style={{marginLeft: 15}}
                             />
+                            </View>
+                            <View style={{flex: 1}}>
                             <AppButton
                                 buttonText={"Mi mascota no está en esta lista!"} 
                                 onPress={sendPredictionFeedback} 
                                 isDisabled={this.state.feedbackDisabled}
-                                additionalButtonStyles={[styles.button, { backgroundColor: colors.pink, marginTop: 20, marginBottom: 60}]} /> 
+                                additionalButtonStyles={[styles.button, { backgroundColor: colors.pink, marginTop: 20}]} /> 
+                            </View>
                         </View>: 
                         <View>
                             <Text style={{textAlign: 'center', color: colors.yellow, fontSize: 20 }}>
@@ -250,8 +253,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                                 No encontramos resultados para tu búsqueda!
                             </Text>
                         </View>
-                    }
-                    </View>
+                    }</>
                 }
                 </SafeAreaView>
                 </>
@@ -261,8 +263,9 @@ export class FaceRecognitionResultsScreen extends React.Component {
 
 const styles = StyleSheet.create({
     button: {
-        margin: 10,
-        alignSelf: 'stretch',
+        marginTop: 10,
+        alignSelf: 'center',
+        width: width - 60,
     },
     titleText: {
         color: colors.clearBlack, 
@@ -283,9 +286,6 @@ const styles = StyleSheet.create({
         marginTop: 10
     },
     modalView: {
-        flex: 1,
-        margin: 20,
-        padding: 35,
         width: '90%',
     },
     modalTitle: {

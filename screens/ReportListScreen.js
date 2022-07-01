@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, SafeAreaView, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, SafeAreaView, View, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -29,6 +29,8 @@ export class ReportListScreen extends React.Component {
             selectedIndex: this.props.selectedIndex ? this.props.selectedIndex : 0,
             isLoading: true,
             location: null,
+            page: 1,
+            moreDataLoading: false
         };
     }
 
@@ -56,29 +58,46 @@ export class ReportListScreen extends React.Component {
             let filters = this.props.route.params.filters
             if ((filters && !prevProps.route.params) || (filters != prevProps.route.params.filters)) {
                 let queryParams = this.getQueryParamsBasedOnFilters(filters);
-                this.getReports(queryParams);
+                this.setState({
+                    notices: [],
+                    page: 1,
+                    moreDataLoading: false,
+                    isLoading: true
+                })
+                this.loadReports(queryParams);
             }
         }
     }
 
     componentDidMount() {
-        this.getUserLocation();
-        this.getReports()
+        this.fetchUserLocation();
+        this.loadReports()
     }
 
-    getReports(queryParams='') {
+    loadReports(queryParams='') {
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+            if (queryParams === '') {
+                queryParams += "?"
+            }
+            queryParams += `size=10&page=${this.state.page}`
+            console.log(queryParams)
             getJsonData(global.noticeServiceBaseUrl + '/notices' + queryParams, { 'Authorization': 'Basic ' + sessionToken }
             ).then(response => {
-                this.setState({ notices: response });
+                this.setState({ 
+                    notices: this.state.page === 1 ? response : [...this.state.notices, ...response],                    
+                });
             }).catch(err => {
                 console.log(err);
                 alert(err);
-            }).finally(() => this.setState({ isLoading: false }));
+            }).finally(() => this.setState({ moreDataLoading: false, isLoading: false }));
         });
     }
+
+    loadMoreData = () => {
+        this.setState({ page: this.state.page + 1, moreDataLoading: true }, () => this.loadReports())        
+    }
     
-    getUserLocation() {
+    fetchUserLocation() {
         Location.requestForegroundPermissionsAsync()
             .then(response => {
                 if (response.status !== 'granted') {
@@ -111,10 +130,21 @@ export class ReportListScreen extends React.Component {
                 </View>
                 <FilterBar onFilterPress={this.navigateToFilterSettings} />
                 {this.state.selectedIndex == segmentedTabTitles.indexOf(listTabTitle) && 
+                     (this.state.isLoading ?
+                        <View style={{position: 'absolute', top: 100, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
+                            <ActivityIndicator size="large" color={colors.clearBlack}/>
+                        </View> : <>
                     <ReportImagesList 
                         notices={this.state.notices}
                         onItemPress={(item) => this.navigateToReportView(item.userId, item.noticeId)}
-                        withLabel={true}/>
+                        withLabel={true}
+                        loadMoreData={this.loadMoreData}/>
+
+                    {this.state.moreDataLoading ? 
+                        <View style={{justifyContent: 'center', alignItems: 'center', backgroundColor: colors.transparent}}>
+                            <ActivityIndicator size="large" color={colors.clearBlack}/>
+                        </View> : <></> } 
+                    </>)
                 }
 
                 {this.state.selectedIndex == segmentedTabTitles.indexOf(mapTabTitle) && this.state.location &&

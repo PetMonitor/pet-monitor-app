@@ -76,7 +76,7 @@ export class ReportViewScreen extends React.Component {
                 email: '',
                 phoneNumber: '',
                 userId: ''
-            }
+            },
         };
     }
 
@@ -930,7 +930,7 @@ const ReportContent = ({selectedIndex, reportInfo, fosterInfo, onEditPress}) => 
 
         let history = []
         history.push(title)
-        history.push(<FosteringInfo historyData={historyData} onEditPress={onEditPress}/>)
+        {historyData.length != 0 ? history.push(<FosteringInfo historyData={historyData} onEditPress={onEditPress}/>) : <></>}
         return history;
     }
     return null;
