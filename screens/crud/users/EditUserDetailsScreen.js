@@ -1,18 +1,21 @@
 import React from "react";
 
 import { Text, TextInput, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
+import * as Location from 'expo-location';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import uuid from 'react-native-uuid';
 
-import { putJsonData } from '../../../utils/requests';
+import { putJsonData, getLocationFromCoordinates } from '../../../utils/requests';
 import { getSecureStoreValueFor } from '../../../utils/store';
 import { HeaderWithBackArrow } from "../../../utils/headers";
 
 import commonStyles from '../../../utils/styles';
 import colors from '../../../config/colors';
 import { AppButton } from "../../../utils/buttons";
+import { OptionTitle } from "../../../utils/editionHelper";
 
 export class EditUserDetailsScreen extends React.Component {
 
@@ -21,9 +24,29 @@ export class EditUserDetailsScreen extends React.Component {
         this.state = Object.assign({ }, 
             { 
                 ...this.props.route.params.userData,
-                profilePicture: null
+                profilePicture: null,
+                userLocation: null,
+                eventMarker: null,
+                city: null,
+                locality: null,
+                country: null
             }
         );
+    }
+
+    componentDidMount() {
+        Location.requestForegroundPermissionsAsync()
+        .then( response => {
+            if (response.status !== 'granted') {
+                alert('Permission to access location was denied');
+                return;
+            }
+
+            Location.getCurrentPositionAsync({})
+            .then(userLocation => {
+                this.setState({ userLocation: userLocation })
+            });
+        });
     }
 
     render() {
@@ -173,35 +196,41 @@ export class EditUserDetailsScreen extends React.Component {
                         </Text>
                     </View>
 
-                    <View style={styles.lowerContainer}>
-
-                        <View style={{flexDirection:'row', marginLeft: 30}}>
-                            <Text style={{fontWeight: 'bold', fontSize: 18, color: colors.pink, marginTop: 15, marginRight: 20}}>Alertas</Text>
-                            <Switch 
-                                style={{marginTop: 10}}
-                                trackColor={{ false: colors.grey, true: colors.pink }}
-                                thumbColor={ colors.white }
-                                onValueChange={handleToggleAlerts}
-                                value={this.state.alertsActivated}
-                            />
-                        </View>
-
-                        {this.state.alertsActivated ? <View style={[styles.alignedContent, {marginLeft: 30}]}>
-                            <Text style={styles.textLabel}>Radio</Text>
-                            <Picker selectedValue={this.state.alertRadius}
-                                style={{ width: 150, marginLeft: 40, marginRight: 30 }}
-                                itemStyle={{height: 88, fontSize: 16}}
-                                onValueChange={(itemValue, itemIndex) => this.setState({ alertRadius: itemValue })}
-                                enabled={this.state.alertsActivated}
-                                >
-                                <Picker.Item label="1 km" value={1} />
-                                <Picker.Item label="3 km" value={3} />
-                                <Picker.Item label="5 km" value={5} />
-                                <Picker.Item label="10 km" value={10} />
-                            </Picker>
-                        </View> : null}
-                        
+                    <View style={{flexDirection:'row', marginLeft: 30}}>
+                        <Text style={{fontWeight: 'bold', fontSize: 18, color: colors.pink, marginTop: 15, marginRight: 10}}>Alertas</Text>
+                        <Switch 
+                            style={{ marginTop: 10, transform: [{ scaleX: .8 }, { scaleY: .8 }] }}
+                            trackColor={{ false: colors.grey, true: colors.pink }}
+                            thumbColor={ colors.white }
+                            onValueChange={handleToggleAlerts}
+                            value={this.state.alertsActivated}
+                            
+                        />
                     </View>
+                    <Text style={[styles.textLabel, {marginHorizontal: 30, fontSize: 14, marginTop: 10}]}>Se pueden activar alertas para recibir un mail por cada reporte creado en la zona seleccionada y en zonas cercanas a la última ubicación.</Text>
+
+                    {this.state.alertsActivated ?
+                    this.state.userLocation && <>
+                    <OptionTitle text={"Seleccionar la ubicación aproximada"} additionalStyle={{marginLeft: 30}}/>
+                    {this.showLocationMapSelector()}
+                    {this.state.country &&
+                    <Text style={[styles.textLabel, {marginHorizontal: 30, fontSize: 14, marginTop: 10}]}>{"Se recibirán alertas sobre" + (this.state.city ? ` ${this.state.city},` : '') + (this.state.locality ? ` ${this.state.locality},` : '') + this.state.country}</Text>}
+                    </> : null }
+                    {/* <View style={[styles.alignedContent, {marginLeft: 30}]}>
+                        <Text style={styles.textLabel}>Radio</Text>
+                        <Picker selectedValue={this.state.alertRadius}
+                            style={{ width: 150, marginLeft: 40, marginRight: 30 }}
+                            itemStyle={{height: 88, fontSize: 16}}
+                            onValueChange={(itemValue, itemIndex) => this.setState({ alertRadius: itemValue })}
+                            enabled={this.state.alertsActivated}
+                            >
+                            <Picker.Item label="1 km" value={1} />
+                            <Picker.Item label="3 km" value={3} />
+                            <Picker.Item label="5 km" value={5} />
+                            <Picker.Item label="10 km" value={10} />
+                        </Picker>
+                    </View> : null} */}
+                        
                     <View style={{flex: 1, alignItems: 'center', marginTop: 10, marginBottom: 40}}>
                         <AppButton
                             buttonText={"Guardar cambios"} 
@@ -211,6 +240,56 @@ export class EditUserDetailsScreen extends React.Component {
                 </ScrollView>
             </SafeAreaView>
         </>);
+    }
+
+    selectedLocation = (locations) => {
+        let maxConfidence = 0
+        let selected = 0
+        for (let i = 0; i < locations.length; i++) {
+            if (locations[i].confidence > maxConfidence) {
+                maxConfidence = locations[i].confidence
+                selected = i
+            }
+        }
+        return locations[selected]
+    }
+
+    fillLocationInfo = (latitude, longitude) => {
+        getLocationFromCoordinates(latitude, longitude)
+        .then(response => {
+            let eventLocation = this.selectedLocation(response.data)
+
+            this.setState({
+                // location: eventLocation.street ? eventLocation.street : '',
+                city: eventLocation.neighbourhood ? eventLocation.neighbourhood : '',
+                province: eventLocation.locality ? eventLocation.locality : '',
+                country: eventLocation.country ? eventLocation.country : '',
+            })
+        }).catch(err => {
+            alert(err)
+        })
+    }
+
+    showLocationMapSelector() {
+        return <MapView 
+            style={{ height: 300, marginVertical: 10, marginHorizontal: 30 }}
+            // provider={PROVIDER_GOOGLE}
+            region={{
+                latitude: this.state.eventMarker ? this.state.eventMarker.latitude : this.state.userLocation.coords.latitude,
+                longitude: this.state.eventMarker ? this.state.eventMarker.longitude : this.state.userLocation.coords.longitude,
+                latitudeDelta: 0.0022,
+                longitudeDelta: 0.0121,
+            }}
+            showsUserLocation={true}
+            onPress={(e) => {
+                if (e.nativeEvent.coordinate) {
+                    this.setState({ eventMarker: e.nativeEvent.coordinate });
+                    this.fillLocationInfo(e.nativeEvent.coordinate.latitude, e.nativeEvent.coordinate.longitude);
+                }
+            } }>
+            {this.state.eventMarker &&
+                <Marker coordinate={this.state.eventMarker} image={require('../../../assets/eventMarker.png')} />}
+        </MapView>;
     }
 }
 
@@ -224,13 +303,6 @@ const styles = StyleSheet.create({
         backgroundColor: colors.white,
         flexDirection: 'column',
         alignItems: 'baseline'
-    },
-    lowerContainer: {
-        flex: 2,
-        backgroundColor: colors.white,
-        flexDirection: 'column',
-        flexWrap: 'wrap',
-        alignItems: 'flex-start'
     },
     textLabel: {
         marginTop: 20,

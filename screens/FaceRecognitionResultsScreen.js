@@ -177,8 +177,9 @@ export class FaceRecognitionResultsScreen extends React.Component {
                         >
                         <View style={{ backgroundColor: colors.white, padding: 15, borderRadius: 20 }}>
                             <View style={{flexDirection: 'row'}}>
-                                <Text style={styles.modalTitle}>Búsquedas programadas</Text>
+                                <Text style={[styles.modalTitle, {marginRight: 10}]}>Búsquedas programadas</Text>
                                 <Switch 
+                                    style={{ marginTop: 5, transform: [{ scaleX: .8 }, { scaleY: .8 }] }}
                                     trackColor={{ false: colors.grey, true: colors.yellow }}
                                     thumbColor={ colors.white }
                                     onValueChange={this.handleToggleAlerts}
