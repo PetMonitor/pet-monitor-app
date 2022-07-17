@@ -154,7 +154,6 @@ export class FosteringVolunteersScreen extends React.Component {
     }
 
     fetchFosterVolunteerProfiles() {
-        console.log(this.state)
         let regionFilter = (this.state.filterByRegion && this.state.searchRegion != "") ? `&profileRegion=${this.state.searchRegion}` : ""
         let queryParams = "?available=true" + regionFilter
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {

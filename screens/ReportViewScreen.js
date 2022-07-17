@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { getSecureStoreValueFor } from '../utils/store';
-import { getJsonData, deleteJsonData, postJsonData, putJsonData } from '../utils/requests.js';
+import { getJsonData, deleteJsonData, postJsonData, putJsonData, getLocationFromCoordinates } from '../utils/requests.js';
 import { CheckBoxItem, getDatePicker, OptionTextInput, OptionTitle } from '../utils/editionHelper.js';
 import { HeaderWithBackArrow } from '../utils/headers';
 import { PetImagesHeader } from '../utils/images.js';
@@ -12,6 +12,7 @@ import {  Alert, Text, SafeAreaView, View, Image, Dimensions, TouchableOpacity, 
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SegmentedControlTab from "react-native-segmented-control-tab";
+import * as Location from 'expo-location';
 
 import { mapReportTypeToLabelColor, mapPetTypeToLabel, mapPetSexToLabel, mapPetSizeToLabel, mapPetLifeStageToLabel, mapReportTypeToPetLocationTitle, mapReportTypeToReportLabel } from '../utils/mappers';
 
@@ -77,6 +78,8 @@ export class ReportViewScreen extends React.Component {
                 phoneNumber: '',
                 userId: ''
             },
+            filterByRegion: true,
+            searchRegion: ""
         };
     }
 
@@ -184,10 +187,42 @@ export class ReportViewScreen extends React.Component {
          });
     }
 
+    selectedLocation = (locations) => {
+        let maxConfidence = 0
+        let selected = 0
+        for (let i = 0; i < locations.length; i++) {
+            if (locations[i].confidence > maxConfidence) {
+                maxConfidence = locations[i].confidence
+                selected = i
+            }
+        }
+        return locations[selected]
+    }
+
+    fillLocationInfo = (latitude, longitude) => {
+        getLocationFromCoordinates(latitude, longitude)
+        .then(response => {
+            let eventLocation = this.selectedLocation(response.data)
+            let userRegion = null
+            if (eventLocation.neighbourhood) {
+                userRegion = eventLocation.neighbourhood;
+            } else if (eventLocation.locality) {
+                userRegion = eventLocation.locality;
+            }
+            this.setState({
+                filterByRegion: userRegion != "" ? true : false,
+                searchRegion: userRegion
+            }, () => this.fetchFosterVolunteerProfiles())
+        }).catch(err => {
+            alert(err)
+        })
+    }
+
     fetchFosterVolunteerProfiles() {
+        let regionFilter = (this.state.filterByRegion && this.state.searchRegion != "") ? `?profileRegion=${this.state.searchRegion}` : ""
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getSecureStoreValueFor("userId").then(userId => {
-                getJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles', { 'Authorization': 'Basic ' + sessionToken }
+                getJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles' + regionFilter, { 'Authorization': 'Basic ' + sessionToken }
                 ).then(profilesInfo => {
                     let volunteers = []
                     let promises = []
@@ -196,11 +231,8 @@ export class ReportViewScreen extends React.Component {
                         promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profileUserId + '/contactInfo',
                         ).then(userInfo => {
                             let volunteerInfo = {
-                                label: userInfo.name,
-                                value: {
-                                    ...userInfo, 
-                                    userId: profileUserId
-                                }
+                                label: `--- ${userInfo.name} ---\n${profilesInfo[i].location}, ${profilesInfo[i].province}`,
+                                value: profileUserId
                             }
                             if (userId !== userInfo.userId) {
                                 volunteers.push(volunteerInfo)
@@ -214,6 +246,7 @@ export class ReportViewScreen extends React.Component {
                     .then(() => {
                         let dropdownValue = null
                         if (volunteers.length > 0) {
+                            volunteers.sort((a, b) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))
                             dropdownValue = volunteers[0].value
                         }
                         this.setState({ 
@@ -239,7 +272,19 @@ export class ReportViewScreen extends React.Component {
             this.fetchContactInfo();
         });
         getSecureStoreValueFor("userId").then(userId => this.setState({ isMyReport: userId === this.props.route.params.noticeUserId}));
-        this.fetchFosterVolunteerProfiles();
+        Location.requestForegroundPermissionsAsync()
+        .then( response => {
+            if (response.status !== 'granted') {
+                alert('Permission to access location was denied');
+                return;
+            }
+
+            Location.getCurrentPositionAsync({})
+            .then(userLocation => {
+                this.fillLocationInfo(userLocation.coords.latitude, userLocation.coords.longitude);
+            });
+        });
+        // this.fetchFosterVolunteerProfiles();
     }
 
     componentDidUpdate() {
@@ -434,8 +479,7 @@ export class ReportViewScreen extends React.Component {
             sinceDate: this.state.homeSinceSelectedDate.toISOString()
         }
         if (this.state.existingVolunteer) {
-            let volunteer = this.state.dropdownValue
-            newHome.userId = volunteer.userId
+            newHome.userId = this.state.dropdownValue
         } else {
             let email = this.state.manualVolunteerData.email
 
@@ -560,7 +604,11 @@ export class ReportViewScreen extends React.Component {
                         phoneNumber: text
                     }})}}
                     dataToEdit={this.state.historyDataToEdit}
-                    onEditHomePress={() => this.editFosterHomeData(this.state.historyDataToEdit)} />
+                    onEditHomePress={() => this.editFosterHomeData(this.state.historyDataToEdit)}
+                    searchRegion={this.state.searchRegion}
+                    onSearchRegionChange={text => this.setState({ searchRegion: text })}
+                    onSearchPress={() => this.fetchFosterVolunteerProfiles()}
+                    />
                 <HeaderWithBackArrow headerText={"Reporte"} headerTextColor={colors.secondary} backgroundColor={colors.white} backArrowColor={colors.secondary} onBackArrowPress={this.navigateToReports} />
                 <PetImagesHeader petPhotos={this.state.petPhotos} petName={this.state.name} />
 
@@ -687,7 +735,7 @@ const ContactInfoModal = ({isVisible, onModalClose, name, email, phoneNumber, on
     );
 }
 
-const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCancelPress, sinceDate, onSinceDateSelect, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onPhoneNumberChange, onEmailChange, dataToEdit, onEditHomePress}) => {
+const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCancelPress, sinceDate, onSinceDateSelect, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onPhoneNumberChange, onEmailChange, dataToEdit, onEditHomePress, searchRegion, onSearchRegionChange, onSearchPress}) => {
     return (
         <View>
             <Modal
@@ -696,14 +744,14 @@ const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCance
                 visible={isVisible}
                 onRequestClose={onModalClose}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}>
-                   <FosterEntryInfo sinceDate={sinceDate} onSinceDateSelect={onSinceDateSelect} onAddHomePress={onAddHomePress} onCancelPress={onCancelPress} untilDate={untilDate} onUntilDateSelect={onUntilDateSelect} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} onButtonPress={onButtonPress} name={name} email={email} phoneNumber={phoneNumber} onNameChange={onNameChange} onPhoneNumberChange={onPhoneNumberChange} onEmailChange={onEmailChange} dataToEdit={dataToEdit} onEditHomePress={onEditHomePress} />
+                   <FosterEntryInfo sinceDate={sinceDate} onSinceDateSelect={onSinceDateSelect} onAddHomePress={onAddHomePress} onCancelPress={onCancelPress} untilDate={untilDate} onUntilDateSelect={onUntilDateSelect} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} onButtonPress={onButtonPress} name={name} email={email} phoneNumber={phoneNumber} onNameChange={onNameChange} onPhoneNumberChange={onPhoneNumberChange} onEmailChange={onEmailChange} dataToEdit={dataToEdit} onEditHomePress={onEditHomePress} searchRegion={searchRegion} onSearchRegionChange={onSearchRegionChange} onSearchPress={onSearchPress} />
                 </View>
             </Modal>
         </View>
     );
 }
 
-const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancelPress, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onEmailChange, onPhoneNumberChange, dataToEdit, onEditHomePress}) => {
+const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancelPress, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onEmailChange, onPhoneNumberChange, dataToEdit, onEditHomePress, searchRegion, onSearchRegionChange, onSearchPress}) => {
     return (
         <View style={styles.modalView}>
             <Text style={[styles.modalTitle, {marginBottom: 25}]}>{dataToEdit ? "Editar hogar" : "Crear nuevo hogar"}</Text>
@@ -742,6 +790,17 @@ const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancel
                 checkBoxTitle={"Elegir voluntario"} 
                 onPress={() => onButtonPress(true)} 
                 additionalStyle={{marginBottom: 10}}/>
+                {existingVolunteer ?
+                <View>
+                    <Text style={{color: colors.clearBlack, marginTop: 10}}>Filtrar voluntarios por región</Text>
+                    <View style={commonStyles.alignedContent}>
+                        <OptionTextInput value={searchRegion} placeholder={"Región"} 
+                        onChangeText={onSearchRegionChange}
+                        additionalStyle={{flex: 2, marginTop: 0}} />
+                        <AppButton buttonText={"Filtrar"} onPress={onSearchPress} additionalButtonStyles={{flex: 1, marginTop: 10, padding: 15}} isDisabled={ searchRegion === ""} />
+                    </View> 
+                </View>
+                : <></>}
             
             <DropDownPicker
                 open={openDropdown}
