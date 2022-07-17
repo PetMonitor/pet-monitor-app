@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import * as Location from 'expo-location';
 
@@ -83,11 +83,6 @@ export class FosteringVolunteersScreen extends React.Component {
     }
 
     componentDidMount() {
-        this.fetchFosterVolunteerProfiles();
-        this.fetchUserLocation();
-    }
-
-    fetchUserLocation() {
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
@@ -97,7 +92,7 @@ export class FosteringVolunteersScreen extends React.Component {
 
             Location.getCurrentPositionAsync({})
             .then(userLocation => {
-                // this.fillLocationInfo(userLocation.coords.latitude, userLocation.coords.longitude);
+                this.fillLocationInfo(userLocation.coords.latitude, userLocation.coords.longitude);
             });
         });
     }
@@ -125,18 +120,46 @@ export class FosteringVolunteersScreen extends React.Component {
                 userRegion = eventLocation.locality;
             }
             this.setState({
-                filterByRegion: userRegion ? true : false,
+                filterByRegion: userRegion != "" ? true : false,
                 searchRegion: userRegion
-            })
+            }, () => this.fetchFosterVolunteerProfiles())
         }).catch(err => {
             alert(err)
         })
     }
 
+    confirmFilterRemoval = () =>
+        Alert.alert(
+        "Atención!",
+        "Si continúa con la acción, se mostrarán todos los perfiles sin filtrar por región",
+        [
+            {
+                text: "Cancelar",
+                onPress: () => console.log("Cancel uncheck filter pressed"),
+                style: "cancel"
+            },
+            { 
+                text: "Continuar", 
+                onPress: () => this.setState({filterByRegion: !this.state.filterByRegion, searchRegion: ''}, () => this.fetchFosterVolunteerProfiles())
+            }
+        ]
+    );
+
+    filterByRegionAction = () => {
+        if (this.state.filterByRegion && this.state.searchRegion != "") {
+            this.confirmFilterRemoval();
+        } else {
+            this.setState({filterByRegion: !this.state.filterByRegion}, () => this.fetchFosterVolunteerProfiles())
+        }
+    }
+
     fetchFosterVolunteerProfiles() {
+        console.log(this.state)
+        let regionFilter = (this.state.filterByRegion && this.state.searchRegion != "") ? `&profileRegion=${this.state.searchRegion}` : ""
+        let queryParams = "?available=true" + regionFilter
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             getSecureStoreValueFor("userId").then(userId => {
-                getJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles?available=true', { 'Authorization': 'Basic ' + sessionToken }
+                getJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles' + queryParams, { 'Authorization': 'Basic ' + sessionToken }
                 ).then(profilesInfo => {
                     let volunteers = []
                     let promises = []
@@ -161,7 +184,21 @@ export class FosteringVolunteersScreen extends React.Component {
                         }))
                     }
                     Promise.all(promises)
-                    .then(() => this.setState({ volunteers: volunteers, myVolunteerProfile: myVolunteerProfile }))
+                    .then(() => {
+                        volunteers.sort((a, b) => {
+                            let locationDiff = a["location"].toLowerCase().localeCompare(b["location"].toLowerCase())
+                            if (locationDiff !== 0) {
+                                return locationDiff;
+                            }
+                            if (a.averageRating < b.averageRating) {
+                                return 1;
+                            } if (a.averageRating > b.averageRating) {
+                                return -1;
+                            }
+                            return 0;
+                        });
+                        this.setState({ volunteers: volunteers, myVolunteerProfile: myVolunteerProfile });
+                    })
                     .catch(err => {
                         console.log(err);
                         alert(err);
@@ -187,12 +224,12 @@ export class FosteringVolunteersScreen extends React.Component {
                     <CheckBoxItem 
                         optionIsSelected={this.state.filterByRegion} 
                         checkBoxTitle={"Filtrar por región"} 
-                        onPress={() => this.setState({filterByRegion: !this.state.filterByRegion})}
+                        onPress={() => this.filterByRegionAction()}
                         additionalTextStyle={{color: colors.secondary, fontWeight: '500', fontSize: 16}} />
                      {this.state.filterByRegion ?   
                     <View style={commonStyles.alignedContent}>
                         <OptionTextInput value={this.state.searchRegion} placeholder={"Región"} onChangeText={text => this.setState({ searchRegion: text })} additionalStyle={{flex: 2}} />
-                        <AppButton buttonText={"Buscar"} onPress={() => console.log("")} additionalButtonStyles={{flex: 1, marginTop: 20, padding: 15}} />
+                        <AppButton buttonText={"Buscar"} onPress={() => this.fetchFosterVolunteerProfiles()} additionalButtonStyles={{flex: 1, marginTop: 20, padding: 15}} isDisabled={ this.state.searchRegion === ""} />
                     </View> : <></>}
                     <FlatList 
                         data={this.state.volunteers}

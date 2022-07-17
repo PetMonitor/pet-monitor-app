@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Text, TextInput, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView } from 'react-native';
+import { Text, TextInput, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
@@ -26,12 +26,12 @@ export class EditUserDetailsScreen extends React.Component {
                 ...this.props.route.params.userData,
                 profilePicture: null,
                 userLocation: null,
-                eventMarker: null,
-                city: null,
-                locality: null,
-                country: null
             }
         );
+    }
+
+    getRegion() {
+        return this.state.alertRegion ? ` ${this.state.alertRegion},` : '';
     }
 
     componentDidMount() {
@@ -62,6 +62,7 @@ export class EditUserDetailsScreen extends React.Component {
             const updatedUserData = Object.assign({ }, this.state);
                 
             delete updatedUserData.userId;
+            delete updatedUserData.userLocation;
             updatedUserData._ref = uuid.v4();
 
             getSecureStoreValueFor('sessionToken').then((sessionToken) => {
@@ -113,6 +114,8 @@ export class EditUserDetailsScreen extends React.Component {
             borderBottomColor: colors.inputGrey,
             borderBottomWidth: 1,
         }} />;
+
+        console.log(this.state)
         
         return ( <>
             <SafeAreaView
@@ -213,8 +216,8 @@ export class EditUserDetailsScreen extends React.Component {
                     this.state.userLocation && <>
                     <OptionTitle text={"Seleccionar la ubicación aproximada"} additionalStyle={{marginLeft: 30}}/>
                     {this.showLocationMapSelector()}
-                    {this.state.country &&
-                    <Text style={[styles.textLabel, {marginHorizontal: 30, fontSize: 14, marginTop: 10}]}>{"Se recibirán alertas sobre" + (this.state.city ? ` ${this.state.city},` : '') + (this.state.locality ? ` ${this.state.locality},` : '') + this.state.country}</Text>}
+                    {this.state.alertLocation.lat && this.state.alertLocation.long &&
+                    <Text style={[styles.textLabel, {marginHorizontal: 30, fontSize: 14, marginTop: 10}]}>Alertas configuradas sobre<Text style={{fontWeight: 'bold'}}>{this.getRegion() + " Argentina"}</Text></Text>}
                     </> : null }
                     {/* <View style={[styles.alignedContent, {marginLeft: 30}]}>
                         <Text style={styles.textLabel}>Radio</Text>
@@ -258,12 +261,20 @@ export class EditUserDetailsScreen extends React.Component {
         getLocationFromCoordinates(latitude, longitude)
         .then(response => {
             let eventLocation = this.selectedLocation(response.data)
+            if (eventLocation.country != "Argentina") {
+                Alert.alert("Solamente podemos configurar alertas en Argentina");
+                return
+            }
 
+            let region = null
+            if (eventLocation.neighbourhood) {
+                region = eventLocation.neighbourhood;
+            } else if (eventLocation.locality) {
+                region = eventLocation.locality;
+            }
             this.setState({
-                // location: eventLocation.street ? eventLocation.street : '',
-                city: eventLocation.neighbourhood ? eventLocation.neighbourhood : '',
-                province: eventLocation.locality ? eventLocation.locality : '',
-                country: eventLocation.country ? eventLocation.country : '',
+                alertRegion: region,
+                alertLocation: { lat: latitude, long: longitude }
             })
         }).catch(err => {
             alert(err)
@@ -275,20 +286,19 @@ export class EditUserDetailsScreen extends React.Component {
             style={{ height: 300, marginVertical: 10, marginHorizontal: 30 }}
             // provider={PROVIDER_GOOGLE}
             region={{
-                latitude: this.state.eventMarker ? this.state.eventMarker.latitude : this.state.userLocation.coords.latitude,
-                longitude: this.state.eventMarker ? this.state.eventMarker.longitude : this.state.userLocation.coords.longitude,
+                latitude: this.state.alertLocation.lat ? this.state.alertLocation.lat : this.state.userLocation.coords.latitude,
+                longitude: this.state.alertLocation.long ? this.state.alertLocation.long : this.state.userLocation.coords.longitude,
                 latitudeDelta: 0.0022,
                 longitudeDelta: 0.0121,
             }}
             showsUserLocation={true}
             onPress={(e) => {
                 if (e.nativeEvent.coordinate) {
-                    this.setState({ eventMarker: e.nativeEvent.coordinate });
                     this.fillLocationInfo(e.nativeEvent.coordinate.latitude, e.nativeEvent.coordinate.longitude);
                 }
             } }>
-            {this.state.eventMarker &&
-                <Marker coordinate={this.state.eventMarker} image={require('../../../assets/eventMarker.png')} />}
+            {this.state.alertLocation.lat && this.state.alertLocation.long &&
+                <Marker coordinate={{ latitude: this.state.alertLocation.lat, longitude: this.state.alertLocation.long }} image={require('../../../assets/eventMarker.png')} />}
         </MapView>;
     }
 }
