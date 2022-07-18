@@ -11,6 +11,8 @@ import { secureStoreSave } from '../utils/store.js';
 import { Modal, Image, TouchableOpacity, Text, TextInput, StyleSheet, View } from 'react-native';
 import { AppButton } from '../utils/buttons';
 
+const USER_CREATED_SUCCESS_TEXT = "Perfil creado con éxito!";
+const USER_CREATED_ERROR_TEXT = "Error al crear perfil!";
 
 export class LoginScreen extends React.Component {
 
@@ -21,17 +23,22 @@ export class LoginScreen extends React.Component {
         username: '',
         password: '',
         emailAddress: '',
-        modalUserCreatedSuccessVisible: false,
-        modalErrorVisible: false,
+        modalVisible: false,
+        modalText: '',
+        errorOcurred: false,
       };
     }
 
-    setUserCreatedSuccessModalVisible = (visible=true) => {
-      this.setState({ modalUserCreatedSuccessVisible: visible });
+    setModalVisible = (visible) => {
+      this.setState({ modalVisible: visible });
     }
 
-    setErrorModalVisible = (visible=true) => {
-      this.setState({ modalUserCreatedErrorVisible: visible });
+    setUserCreatedSuccessModalVisible = () => {
+      this.setState({ modalText: USER_CREATED_SUCCESS_TEXT, errorOcurred: false, modalVisible: true })
+    }
+
+    setErrorModalVisible = () => {
+      this.setState({ modalText: USER_CREATED_ERROR_TEXT, errorOcurred: true, modalVisible: true  });
     }
 
     render() {
@@ -162,41 +169,22 @@ export class LoginScreen extends React.Component {
             <Modal 
                 animationType="slide"
                 transparent={true}
-                visible={this.state.modalUserCreatedSuccessVisible}
+                visible={this.state.modalVisible}
                 onRequestClose={() => {
                   Alert.alert("Modal has been closed.");
-                  this.setUserCreatedSuccessModalVisible(!modalVisible);
+                  this.setModalVisible(!modalVisible);
                 }}>
                 <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
                   <View style={styles.modalView}>
-                    <Text style={styles.modalText}>Perfil creado con éxito!</Text>
+                  {this.state.errorOcurred? 
+                      <Text style={styles.titleError}>Error!</Text>
+                      : null 
+                  }  
+                    <Text style={styles.modalText}>{this.state.modalText}</Text>
                     <TouchableOpacity
                       style={[styles.modalButton, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
                         onPress={() => {
-                        this.setUserCreatedSuccessModalVisible(!this.state.modalUserCreatedSuccessVisible);
-                      }}>
-                      <Text>Ok</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-            </Modal>
-
-
-            <Modal 
-                animationType="slide"
-                transparent={true}
-                visible={this.state.modalErrorVisible}
-                onRequestClose={() => {
-                  Alert.alert("Error modal has been closed.");
-                  this.setErrorModalVisible(!modalVisible);
-                }}>
-                <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
-                  <View style={styles.modalView}>
-                    <Text style={styles.modalText}>Perfil creado con éxito!</Text>
-                    <TouchableOpacity
-                      style={[styles.modalButton, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
-                        onPress={() => {
-                        this.setErrorModalVisible(!this.state.modalErrorVisible);
+                        this.setModalVisible(!this.state.modalVisible);
                       }}>
                       <Text>Ok</Text>
                     </TouchableOpacity>
@@ -304,5 +292,12 @@ const styles = StyleSheet.create({
     borderRadius: 7, 
     width: '55%', 
     alignSelf: 'flex-start'
+  },
+  titleError: {
+      fontWeight: '500',
+      color: colors.pink,
+      fontSize: 20,
+      margin: 10,
+      alignSelf: 'center'
   }
 });

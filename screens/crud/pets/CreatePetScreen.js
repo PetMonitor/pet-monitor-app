@@ -73,7 +73,14 @@ export class CreatePetScreen extends React.Component {
             console.log('Navigating to create pet screen');
             console.log(JSON.stringify(userInfo));
 
-            this.props.navigation.push('CreatePet', { userInfo: userInfo, initialSetup: true, initPetType: initPetType, onGoBack: null }); 
+            this.props.navigation.push('CreatePet', { 
+                userInfo: userInfo, 
+                initialSetup: true, 
+                initPetType: initPetType, 
+                onGoBack: null ,
+                onUserCreatedSuccessfully: this.props.route.params.onUserCreatedSuccessfully, 
+                onUserCreatedError: this.props.route.params.onUserCreatedError
+            }); 
         };
 
         const handleFinishInitialSetup = () => {
@@ -100,12 +107,12 @@ export class CreatePetScreen extends React.Component {
             
             postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
                 console.log(response);
-                alert('Usuario creado con éxito!')
+                this.props.route.params.onUserCreatedSuccessfully();
                 // go back to login page
                 this.props.navigation.popToTop();
             }).catch(err => {
                 console.error(err);
-                alert(`Error al crear perfil de usuario!`);
+                this.props.route.params.onUserCreatedError();
                 this.props.navigation.popToTop();
             });      
         };
