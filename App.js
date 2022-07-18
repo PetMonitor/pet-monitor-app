@@ -8,6 +8,7 @@ import { BottomTabNavigator } from './screens/BottomTabNavigator.js';
 import { LoginScreen } from './screens/LoginScreen.js';
 import { CreateUserScreen } from './screens/crud/users/CreateUserScreen';
 import { ConfirmEmailScreen } from './screens/crud/users/ConfirmEmailScreen';
+import { ResetPasswordScreen } from './screens/crud/users/ResetPasswordScreen';
 import { CreatePetScreen } from './screens/crud/pets/CreatePetScreen';
 import { AskCreatePetScreen } from './screens/crud/pets/AskCreatePetScreen';
 import { EditUserDetailsScreen } from './screens/crud/users/EditUserDetailsScreen';
@@ -40,6 +41,7 @@ export default class App extends React.Component {
               <Stack.Screen name="BottomTabNavigator" component={BottomTabNavigator} options={{ headerShown: false, headerLeft: () => null }} />
               <Stack.Screen name="CreateUserScreen" component={CreateUserScreen} options={{headerShown: false}}/>
               <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{title: '', headerShown: false}}/>
+              <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} options={{title: '', headerShown: false}}/>
               <Stack.Screen name="EditUserScreen" component={EditUserDetailsScreen} options={{headerShown: false}}/>
               <Stack.Screen name="ChangeUserPasswordScreen" component={ChangePasswordScreen} options={{headerShown: false}}/>
               <Stack.Screen name="AskCreatePet" component={AskCreatePetScreen} options={{headerShown: false,headerBackVisible: false, title: '', headerStyle: {backgroundColor: colors.primary}}} />

@@ -26,12 +26,12 @@ export class ConfirmEmailScreen extends React.Component {
     setModalVisible = (visible) => {
         this.setState({ modalVisible: visible });
     }
-    
+
     render() {
 
         const { navigation } = this.props;
 
-        const { user } = this.props.route.params;
+        const { user, onUserCreatedSuccessfully, onUserCreatedError } = this.props.route.params;
 
 
         const handleCheckEmailConfirmed = () => {
@@ -43,13 +43,26 @@ export class ConfirmEmailScreen extends React.Component {
 
                 if (response.confirmed) {
                     this.setState({ emailConfirmed: response.emailConfirmed });
-                    return navigation.push('AskCreatePet', user);
+
+                    console.log(`Continue user setup ${JSON.stringify(user)}`)
+                    return navigation.push('AskCreatePet', { 
+                        user: {
+                          'username': user.username, 
+                          'email': user.email,
+                          'password': user.password,
+                          'pets': []
+                        },
+                        onUserCreatedSuccessfully: onUserCreatedSuccessfully,
+                        onUserCreatedError: onUserCreatedError
+                      });
                 } else {
                     this.setState({modalVisible: true, modalText: MAIL_NOT_CONFIRMED_TEXT})
                     console.info(`Email ${user.email} not confirmed. Cannot continue setup`);
                 }
             }).catch(error => {
-                 console.error(`Error sending confirmation email to ${user.email}: ${error}`)
+                 console.error(`Error checking email confirmation for ${user.email}: ${error}`);
+                 onUserCreatedError();
+                 navigation.navigate('Login');
             });   
             
         };

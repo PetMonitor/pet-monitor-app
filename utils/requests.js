@@ -1,5 +1,16 @@
 import { GEOCODING_API_KEY } from "@env"
 
+export const HttpStatusCodes = {
+    "NOT_FOUND": 404
+}
+
+class HttpError extends Error {
+    constructor (message, statusCode) {
+        super(message);
+        this.statusCode = statusCode;
+    }
+}
+
 export async function postJsonData(url = '', data = {}, additionalHeaders = {}) {
     // console.log('POST ' + url + ' ' + JSON.stringify(data));
     reqHeaders = Object.assign({}, additionalHeaders, { 'Content-Type': 'application/json' });
@@ -16,7 +27,7 @@ export async function postJsonData(url = '', data = {}, additionalHeaders = {}) 
             return response;
         } else {
             console.log('POST ' + url + ' returned ' + response.status);
-            throw Error('Request at POST ' + url + ' returned ' + response.status)
+            throw new HttpError('Request at POST ' + url + ' returned ' + response.status, response.status)
         }
     })
     .then(response => response.json())
@@ -38,7 +49,7 @@ export async function deleteJsonData(url = '', data = {}, additionalHeaders = {}
             return response;
         } else {
             console.log('DELETE ' + url + ' returned ' + response.status);
-            throw Error('Request at DELETE ' + url + ' returned ' + response.status)
+            throw new HttpError('Request at DELETE ' + url + ' returned ' + response.status, response.status)
         }
     });
 };
@@ -56,7 +67,7 @@ export async function getJsonData(url = '', additionalHeaders = {}) {
             return response;
         } else {
             console.log('GET ' + url + ' returned ' + response.status);
-            throw Error('Request at GET ' + url + ' returned ' + response.status)
+            throw new HttpError('Request at GET ' + url + ' returned ' + response.status, response.status)
         }
     })
     .then(response => response.json())
@@ -80,7 +91,7 @@ export async function putJsonData(url = '', data = {}, additionalHeaders = {}) {
             return response;
         } else {
             console.log('PUT ' + url + ' returned ' + response.status);
-            throw Error('Request at PUT ' + url + ' returned ' + response.status)
+            throw new HttpError('Request at PUT ' + url + ' returned ' + response.status, response.status)
         }
     })
     .then(response => response.json())
@@ -97,7 +108,7 @@ export async function getLocationFromCoordinates(latitude, longitude) {
             return response;
         } else {
             console.log('GET ' + url + ' returned ' + response.status);
-            throw Error('Request at GET ' + url + ' returned ' + response.status)
+            throw new HttpError('Request at GET ' + url + ' returned ' + response.status, response.status)
         }
     })
     .then(response => response.json())
@@ -114,7 +125,7 @@ export async function getCoordinatesFromLocation(location) {
             return response;
         } else {
             console.log('GET ' + url + ' returned ' + response.status);
-            throw Error('Request at GET ' + url + ' returned ' + response.status)
+            throw new HttpError('Request at GET ' + url + ' returned ' + response.status, response.status)
         }
     })
     .then(response => response.json())

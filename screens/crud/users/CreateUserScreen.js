@@ -26,6 +26,8 @@ export class CreateUserScreen extends React.Component {
         
         const { navigation } = this.props;
 
+        const { onUserCreatedSuccessfully, onUserCreatedError } = this.props.route.params;
+
         const handleRegisterPress = () => {
 
             if(!validateEmail(this.state.email)) {
@@ -47,10 +49,14 @@ export class CreateUserScreen extends React.Component {
                       'email': this.state.email,
                       'password': this.state.password,
                       'pets': []
-                    }
+                    },
+                    onUserCreatedSuccessfully: onUserCreatedSuccessfully,
+                    onUserCreatedError: onUserCreatedError
                   });
             }).catch(error => {
                 console.error(`Error sending confirmation email to ${this.state.email}: ${error}`)
+                onUserCreatedError();
+                navigation.navigate('Login');
             });
         };
 

@@ -20,7 +20,7 @@ export class AskCreatePetScreen extends React.Component {
 
         const { navigation } = this.props;
 
-        const { user } = this.props.route.params;
+        const { user, onUserCreatedSuccessfully, onUserCreatedError  } = this.props.route.params;
 
         const tabIconSize = 60;
 
@@ -33,14 +33,17 @@ export class AskCreatePetScreen extends React.Component {
         };
 
         const handleSkipStep = () => {
+            //console.log(`Skip create pets ${JSON.stringify(user)}`)
             // User should be registered and redirected to login page.
             postJsonData(global.noticeServiceBaseUrl + '/users', user).then(response => {
                 console.log(response);
-                alert('Successfully created user!')
                 // go back to login page
+                onUserCreatedSuccessfully()
                 navigation.popToTop();
             }).catch(err => {
-                alert(err)
+                console.error(err);
+                onUserCreatedError();
+                navigation.popToTop();
             });
         };
 
