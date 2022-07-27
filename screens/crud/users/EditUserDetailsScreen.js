@@ -73,7 +73,7 @@ export class EditUserDetailsScreen extends React.Component {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(response => {
                     console.log(response);
-                    alert('Successfully updated user data!')
+                    alert('Perfil actualizado correctamente!')
                     // go back and return user data to parent component
                     updatedUserData.userId = this.state.userId;
                     this.props.navigation.pop();

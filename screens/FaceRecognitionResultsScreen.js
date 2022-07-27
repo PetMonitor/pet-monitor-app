@@ -38,7 +38,8 @@ export class FaceRecognitionResultsScreen extends React.Component {
             alertsActivated: false,
             alertFrequency: 1,
             alertLimitDate: new Date(),
-            feedbackDisabled: false
+            feedbackDisabled: false,
+            searchedRegion: props.route.params.region,
         };
     }
     
@@ -59,8 +60,12 @@ export class FaceRecognitionResultsScreen extends React.Component {
 
     componentDidMount() {
         this.setState({ isLoading : true })
+        let queryParams = ''
+        if (this.state.searchedRegion != null && this.state.searchedRegion != '') {
+            queryParams = '?region=' + this.state.searchedRegion
+        }
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
-            getJsonData(global.noticeServiceBaseUrl + '/similarPets/' + this.state.searchedNoticeId, 
+            getJsonData(global.noticeServiceBaseUrl + '/similarPets/' + this.state.searchedNoticeId + queryParams, 
             {
                 'Authorization': 'Basic ' + sessionToken 
             }
@@ -247,10 +252,10 @@ export class FaceRecognitionResultsScreen extends React.Component {
                             </View>
                         </View>: 
                         <View>
-                            <Text style={{textAlign: 'center', color: colors.yellow, fontSize: 20 }}>
+                            <Text style={{textAlign: 'center', color: colors.secondary, fontWeight: '500', fontSize: 20, paddingTop: '20%'}}>
                                 Oops!
                             </Text>
-                            <Text style={{textAlign: 'center', color: colors.yellow, fontSize: 20, paddingBottom:'80%' }}>
+                            <Text style={{textAlign: 'center', color: colors.secondary, fontWeight: '500', fontSize: 20}}>
                                 No encontramos resultados para tu búsqueda!
                             </Text>
                         </View>

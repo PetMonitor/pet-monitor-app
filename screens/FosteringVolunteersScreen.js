@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Alert, ActivityIndicator } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import * as Location from 'expo-location';
 
@@ -113,7 +113,7 @@ export class FosteringVolunteersScreen extends React.Component {
         getLocationFromCoordinates(latitude, longitude)
         .then(response => {
             let eventLocation = this.selectedLocation(response.data)
-            let userRegion = null
+            let userRegion = ""
             if (eventLocation.neighbourhood) {
                 userRegion = eventLocation.neighbourhood;
             } else if (eventLocation.locality) {
@@ -140,7 +140,7 @@ export class FosteringVolunteersScreen extends React.Component {
             },
             { 
                 text: "Continuar", 
-                onPress: () => this.setState({filterByRegion: !this.state.filterByRegion, searchRegion: ''}, () => this.fetchFosterVolunteerProfiles())
+                onPress: () => this.setState({filterByRegion: !this.state.filterByRegion, searchRegion: '', volunteers: [], isLoading: true}, () => this.fetchFosterVolunteerProfiles())
             }
         ]
     );
@@ -212,7 +212,9 @@ export class FosteringVolunteersScreen extends React.Component {
 
     render() {
         if (this.state.isLoading) {
-            return null;
+            return <View style={{position: 'absolute', top: 100, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.semiTransparent}}>
+                <ActivityIndicator size="large" color={colors.clearBlack}/>
+            </View>;
         }
         return (
             <View style={commonStyles.container}> 
@@ -240,10 +242,12 @@ export class FosteringVolunteersScreen extends React.Component {
                     />
                     </View>
                 }
+                <View style={{position: 'absolute', top: height - 270, height: 270, alignSelf: 'center', backgroundColor: colors.white}}>
                 <AppButton
                         buttonText={this.state.myVolunteerProfile ? "Editar mi información" : "Quiero sumarme como voluntario"} 
                         onPress={() => this.navigateToSettingsView(this.state.myVolunteerProfile)} 
                         additionalButtonStyles={{width: width - 60, alignSelf: 'center', marginBottom: 20, marginTop: 10}} />
+                </View>        
             </View>
         )
     }

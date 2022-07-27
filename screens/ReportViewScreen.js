@@ -796,8 +796,8 @@ const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancel
                     <View style={commonStyles.alignedContent}>
                         <OptionTextInput value={searchRegion} placeholder={"Región"} 
                         onChangeText={onSearchRegionChange}
-                        additionalStyle={{flex: 2, marginTop: 0}} />
-                        <AppButton buttonText={"Filtrar"} onPress={onSearchPress} additionalButtonStyles={{flex: 1, marginTop: 10, padding: 15}} isDisabled={ searchRegion === ""} />
+                        additionalStyle={{flex: 2, marginTop: 0, padding: 8}} />
+                        <AppButton buttonText={"Filtrar"} onPress={onSearchPress} additionalButtonStyles={{flex: 1, marginTop: 10, padding: 8}} isDisabled={ searchRegion === ""} />
                     </View> 
                 </View>
                 : <></>}
