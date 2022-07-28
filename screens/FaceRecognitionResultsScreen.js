@@ -65,6 +65,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 'Authorization': 'Basic ' + sessionToken 
             }
             ).then(response => {
+                console.log(`RECEIVED SIMILAR PETS ${JSON.stringify(response)}`)
                 this.setState({ notices: response });
             }).catch(err => {
                 console.log(err);
@@ -150,7 +151,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
         const addDaysToToday = (daysToAdd) => {
             var result = new Date();
             result.setDate(result.getDate() + daysToAdd);
-            console.log(`MAX DATE ${result}`)
+            //console.log(`MAX DATE ${result}`)
             return result;
         }
 
