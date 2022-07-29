@@ -3,13 +3,15 @@ import React from 'react';
 import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { encode as btoa } from 'base-64'
+import * as Location from 'expo-location';
 
-import { getJsonData } from '../utils/requests.js';
+import { getJsonData, getLocationFromCoordinates } from '../utils/requests.js';
 import { getSecureStoreValueFor } from '../utils/store';
 import { AppButton } from '../utils/buttons.js';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
+import { CheckBoxItem, OptionTextInput } from '../utils/editionHelper.js';
 
 /** Implements the Face Recognition search screen. */
 export class FaceRecognitionSearchScreen extends React.Component {
@@ -19,7 +21,9 @@ export class FaceRecognitionSearchScreen extends React.Component {
         this.state = {
             userNotices: [],
             userId: '',
-            noticeId: ''
+            noticeId: '',
+            filterByRegion: true,
+            searchRegion: ''
         };
     }
 
@@ -47,7 +51,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
             alert("Debes seleccionar un reporte!")
             return;
         }
-        this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId, userId: this.state.userId }); 
+        this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId, userId: this.state.userId, region: this.state.filterByRegion ? this.state.searchRegion : null }); 
     }
 
     arrayBufferToBase64 = buffer => {
@@ -59,6 +63,37 @@ export class FaceRecognitionSearchScreen extends React.Component {
         }
         return btoa(binary);
     };
+
+    selectedLocation = (locations) => {
+        let maxConfidence = 0
+        let selected = 0
+        for (let i = 0; i < locations.length; i++) {
+            if (locations[i].confidence > maxConfidence) {
+                maxConfidence = locations[i].confidence
+                selected = i
+            }
+        }
+        return locations[selected]
+    }
+
+    fillLocationInfo = (latitude, longitude) => {
+        getLocationFromCoordinates(latitude, longitude)
+        .then(response => {
+            let eventLocation = this.selectedLocation(response.data)
+            let userRegion = ""
+            if (eventLocation.neighbourhood) {
+                userRegion = eventLocation.neighbourhood;
+            } else if (eventLocation.locality) {
+                userRegion = eventLocation.locality;
+            }
+            this.setState({
+                filterByRegion: userRegion != "" ? true : false,
+                searchRegion: userRegion
+            })
+        }).catch(err => {
+            alert(err)
+        })
+    }
 
     componentDidMount() {
         getSecureStoreValueFor('sessionToken').then(sessionToken =>  
@@ -79,6 +114,18 @@ export class FaceRecognitionSearchScreen extends React.Component {
                 });
             })
         )
+        Location.requestForegroundPermissionsAsync()
+        .then( response => {
+            if (response.status !== 'granted') {
+                alert('Permission to access location was denied');
+                return;
+            }
+
+            Location.getCurrentPositionAsync({})
+            .then(userLocation => {
+                this.fillLocationInfo(userLocation.coords.latitude, userLocation.coords.longitude);
+            });
+        });
     }
 
     render() {
@@ -96,6 +143,13 @@ export class FaceRecognitionSearchScreen extends React.Component {
                         renderItem={this.renderPet}
                         style={{paddingLeft: 15, marginRight: 10, marginTop: 10}}
                     />
+                    <CheckBoxItem
+                        optionIsSelected={this.state.filterByRegion} 
+                        checkBoxTitle={"Filtrar por región"} 
+                        onPress={() => this.setState({ filterByRegion: !this.state.filterByRegion})}
+                        additionalTextStyle={{color: colors.secondary, fontWeight: '500', fontSize: 16}} 
+                        additionalStyle={{marginLeft: 20, marginTop: 15}}/>
+                    {this.state.filterByRegion && <OptionTextInput value={this.state.searchRegion} placeholder={"Región"} onChangeText={text => this.setState({ searchRegion: text })} additionalStyle={{marginLeft: 20, marginRight: 20, padding: 12}} /> }
                 </> : <Text style={{margin: 20, color: colors.clearBlack, fontSize: 15, marginTop: 20}}>No hay reportes creados aún. Para realizar una búsqueda, se requiere tener al menos reporte activo de la mascota de interés. </Text>}
                 {/* <TouchableOpacity style={styles.button} onPress={() => this.navigateToCreatePet()}>
                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -110,7 +164,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
                     additionalButtonStyles={styles.buttonSearch} 
                     additionalTextStyles={{paddingLeft: 10}}
                     additionalElement={<Icon name='search' size={20} color={colors.white} />}
-                    isDisabled={this.state.userNotices.length == 0 } />
+                    isDisabled={this.state.userNotices.length == 0 || (this.state.filterByRegion && this.state.searchRegion == '') } />
 
                 </ScrollView>
             </View>
@@ -123,7 +177,7 @@ const styles = StyleSheet.create({
         fontSize: 20, 
         color: colors.secondary,
         paddingLeft: 20, 
-        paddingTop: 25, 
+        paddingTop: 20, 
         paddingBottom: 5, 
         fontWeight: 'bold',
     },
@@ -138,7 +192,7 @@ const styles = StyleSheet.create({
     },
     buttonSearch: {
         backgroundColor: colors.secondary,
-        marginTop: 30,
+        marginTop: 50,
         width: '50%', 
         alignSelf: 'center'
     },

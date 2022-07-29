@@ -276,7 +276,7 @@ const ReportMarker = ({notice, onMarkerPreviewPress}) => {
 
 const ReportMarkers = ({notices, onMarkerPreviewPress}) => {
     return notices ? 
-        notices.map(notice => <ReportMarker notice={notice} onMarkerPreviewPress={onMarkerPreviewPress} />) : null;
+        notices.map(notice => <ReportMarker notice={notice} key={notice.noticeId} onMarkerPreviewPress={onMarkerPreviewPress} />) : null;
 }
 
 const ReportsMap = ({userLatitude, userLongitude, notices, onMarkerPreviewPress}) => {

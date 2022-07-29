@@ -8,9 +8,11 @@ import * as config from '../config/config';
 
 import { getJsonData, postJsonData } from '../utils/requests.js';
 import { secureStoreSave } from '../utils/store.js';
-import { Image, Text, TextInput, StyleSheet, View } from 'react-native';
+import { Modal, Image, TouchableOpacity, Text, TextInput, StyleSheet, View } from 'react-native';
 import { AppButton } from '../utils/buttons';
 
+const USER_CREATED_SUCCESS_TEXT = "Perfil creado con éxito!";
+const USER_CREATED_ERROR_TEXT = "Error al crear perfil!";
 
 export class LoginScreen extends React.Component {
 
@@ -19,8 +21,24 @@ export class LoginScreen extends React.Component {
 
       this.state = {
         username: '',
-        password: ''
+        password: '',
+        emailAddress: '',
+        modalVisible: false,
+        modalText: '',
+        errorOcurred: false,
       };
+    }
+
+    setModalVisible = (visible) => {
+      this.setState({ modalVisible: visible });
+    }
+
+    setUserCreatedSuccessModalVisible = () => {
+      this.setState({ modalText: USER_CREATED_SUCCESS_TEXT, errorOcurred: false, modalVisible: true })
+    }
+
+    setErrorModalVisible = () => {
+      this.setState({ modalText: USER_CREATED_ERROR_TEXT, errorOcurred: true, modalVisible: true  });
     }
 
     render() {
@@ -130,9 +148,16 @@ export class LoginScreen extends React.Component {
       };
   
       const handleRegisterPress = () => { 
-        this.props.navigation.navigate("CreateUserScreen");
+        this.props.navigation.navigate("CreateUserScreen", { 
+          onUserCreatedSuccessfully: this.setUserCreatedSuccessModalVisible, 
+          onUserCreatedError: this.setErrorModalVisible 
+        });
       };
   
+      const handleForgotPassword = () => { 
+        navigation.navigate("ResetPassword");
+      };
+
       return (
         <View style={commonStyles.container}>
           <View style={styles.loginUpperContainer}>
@@ -141,6 +166,32 @@ export class LoginScreen extends React.Component {
           <View style={{left: "15%"}}>
             <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500',  marginTop: "5%"}}>Inicia sesión para continuar</Text>
             
+            <Modal 
+                animationType="slide"
+                transparent={true}
+                visible={this.state.modalVisible}
+                onRequestClose={() => {
+                  Alert.alert("Modal has been closed.");
+                  this.setModalVisible(!modalVisible);
+                }}>
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
+                  <View style={styles.modalView}>
+                  {this.state.errorOcurred? 
+                      <Text style={styles.titleError}>Error!</Text>
+                      : null 
+                  }  
+                    <Text style={styles.modalText}>{this.state.modalText}</Text>
+                    <TouchableOpacity
+                      style={[styles.modalButton, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
+                        onPress={() => {
+                        this.setModalVisible(!this.state.modalVisible);
+                      }}>
+                      <Text>Ok</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+            </Modal>
+
             <View style={{ width: "70%"}}>
               <TextInput
                 placeholder = 'Usuario'
@@ -159,6 +210,8 @@ export class LoginScreen extends React.Component {
                 maxLength = { 30 }
                 secureTextEntry = { true } 
               />
+              <Text style={{textDecorationLine: 'underline', color:colors.clearBlack, fontSize: 16, fontWeight: '500', marginTop: 10,textAlign: 'right'}} onPress={handleForgotPassword}>Olvidé mi contraseña!</Text>
+
             </View>
             <AppButton
               buttonText={"Iniciar sesión"} 
@@ -203,4 +256,48 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     fontWeight: '500'
   },
+  modalView: {
+    margin: 20,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: colors.clearBlack,
+    shadowOffset: {
+        width: 0,
+        height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  modalButton: {
+      backgroundColor: colors.secondary,
+      margin: 0,
+      marginTop: 10,
+      padding: 18, 
+      borderRadius: 7, 
+      width: '55%', 
+      alignSelf: 'flex-start'
+  },
+  errorModalButton: {
+    backgroundColor: colors.secondary,
+    margin: 0,
+    marginTop: 10,
+    padding: 18, 
+    borderRadius: 7, 
+    width: '55%', 
+    alignSelf: 'flex-start'
+  },
+  titleError: {
+      fontWeight: '500',
+      color: colors.pink,
+      fontSize: 20,
+      margin: 10,
+      alignSelf: 'center'
+  }
 });

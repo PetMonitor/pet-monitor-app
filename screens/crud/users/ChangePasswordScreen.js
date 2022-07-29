@@ -27,7 +27,6 @@ const ChangePasswordScreen = ({ route, navigation }) => {
             alert('La constaseña nueva y la confirmación no son iguales! Intente nuevamente.');
             return;
         }
-        alert('Set new password!');
 
         getSecureStoreValueFor('sessionToken').then((sessionToken) => {
             putJsonData(global.noticeServiceBaseUrl + '/users/' + route.params.userId + '/password', 
@@ -40,7 +39,7 @@ const ChangePasswordScreen = ({ route, navigation }) => {
                 'Authorization': 'Basic ' + sessionToken 
             }).then(response => {
                 console.log(`User password successfully updated!`);
-                alert(`Password successfully updated!`);
+                alert(`Contraseña actualizada!`);
                 navigation.pop();
             }).catch(err => {
                 console.log(err);

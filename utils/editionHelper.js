@@ -88,20 +88,20 @@ export const PickerOnValue = ({value, onValueChange, pickerItems}) => {
     </Picker>;
 }
 
-export const OptionTextInput = ({onChangeText, value = '', isMultiline = false, autoCapitalize="sentences" }) => {
+export const OptionTextInput = ({onChangeText, value = '', isMultiline = false, autoCapitalize = "sentences", placeholder = "", additionalStyle = {} }) => {
     return <TextInput
         onChangeText = {onChangeText}
         autoCorrect = { false }
         autoCapitalize={autoCapitalize}
-        style = {[editionStyles.textInput, isMultiline ? {height: 120, paddingTop: 10, paddingBottom: 10} : {}]}
+        style = {[editionStyles.textInput, isMultiline ? {height: 120, paddingTop: 10, paddingBottom: 10} : {}, additionalStyle]}
         maxLength = { isMultiline ? 300 : 50 }
         multiline = {isMultiline}
-        placeholder = {isMultiline ? "Ingrese descripción" : ""}
+        placeholder = {isMultiline ? "Ingrese descripción" : placeholder}
         value = { value ? value : "" }
     />
 }
 
-export const CheckBoxItem = ({optionIsSelected, checkBoxTitle, onPress, additionalStyle = {}}) => {
+export const CheckBoxItem = ({optionIsSelected, checkBoxTitle, onPress, additionalStyle = {}, additionalTextStyle = {}}) => {
     return <TouchableOpacity style={[styles.alignedContent, {marginTop: 10}, additionalStyle]} 
         onPress={onPress}>
         <MaterialIcon
@@ -109,7 +109,7 @@ export const CheckBoxItem = ({optionIsSelected, checkBoxTitle, onPress, addition
             size={23}
             color={optionIsSelected ? colors.secondary : colors.inputGrey}
         />
-        <Text style={editionStyles.checkBoxOptionTitle}>{checkBoxTitle}</Text>
+        <Text style={[editionStyles.checkBoxOptionTitle, additionalTextStyle]}>{checkBoxTitle}</Text>
     </TouchableOpacity>
 }
 

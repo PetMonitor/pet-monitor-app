@@ -8,6 +8,8 @@ import colors from '../../../config/colors';
 import { AppButton } from '../../../utils/buttons';
 import { validateEmail } from '../../../utils/commons';
 
+import { postJsonData } from '../../../utils/requests.js';
+
 export class CreateUserScreen extends React.Component {
 
     constructor(props) {
@@ -24,6 +26,8 @@ export class CreateUserScreen extends React.Component {
         
         const { navigation } = this.props;
 
+        const { onUserCreatedSuccessfully, onUserCreatedError } = this.props.route.params;
+
         const handleRegisterPress = () => {
 
             if(!validateEmail(this.state.email)) {
@@ -36,15 +40,24 @@ export class CreateUserScreen extends React.Component {
                 return;
             }
 
-            navigation.push('AskCreatePet', { 
-              user: {
-                'username': this.state.username, 
-                'email': this.state.email,
-                'password': this.state.password,
-                'pets': []
-              }
+            postJsonData(global.noticeServiceBaseUrl + '/emails/confirmation', 
+                { "emailAddress": this.state.email },
+            ).then((response) => {
+                navigation.push('ConfirmEmail', { 
+                    user: {
+                      'username': this.state.username, 
+                      'email': this.state.email,
+                      'password': this.state.password,
+                      'pets': []
+                    },
+                    onUserCreatedSuccessfully: onUserCreatedSuccessfully,
+                    onUserCreatedError: onUserCreatedError
+                  });
+            }).catch(error => {
+                console.error(`Error sending confirmation email to ${this.state.email}: ${error}`)
+                onUserCreatedError();
+                navigation.navigate('Login');
             });
-
         };
 
         const styles = StyleSheet.create({
