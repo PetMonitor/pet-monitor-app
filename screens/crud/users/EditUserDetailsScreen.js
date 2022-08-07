@@ -99,7 +99,6 @@ export class EditUserDetailsScreen extends React.Component {
             console.log(result);
         
             if (!result.cancelled) {
-            //   this.setState({profilePicture: result.base64});
               console.log(result.uri);
             }
         }
@@ -169,8 +168,10 @@ export class EditUserDetailsScreen extends React.Component {
                             />
                         </View>
                         <View style={styles.alignedContent}>
+                            {/* Email edit disabled until email confirmation step can be added here */}
                             <Text style={styles.textLabel}>Email</Text>
                             <TextInput 
+                                editable={false}
                                 value={this.state.email}
                                 onChangeText = { inputEmail => { this.setState({ email: inputEmail })}}
                                 autoCapitalize = 'none'

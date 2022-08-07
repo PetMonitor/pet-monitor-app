@@ -79,7 +79,8 @@ export class ReportViewScreen extends React.Component {
                 userId: ''
             },
             filterByRegion: true,
-            searchRegion: ""
+            searchRegion: "",
+            isTransfer: false
         };
     }
 
@@ -95,6 +96,10 @@ export class ReportViewScreen extends React.Component {
 
     setFosteringHomeModalVisible = (visible) => {
         this.setState({ newFosteringHomeModalVisible: visible });
+    }
+
+    setIsTransfer = (isTransfer) => {
+        this.setState({ isTransfer: isTransfer });
     }
 
     handleTabSegmenterIndexChange = index => {
@@ -170,6 +175,32 @@ export class ReportViewScreen extends React.Component {
 
     addNewHomeButton = () => {
         this.setFosteringHomeModalVisible(true);
+        this.setIsTransfer(false);
+    }
+
+    showTransferPetModal = () => {
+        this.setFosteringHomeModalVisible(true);
+        this.setIsTransfer(true);
+    }
+
+    cancelTransferAction = () => {
+        this.setFosteringHomeModalVisible(false);
+    }
+
+    transferPet = () => {
+        console.log(`Requested to transfer pet`);
+        let newHome = {
+            transferToUser : this.state.dropdownValue
+        }
+
+        postJsonData(global.noticeServiceBaseUrl + '/pets/' + this.state.petId + '/transfer', newHome).then(response => {
+            console.log(`Pet transfer successfully created!`);
+
+            
+        }).catch(err => {
+            alert(err);
+        });
+        this.changeNewHomeModalVisibility();
     }
 
     editHomeButton = (historyData) => {
@@ -226,12 +257,16 @@ export class ReportViewScreen extends React.Component {
                 ).then(profilesInfo => {
                     let volunteers = []
                     let promises = []
+
+                    console.log(`Obtained volunteer profiles ${JSON.stringify(profilesInfo)}`)
                     for (let i = 0; i < profilesInfo.length; i++) {
                         let profileUserId = profilesInfo[i].userId
                         promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profileUserId + '/contactInfo',
                         ).then(userInfo => {
+                            console.log(`User info ${JSON.stringify(userInfo)}`)
+
                             let volunteerInfo = {
-                                label: `--- ${userInfo.name} ---\n${profilesInfo[i].location}, ${profilesInfo[i].province}`,
+                                label: `--- ${userInfo.name.length > 0? userInfo.name : userInfo.username } ---\n${profilesInfo[i].location}, ${profilesInfo[i].province}`,
                                 value: profileUserId
                             }
                             if (userId !== userInfo.userId) {
@@ -574,9 +609,12 @@ export class ReportViewScreen extends React.Component {
                     onContactInfoOk={changeContactModalVisibility}/> 
                 <NewFosteringHomeModal 
                     isVisible={this.state.newFosteringHomeModalVisible} 
+                    isTransfer={this.state.isTransfer}
                     onModalClose={changeNewHomeModalVisibility}
                     onAddHomePress={this.addFosterHome}
                     onCancelPress={this.cancelHomeAction}
+                    transferPetAction={this.transferPet}
+                    cancelTransferAction={this.cancelTransferAction}
                     sinceDate={this.state.homeSinceSelectedDate}
                     onSinceDateSelect={(selectedDate) => this.setState({ homeSinceSelectedDate: selectedDate })}
                     untilDate={this.state.homeUntilSelectedDate}
@@ -659,7 +697,8 @@ export class ReportViewScreen extends React.Component {
                                 showContactInfo: this.showContactInfo
                             }}
                             myReportButtonHandler={{
-                                resolveReport: this.confirmResolveReport
+                                resolveReport: this.confirmResolveReport,
+                                showTransferPetModal: this.showTransferPetModal
                             }} 
                             fosterInfoButtonHandler={{
                                 addNewHome: this.addNewHomeButton
@@ -735,7 +774,7 @@ const ContactInfoModal = ({isVisible, onModalClose, name, email, phoneNumber, on
     );
 }
 
-const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCancelPress, sinceDate, onSinceDateSelect, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onPhoneNumberChange, onEmailChange, dataToEdit, onEditHomePress, searchRegion, onSearchRegionChange, onSearchPress}) => {
+const NewFosteringHomeModal = ({isVisible, isTransfer, onModalClose, onAddHomePress, onCancelPress, cancelTransferAction, transferPetAction, sinceDate, onSinceDateSelect, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onPhoneNumberChange, onEmailChange, dataToEdit, onEditHomePress, searchRegion, onSearchRegionChange, onSearchPress}) => {
     return (
         <View>
             <Modal
@@ -744,11 +783,60 @@ const NewFosteringHomeModal = ({isVisible, onModalClose, onAddHomePress, onCance
                 visible={isVisible}
                 onRequestClose={onModalClose}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}>
-                   <FosterEntryInfo sinceDate={sinceDate} onSinceDateSelect={onSinceDateSelect} onAddHomePress={onAddHomePress} onCancelPress={onCancelPress} untilDate={untilDate} onUntilDateSelect={onUntilDateSelect} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} onButtonPress={onButtonPress} name={name} email={email} phoneNumber={phoneNumber} onNameChange={onNameChange} onPhoneNumberChange={onPhoneNumberChange} onEmailChange={onEmailChange} dataToEdit={dataToEdit} onEditHomePress={onEditHomePress} searchRegion={searchRegion} onSearchRegionChange={onSearchRegionChange} onSearchPress={onSearchPress} />
+                   { isTransfer?
+                    <FosterEntryForTransferInfo onCancelPress={cancelTransferAction} onTransferPress={transferPetAction} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} searchRegion={searchRegion} onSearchRegionChange={onSearchRegionChange} onSearchPress={onSearchPress}/>:
+                    <FosterEntryInfo sinceDate={sinceDate} onSinceDateSelect={onSinceDateSelect} onAddHomePress={onAddHomePress} onCancelPress={onCancelPress} untilDate={untilDate} onUntilDateSelect={onUntilDateSelect} openDropdown={openDropdown} onSetOpen={onSetOpen} dropdownValue={dropdownValue} onSetValue={onSetValue} volunteers={volunteers} existingVolunteer={existingVolunteer} onButtonPress={onButtonPress} name={name} email={email} phoneNumber={phoneNumber} onNameChange={onNameChange} onPhoneNumberChange={onPhoneNumberChange} onEmailChange={onEmailChange} dataToEdit={dataToEdit} onEditHomePress={onEditHomePress} searchRegion={searchRegion} onSearchRegionChange={onSearchRegionChange} onSearchPress={onSearchPress} />
+                   }
                 </View>
             </Modal>
         </View>
     );
+}
+
+const FosterEntryForTransferInfo = ({onCancelPress, onTransferPress, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, searchRegion, onSearchRegionChange, onSearchPress}) => {
+    return (
+        <View style={styles.modalView}>
+            <Text style={[styles.modalTitle, {marginBottom: 25}]}>{"Transferir Reporte"}</Text>
+            <Text style={[styles.modalText, {fontWeight: 'bold', marginTop: 20, marginBottom: 5}]}>Voluntario para alojamiento transitorio</Text>
+            <View>
+                <Text style={{color: colors.clearBlack, marginTop: 10}}>Filtrar voluntarios por región</Text>
+                 <View style={commonStyles.alignedContent}>
+                    <OptionTextInput value={searchRegion} placeholder={"Región"} 
+                        onChangeText={onSearchRegionChange}
+                        additionalStyle={{flex: 2, marginTop: 0, padding: 8}} />
+                    <AppButton buttonText={"Filtrar"} onPress={onSearchPress} additionalButtonStyles={{flex: 1, marginTop: 10, padding: 8}} isDisabled={ searchRegion === ""} />
+                </View> 
+            </View>
+            
+            <DropDownPicker
+                open={openDropdown}
+                value={dropdownValue}
+                items={volunteers}
+                setOpen={onSetOpen}
+                setValue={onSetValue}
+                onSelectItem={item => console.log(item)}
+                style={{
+                    borderColor: colors.secondary,
+                    marginBottom: 10
+                }}
+                textStyle={{
+                    color: colors.clearBlack,
+                    fontWeight: 'bold'
+                }}
+                dropDownContainerStyle={{
+                    borderColor: colors.secondary,
+                }}
+                disabledStyle={{
+                    opacity: 0.5
+                }}
+            />
+            
+            <View style={[commonStyles.alignedContent, {marginTop: 20}]}>
+                <AppButton buttonText={"Cancelar"} onPress={onCancelPress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.pink }}/>
+                <AppButton buttonText={"Transferir"} onPress={onTransferPress} additionalButtonStyles={{ alignItems: 'center', flex: 1, width: '50%', backgroundColor: colors.primary }}/>
+            </View>
+        </View>
+    )
 }
 
 const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancelPress, untilDate, onUntilDateSelect, openDropdown, onSetOpen, dropdownValue, onSetValue, volunteers, existingVolunteer, onButtonPress, name, email, phoneNumber, onNameChange, onEmailChange, onPhoneNumberChange, dataToEdit, onEditHomePress, searchRegion, onSearchRegionChange, onSearchPress}) => {
@@ -999,9 +1087,10 @@ const ContactButton = ({showContactInfo}) => {
     return <AppButton buttonText={"Contacto"} onPress={showContactInfo} additionalButtonStyles={{ ...styles.button, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>;
 }
 
-const MyReportButtons = ({resolveReport}) => {
+const MyReportButtons = ({resolveReport, showTransferPetModal}) => {
     return (<>
-        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>
+        <AppButton buttonText={"Transferir"} onPress={showTransferPetModal} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.yellow, marginHorizontal: 0, marginTop: 40, marginBottom: 10 }}/>
+        <AppButton buttonText={"Resolver reporte"} onPress={resolveReport} additionalButtonStyles={{ ...styles.button, backgroundColor: colors.primary, marginHorizontal: 0, marginTop: 0, marginBottom: 60 }}/>
     </>);
 }
 
@@ -1009,7 +1098,7 @@ const ReportButtons = ({isMyReport, guestButtonHandler, myReportButtonHandler}) 
     if (!isMyReport) {
         return <ContactButton showContactInfo={guestButtonHandler.showContactInfo}/>;
     } else {
-        return <MyReportButtons resolveReport={myReportButtonHandler.resolveReport} />
+        return <MyReportButtons resolveReport={myReportButtonHandler.resolveReport} showTransferPetModal={myReportButtonHandler.showTransferPetModal} />
     }
 }
 

@@ -168,7 +168,7 @@ export class FosteringVolunteersScreen extends React.Component {
                         ).then(userInfo => {
                             let volunteerInfo = {
                                 ...profilesInfo[i],
-                                name: userInfo.name,
+                                name: userInfo.name.length>0 ? userInfo.name: userInfo.username,
                                 email: userInfo.email,
                                 phoneNumber: userInfo.phoneNumber
                             }
