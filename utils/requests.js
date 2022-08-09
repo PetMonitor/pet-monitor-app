@@ -1,4 +1,5 @@
 import { GEOCODING_API_KEY } from "@env"
+import { getSecureStoreValueFor } from './store';
 
 export const HttpStatusCodes = {
     "NOT_FOUND": 404
@@ -65,10 +66,9 @@ export async function getJsonData(url = '', additionalHeaders = {}) {
     .then(response => {
         if (response.ok) {
             return response;
-        } else {
-            console.log('GET ' + url + ' returned ' + response.status);
-            throw new HttpError('Request at GET ' + url + ' returned ' + response.status, response.status)
         }
+        console.log('GET ' + url + ' returned ' + response.status);
+        throw new HttpError('Request at GET ' + url + ' returned ' + response.status, response.status)
     })
     .then(response => response.json())
     .then((response) => {
@@ -133,3 +133,60 @@ export async function getCoordinatesFromLocation(location) {
         return response;
     });
 };
+
+export async function fetchFosterVolunteerProfilesByRegion(filterByRegion, searchRegion, searchCallback) {
+    let regionFilter = (filterByRegion && searchRegion != "") ? `?profileRegion=${searchRegion}` : ""
+    getSecureStoreValueFor('sessionToken').then((sessionToken) => {
+        getSecureStoreValueFor("userId").then(userId => {
+            getJsonData(global.noticeServiceBaseUrl + '/fosterVolunteerProfiles' + regionFilter, { 'Authorization': 'Basic ' + sessionToken }
+            ).then(profilesInfo => {
+                let volunteers = []
+                let promises = []
+
+                //console.log(`Obtained volunteer profiles ${JSON.stringify(profilesInfo)}`)
+                for (let i = 0; i < profilesInfo.length; i++) {
+                    let profileUserId = profilesInfo[i].userId
+                    promises.push(getJsonData(global.noticeServiceBaseUrl + '/users/' + profileUserId + '/contactInfo',
+                    ).then(userInfo => {
+                        //console.log(`User info ${JSON.stringify(userInfo)}`)
+
+                        let volunteerInfo = {
+                            label: `--- ${userInfo.name.length > 0? userInfo.name : userInfo.username } ---\n${profilesInfo[i].location}, ${profilesInfo[i].province}`,
+                            value: profileUserId
+                        }
+                        if (userId !== userInfo.userId) {
+                            volunteers.push(volunteerInfo)
+                        } 
+                    }).catch(err => {
+                        console.error(err);
+                        return {}
+                    }))
+                }
+                Promise.all(promises)
+                .then(() => {
+                    let dropdownValue = null
+                    if (volunteers.length > 0) {
+                        volunteers.sort((a, b) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))
+                        dropdownValue = volunteers[0].value
+                    }
+
+                    const res = { 
+                        volunteers: volunteers,
+                        dropdownValue: dropdownValue
+                    }
+
+                    //console.log(`RETURNING ${JSON.stringify(res)}`)
+
+                    return searchCallback(res)
+                })
+                .catch(err => {
+                    console.error(err);
+                    return {}
+                });
+            }).catch(err => {
+                console.error(err);
+                return {}
+            });
+        });
+    });
+}
