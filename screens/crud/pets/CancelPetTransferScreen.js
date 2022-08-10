@@ -54,7 +54,7 @@ export class CancelPetTransferScreen extends React.Component {
           console.error(
             `Error cancelling pet transfer for pet ${transferData.petId}: ${error}`
           );
-          navigation.pop();
+          navigation.navigate("ViewPet");
         });
     };
 
