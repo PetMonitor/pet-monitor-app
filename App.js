@@ -42,6 +42,9 @@ export default class App extends React.Component {
       config: {
         screens: {
           ReportView: "users/:noticeUserId/reports/:noticeId"
+        },
+        screens: {
+          ViewPet: "users/:userId/pets/:petId"
         }
       }
     };
