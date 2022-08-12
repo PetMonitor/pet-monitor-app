@@ -17,6 +17,7 @@ import ChangePasswordScreen from './screens/crud/users/ChangePasswordScreen';
 import ImageSelectorScreen from './screens/ImageSelectorScreen';
 import { ReportListFilterScreen } from './screens/ReportListFilterScreen';
 import { ReportViewScreen } from './screens/ReportViewScreen';
+import { CancelPetTransferScreen } from './screens/crud/pets/CancelPetTransferScreen.js';
 import { FosteringVolunteerProfileScreen } from './screens/FosteringVolunteerProfileScreen';
 import { FosteringVolunteerProfileSettingsScreen } from './screens/FosteringVolunteerProfileSettingsScreen';
 import { FaceRecognitionResultsScreen } from './screens/FaceRecognitionResultsScreen';
@@ -24,7 +25,6 @@ import { ViewPetDetailsScreen } from './screens/crud/pets/ViewPetDetailsScreen.j
 import { EditReportScreen } from './screens/crud/reports/EditReportScreen';
 import { EditPetDetailsScreen } from './screens/crud/pets/EditPetDetailsScreen.js';
 import { LogBox, Text } from 'react-native';
-
 import colors from './config/colors';
 
 import * as Linking from 'expo-linking';
@@ -42,6 +42,9 @@ export default class App extends React.Component {
       config: {
         screens: {
           ReportView: "users/:noticeUserId/reports/:noticeId"
+        },
+        screens: {
+          ViewPet: "users/:userId/pets/:petId"
         }
       }
     };
@@ -66,6 +69,7 @@ export default class App extends React.Component {
               <Stack.Screen name="ReportView" component={ReportViewScreen} options={{headerShown: false}} />
               <Stack.Screen name="EditReportScreen" component={EditReportScreen} options={{ headerShown: false }} />
               <Stack.Screen name="FaceRecognitionResults" component={FaceRecognitionResultsScreen} options={{headerShown: false}} />
+              <Stack.Screen name="CancelPetTransfer" component={CancelPetTransferScreen} options={{headerShown: false}} />
             </Stack.Navigator>
           </NavigationContainer>;
   }
