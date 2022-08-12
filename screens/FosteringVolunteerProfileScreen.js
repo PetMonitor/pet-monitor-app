@@ -6,9 +6,13 @@ import { Dog, Cat } from 'phosphor-react-native';
 
 import { Rating } from '../utils/ratings';
 import { HeaderWithBackArrow } from '../utils/headers';
+import { postJsonData } from '../utils/requests.js';
 
 import commonStyles from '../utils/styles';
 import colors from '../config/colors';
+import { ContactInfoModal } from '../utils/contactInfoModal';
+import { AppButton } from '../utils/buttons';
+import { validateEmail } from '../utils/commons';
 
 
 /** Implements the screen that shows the profile of a given pet fostering volunteer. */
@@ -24,9 +28,87 @@ export class FosteringVolunteerProfileScreen extends React.Component {
         }
     }
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            contactInfo: {
+                name: '',
+                email: '',
+                phoneNumber: ''
+            },
+            contactInfoModalVisible: false,
+            emailMessage: ""
+        };
+    }    
+
+    setContactModalVisible = (visible) => {
+        this.setState({ contactInfoModalVisible: visible });
+    }
+
+    showContactInfo = () => {
+        this.setContactModalVisible(true);
+    }
+
+    sendEmailToVolunteer = (volunteer) => {
+        postJsonData(global.noticeServiceBaseUrl + '/emails',
+            {
+                sendTo: volunteer.email,
+                message: this.state.emailMessage,
+                contactEmail: this.state.contactInfo.email,
+                contactPhoneNumber: this.state.contactInfo.phoneNumber
+            }).then(response => {
+                Alert.alert('', `Mensaje enviado!`);
+            }).catch(err => {
+                console.log(err);
+                alert(err);
+            });
+    }
+
     render() {
         const { navigation } = this.props
         const { volunteer } = this.props.route.params
+
+        // Contact modal related logic
+        const changeContactModalVisibility = () => this.setContactModalVisible(!this.state.contactInfoModalVisible);
+        const changeEmailMessage = (value) => this.setState({ emailMessage: value });
+        const changeContactName = (value) => this.setState({ contactInfo: {...this.state.contactInfo, name: value} });
+        const changeContactEmail = (value) => this.setState({ contactInfo: {...this.state.contactInfo, email: value} });
+        const changeContactPhoneNumber = (value) => this.setState({ contactInfo: {...this.state.contactInfo, phoneNumber: value} });
+        const onContactUserPress = () => {
+            if (this.state.contactInfo.name == "" || this.state.contactInfo.email == "" || this.state.contactInfo.phoneNumber == "") {
+                alert('Ingrese la información de contacto por favor!');
+                return;  
+            }
+            if (!validateEmail(this.state.contactInfo.email)) {
+                alert('Ingrese un email válido por favor!');
+                return;  
+            } 
+            if (this.state.emailMessage == "") {
+                alert('No podemos mandar un email vacío!');
+                return;  
+            }
+            this.sendEmailToVolunteer(volunteer)
+            this.setState({ 
+                contactInfo: {
+                    name: '',
+                    email: '',
+                    phoneNumber: ''
+                },
+                emailMessage: ''
+            }, () => changeContactModalVisibility());
+        }
+
+        const onCancelPress = () => {
+            this.setState({ 
+                contactInfo: {
+                    name: '',
+                    email: '',
+                    phoneNumber: ''
+                },
+                emailMessage: ''
+            }, () => changeContactModalVisibility());
+        }
+
         return ( <>
             <SafeAreaView
                 edges={["top"]}
@@ -35,6 +117,20 @@ export class FosteringVolunteerProfileScreen extends React.Component {
                 edges={["left", "right", "bottom"]}
                 style={commonStyles.container} >
                 <HeaderWithBackArrow headerText={""} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => navigation.goBack()}/>
+                <ContactInfoModal 
+                    isVisible={this.state.contactInfoModalVisible}
+                    onModalClose={changeContactModalVisibility}
+                    name={this.state.contactInfo.name}
+                    email={this.state.contactInfo.email}
+                    phoneNumber={this.state.contactInfo.phoneNumber}
+                    onContactUserPress={onContactUserPress}
+                    emailMessage={this.state.emailMessage}
+                    onChangeEmailMessage={changeEmailMessage}
+                    onChangeName={changeContactName}
+                    onChangeEmail={changeContactEmail} 
+                    onChangePhoneNumber={changeContactPhoneNumber}
+                    onCancelPress={onCancelPress} /> 
+
                 <ProfileDataHeader name={volunteer.name} averageRating={volunteer.averageRating} location={volunteer.location} province={volunteer.province} />
 
                 <ScrollView style={{marginLeft: 20, marginRight: 20}}>
@@ -50,9 +146,10 @@ export class FosteringVolunteerProfileScreen extends React.Component {
                     <Text style={styles.titleText}>Disponibilidad</Text>
                     <Text style={styles.text}>{volunteer.available ? "Disponible" : "No disponible"}</Text>
 
-                    <Text style={styles.titleText}>Contacto</Text>
-                    <Text style={styles.text}>{volunteer.email}</Text>
-                    <Text style={styles.text}>{volunteer.phoneNumber}</Text>
+                    <AppButton 
+                        buttonText={"Enviar mensaje"} 
+                        onPress={this.showContactInfo} 
+                        additionalButtonStyles={{ ...styles.button, marginHorizontal: 0, marginTop: 60, marginBottom: 60 }} />
                 </ScrollView>               
             </SafeAreaView>
             </>
@@ -99,6 +196,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginTop: 25, 
         marginBottom: 5
+    },
+    button: {
+        backgroundColor: colors.secondary,
+        alignSelf: 'stretch',
     },
     text: {
         color: colors.clearBlack, 

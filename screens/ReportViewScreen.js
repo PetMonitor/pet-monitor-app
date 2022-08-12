@@ -21,6 +21,7 @@ import colors from '../config/colors';
 
 import DropDownPicker from 'react-native-dropdown-picker';
 import { validateEmail } from '../utils/commons';
+import { ContactInfoModal } from '../utils/contactInfoModal';
 
 const { height, width } = Dimensions.get("screen")
 
@@ -58,6 +59,16 @@ export class ReportViewScreen extends React.Component {
                 email: '',
                 phoneNumber: ''
             },
+            reportOwnerInfo: {
+                name: '',
+                email: '',
+                phoneNumber: ''
+            },
+            userToContactInfo: {
+                name: '',
+                email: '',
+                phoneNumber: ''
+            },
             selectedIndex: 0,
             contactInfoModalVisible: false,
             newFosteringHomeModalVisible: false,
@@ -79,7 +90,8 @@ export class ReportViewScreen extends React.Component {
                 userId: ''
             },
             filterByRegion: true,
-            searchRegion: ""
+            searchRegion: "",
+            emailMessage: ""
         };
     }
 
@@ -103,8 +115,15 @@ export class ReportViewScreen extends React.Component {
         });
     };
 
-    showContactInfo = () => {
+    showContactInfo = (userToContactData) => {
         this.setContactModalVisible(true);
+        this.setState({
+            userToContactInfo: {
+                name: userToContactData.name,
+                email: userToContactData.email,
+                phoneNumber: userToContactData.phoneNumber
+            },
+        })
     }
 
     resolveReport = () => {
@@ -412,7 +431,7 @@ export class ReportViewScreen extends React.Component {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + this.props.route.params.noticeUserId + '/contactInfo')
         .then(user => {
             this.setState({
-                contactInfo: {
+                reportOwnerInfo: {
                     name: user.name,
                     email: user.email,
                     phoneNumber: user.phoneNumber,
@@ -555,13 +574,68 @@ export class ReportViewScreen extends React.Component {
         this.changeNewHomeModalVisibility();
     }
 
+    sendEmailToUser = (user) => {
+        postJsonData(global.noticeServiceBaseUrl + '/emails',
+            {
+                sendTo: user.email,
+                message: this.state.emailMessage,
+                contactEmail: this.state.contactInfo.email,
+                contactPhoneNumber: this.state.contactInfo.phoneNumber
+            }).then(response => {
+                Alert.alert('', `Mensaje enviado!`);
+            }).catch(err => {
+                console.log(err);
+                alert(err);
+            });
+    }
+
     render() {
         const reportTypeText = mapReportTypeToReportLabel(this.state.reportType);
         const reportTypeLabel = mapReportTypeToLabelColor(this.state.reportType);
         const showHistoryInfo = this.showHistoryInfo();
-        const changeContactModalVisibility = () => this.setContactModalVisible(!this.state.contactInfoModalVisible);
         const changeNewHomeModalVisibility = () => this.setFosteringHomeModalVisible(!this.state.newFosteringHomeModalVisible);
         const changeExistingVolunteer = (value) => this.setState({ existingVolunteer: value });
+        // Contact modal related logic
+        const changeContactModalVisibility = () => this.setContactModalVisible(!this.state.contactInfoModalVisible);
+        const changeEmailMessage = (value) => this.setState({ emailMessage: value });
+        const changeContactName = (value) => this.setState({ contactInfo: {...this.state.contactInfo, name: value} });
+        const changeContactEmail = (value) => this.setState({ contactInfo: {...this.state.contactInfo, email: value} });
+        const changeContactPhoneNumber = (value) => this.setState({ contactInfo: {...this.state.contactInfo, phoneNumber: value} });
+        const onContactUserPress = () => {
+            if (this.state.contactInfo.name == "" || this.state.contactInfo.email == "" || this.state.contactInfo.phoneNumber == "") {
+                alert('Ingrese la información de contacto por favor!');
+                return;  
+            }
+            if (!validateEmail(this.state.contactInfo.email)) {
+                alert('Ingrese un email válido por favor!');
+                return;  
+            } 
+            if (this.state.emailMessage == "") {
+                alert('No podemos mandar un email vacío!');
+                return;  
+            }
+            // console.log(this.state.userToContactInfo)
+            this.sendEmailToUser(this.state.userToContactInfo)
+            this.setState({ 
+                contactInfo: {
+                    name: '',
+                    email: '',
+                    phoneNumber: ''
+                },
+                emailMessage: ''
+            }, () => changeContactModalVisibility());
+        }
+
+        const onCancelPress = () => {
+            this.setState({ 
+                contactInfo: {
+                    name: '',
+                    email: '',
+                    phoneNumber: ''
+                },
+                emailMessage: ''
+            }, () => changeContactModalVisibility());
+        }
 
         return (
             <SafeAreaView style={commonStyles.container}>
@@ -571,7 +645,13 @@ export class ReportViewScreen extends React.Component {
                     name={this.state.contactInfo.name}
                     email={this.state.contactInfo.email}
                     phoneNumber={this.state.contactInfo.phoneNumber}
-                    onContactInfoOk={changeContactModalVisibility}/> 
+                    onContactUserPress={onContactUserPress}
+                    emailMessage={this.state.emailMessage}
+                    onChangeEmailMessage={changeEmailMessage}
+                    onChangeName={changeContactName}
+                    onChangeEmail={changeContactEmail} 
+                    onChangePhoneNumber={changeContactPhoneNumber}
+                    onCancelPress={onCancelPress} /> 
                 <NewFosteringHomeModal 
                     isVisible={this.state.newFosteringHomeModalVisible} 
                     onModalClose={changeNewHomeModalVisibility}
@@ -651,12 +731,14 @@ export class ReportViewScreen extends React.Component {
                             fosterInfo={{
                                 fosterHistory: this.state.fosterHistory
                             }}
-                            onEditPress={(dataToEdit) => this.editHomeButton(dataToEdit)} />
+                            onEditPress={(dataToEdit) => this.editHomeButton(dataToEdit)} 
+                            isMyReport={this.state.isMyReport}
+                            onContactUserPress={user => this.showContactInfo(user)} />
                         <ActionButtons 
                             selectedIndex={this.state.selectedIndex}
                             isMyReport={this.state.isMyReport}
                             guestButtonHandler={{
-                                showContactInfo: this.showContactInfo
+                                showContactInfo: () => this.showContactInfo(this.state.reportOwnerInfo)
                             }}
                             myReportButtonHandler={{
                                 resolveReport: this.confirmResolveReport
@@ -700,38 +782,6 @@ const FosteringHistoryTabSeletor = ({segmentedTabTitles, selectedIndex, onSelect
             tabStyle={{ backgroundColor: colors.inputGrey, borderColor: colors.transparent }}
             activeTabStyle={{ borderRadius: 5, backgroundColor: colors.white, shadowOpacity: 0.2, shadowOffset: { width: 1, height: 1 } }}
             activeTabTextStyle={{ color: colors.primary, fontWeight: 'bold', fontSize: 14 }} />
-    );
-}
-
-const ConditionalContactText = ({textValue, label}) => {
-    return textValue ? <Text style={styles.modalText}><Text style={{ fontWeight: 'bold' }}>{label}</Text>{textValue}</Text> : null;
-}
-
-const ContactInfo = ({name, email, phoneNumber, onContactInfoOk}) => {
-    return (
-        <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Datos de contacto</Text>
-            <ConditionalContactText textValue={name} label="Nombre: "/>
-            <ConditionalContactText textValue={email} label="Email: "/>
-            <ConditionalContactText textValue={phoneNumber} label="Teléfono: "/>
-            <AppButton buttonText={"Ok"} onPress={onContactInfoOk} additionalButtonStyles={{ alignItems: 'center', alignSelf: 'center', width: '50%', backgroundColor: colors.secondary }}/>
-        </View>
-    );
-}
-
-const ContactInfoModal = ({isVisible, onModalClose, name, email, phoneNumber, onContactInfoOk}) => {
-    return (
-        <View>
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={isVisible}
-                onRequestClose={onModalClose}>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}>
-                   <ContactInfo name={name} email={email} phoneNumber={phoneNumber} onContactInfoOk={onContactInfoOk}/>
-                </View>
-            </Modal>
-        </View>
     );
 }
 
@@ -847,7 +897,7 @@ const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancel
     );
 }
 
-const FosteringInfo = ({historyData, onEditPress}) => {
+const FosteringInfo = ({historyData, onEditPress, isMyReport, onContactUserPress}) => {
     let row = []
     row.push(<FosterInfoRow key={"title"}
         sinceDate={<OptionTitle text={"Desde"} additionalStyle={styles.optionTitle} />}
@@ -858,9 +908,10 @@ const FosteringInfo = ({historyData, onEditPress}) => {
         row.push(<FosterInfoRow key={"row" + i}
             sinceDate={<DateToDisplay date={historyData[i].sinceDate} />} 
             untilDate={historyData[i].untilDate ? <DateToDisplay date={historyData[i].untilDate} /> : <Text style={[styles.textInput, { fontSize: 13, alignSelf: 'center' }]}>-</Text>} 
-            contactInfo={<ContactInfoText data={historyData[i]} />} 
+            contactInfo={<ContactButton showContactInfo={() => onContactUserPress({ name: historyData[i].contactName, email: historyData[i].contactEmail, phoneNumber: historyData[i].contactPhone })} additionalStyle={{margin: 0, marginTop: 7, marginBottom: 5, padding: 5, width: '80%'}} additionalTextStyles={{fontSize: 14}} />} 
             dataToEdit={historyData[i]} 
-            onEditPress={onEditPress}/>)
+            onEditPress={onEditPress}
+            isMyReporT={isMyReport} />)
     }
     return row;
 }
@@ -871,20 +922,20 @@ const DateToDisplay = ({date}) => {
     );
 }
 
-const FosterInfoRow = ({sinceDate, untilDate, contactInfo, dataToEdit = null, onEditPress}) => {
+const FosterInfoRow = ({sinceDate, untilDate, contactInfo, dataToEdit = null, onEditPress, isMyReport = false}) => {
     return (<>
         <View style={[commonStyles.alignedContent, {marginHorizontal: -25}]}>
-            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch' }}>
+            <View style={{ flexDirection: 'column', flex: 2, alignSelf: 'center' }}>
                 {sinceDate}
             </View>
-            <View style={{ flexDirection: 'column', flex: 1, alignSelf: 'stretch'}}>
+            <View style={{ flexDirection: 'column', flex: 2, alignSelf: 'center'}}>
                 {untilDate}
             </View>
-            <View style={{ flexDirection: 'column', flex: 2.5, alignSelf: 'stretch', marginLeft: 10}}>
+            <View style={{ flexDirection: 'column', flex: 3, alignSelf: 'center'}}>
                 {contactInfo}
             </View>
-            {dataToEdit &&
-                <View style={{ flexDirection: 'column', flex: 1/3, alignSelf: 'stretch', justifyContent: 'center',  marginLeft: 2}}>
+            {isMyReport &&
+                <View style={{ flexDirection: 'column', flex: 1/2, alignSelf: 'stretch', justifyContent: 'center'}}>
                     <TouchableOpacity onPress={() => onEditPress(dataToEdit)}>
                         <MaterialIcon name='pencil' size={20} color={colors.secondary} />
                     </TouchableOpacity>
@@ -897,15 +948,6 @@ const FosterInfoRow = ({sinceDate, untilDate, contactInfo, dataToEdit = null, on
             borderBottomWidth: 1,
             marginHorizontal: -25
         }} />
-    </>);
-}
-
-
-const ContactInfoText = ({data}) => {
-    return (<>
-        <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactName}</Text>
-        <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactEmail}</Text>
-        <Text style={[styles.textInput, { fontSize: 13 }]}>{data.contactPhone}</Text>
     </>);
 }
 
@@ -975,7 +1017,7 @@ const ReportInfo = ({eventInfo, petInfo}) => {
     </>);
 }
 
-const ReportContent = ({selectedIndex, reportInfo, fosterInfo, onEditPress}) => {
+const ReportContent = ({selectedIndex, reportInfo, fosterInfo, onEditPress, isMyReport, onContactUserPress}) => {
     if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
         // Show information tab data: event and pet details
         return <ReportInfo eventInfo={reportInfo.eventInfo} petInfo={reportInfo.petInfo} />;
@@ -989,14 +1031,14 @@ const ReportContent = ({selectedIndex, reportInfo, fosterInfo, onEditPress}) => 
 
         let history = []
         history.push(title)
-        {historyData.length != 0 ? history.push(<FosteringInfo historyData={historyData} onEditPress={onEditPress}/>) : <></>}
+        {historyData.length != 0 ? history.push(<FosteringInfo historyData={historyData} onEditPress={onEditPress} isMyReport={isMyReport} onContactUserPress={onContactUserPress} />) : <></>}
         return history;
     }
     return null;
 }
 
-const ContactButton = ({showContactInfo}) => {
-    return <AppButton buttonText={"Contacto"} onPress={showContactInfo} additionalButtonStyles={{ ...styles.button, marginHorizontal: 0, marginTop: 40, marginBottom: 60 }}/>;
+const ContactButton = ({showContactInfo, additionalStyle = {}, additionalTextStyles = {}}) => {
+    return <AppButton buttonText={"Enviar mensaje"} onPress={showContactInfo} additionalButtonStyles={{ ...styles.button, ...additionalStyle }} additionalTextStyles={additionalTextStyles} />;
 }
 
 const MyReportButtons = ({resolveReport}) => {
@@ -1007,7 +1049,7 @@ const MyReportButtons = ({resolveReport}) => {
 
 const ReportButtons = ({isMyReport, guestButtonHandler, myReportButtonHandler}) => {
     if (!isMyReport) {
-        return <ContactButton showContactInfo={guestButtonHandler.showContactInfo}/>;
+        return <ContactButton showContactInfo={guestButtonHandler.showContactInfo} additionalStyle={{marginHorizontal: 0, marginTop: 40, marginBottom: 60}}/>;
     } else {
         return <MyReportButtons resolveReport={myReportButtonHandler.resolveReport} />
     }
@@ -1029,7 +1071,7 @@ const FosterButtons = ({isMyReport, fosterInfoButtonHandler}) => {
 
 const ActionButtons = ({selectedIndex, isMyReport, guestButtonHandler, myReportButtonHandler, fosterInfoButtonHandler}) => {
     if (selectedIndex == segmentedTabTitles.indexOf(infoTitle)) {
-        return <ReportButtons isMyReport={isMyReport} guestButtonHandler={guestButtonHandler} myReportButtonHandler={myReportButtonHandler}/>
+        return <ReportButtons isMyReport={isMyReport} guestButtonHandler={guestButtonHandler} myReportButtonHandler={myReportButtonHandler} />
     } else if (selectedIndex == segmentedTabTitles.indexOf(historyTitle)) {
         return <FosterButtons isMyReport={isMyReport} fosterInfoButtonHandler={fosterInfoButtonHandler} />
     }
