@@ -88,15 +88,15 @@ export const PickerOnValue = ({value, onValueChange, pickerItems}) => {
     </Picker>;
 }
 
-export const OptionTextInput = ({onChangeText, value = '', isMultiline = false, autoCapitalize = "sentences", placeholder = "", additionalStyle = {} }) => {
+export const OptionTextInput = ({onChangeText, value = '', isMultiline = false, autoCapitalize = "sentences", placeholder = "", multilineLength = 300, additionalStyle = {} }) => {
     return <TextInput
         onChangeText = {onChangeText}
         autoCorrect = { false }
         autoCapitalize={autoCapitalize}
         style = {[editionStyles.textInput, isMultiline ? {height: 120, paddingTop: 10, paddingBottom: 10} : {}, additionalStyle]}
-        maxLength = { isMultiline ? 300 : 50 }
+        maxLength = { isMultiline ? multilineLength : 50 }
         multiline = {isMultiline}
-        placeholder = {isMultiline ? "Ingrese descripción" : placeholder}
+        placeholder = {isMultiline ? (placeholder ? placeholder : "Ingrese descripción") : placeholder}
         value = { value ? value : "" }
     />
 }
