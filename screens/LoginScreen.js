@@ -13,6 +13,7 @@ import { AppButton } from '../utils/buttons';
 
 const USER_CREATED_SUCCESS_TEXT = "Perfil creado con éxito!";
 const USER_CREATED_ERROR_TEXT = "Error al crear perfil!";
+const USER_LOGIN_ERROR_TEXT = "Credenciales inválidas!";
 
 export class LoginScreen extends React.Component {
 
@@ -116,7 +117,8 @@ export class LoginScreen extends React.Component {
                   });
                 });
             }).catch(err => {
-                alert(err)
+              console.error(`Error at login ${err}`);
+              this.setState({ modalText: USER_LOGIN_ERROR_TEXT, errorOcurred: true, modalVisible: true  });  
             });
             
           }
@@ -143,7 +145,8 @@ export class LoginScreen extends React.Component {
               });
             });
           }).catch(err => {
-            alert(err)
+            console.error(`Error at login ${err}`);
+            this.setState({ modalText: USER_LOGIN_ERROR_TEXT, errorOcurred: true, modalVisible: true  });
           });
       };
   
@@ -182,7 +185,7 @@ export class LoginScreen extends React.Component {
                   }  
                     <Text style={styles.modalText}>{this.state.modalText}</Text>
                     <TouchableOpacity
-                      style={[styles.modalButton, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
+                      style={[this.state.errorOcurred? styles.errorModalButton: styles.modalButton, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
                         onPress={() => {
                         this.setModalVisible(!this.state.modalVisible);
                       }}>
@@ -285,7 +288,7 @@ const styles = StyleSheet.create({
       alignSelf: 'flex-start'
   },
   errorModalButton: {
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.pink,
     margin: 0,
     marginTop: 10,
     padding: 18, 
