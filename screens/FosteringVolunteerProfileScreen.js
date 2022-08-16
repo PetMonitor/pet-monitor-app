@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, StyleSheet, View, ScrollView, SafeAreaView } from 'react-native';
+import { Text, StyleSheet, View, ScrollView, SafeAreaView, Alert } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { Dog, Cat } from 'phosphor-react-native';
 
