@@ -84,11 +84,11 @@ export class ConfirmEmailScreen extends React.Component {
             <>
             <SafeAreaView
                 edges={["top"]}
-                style={{ flex: 0, backgroundColor: colors.white }}/>
+                style={{ flex: 0, backgroundColor: colors.primary }}/>
             <SafeAreaView
                 edges={["left", "right", "bottom"]}
                 style={commonStyles.container} >
-                <HeaderWithBackArrow headerText={""} headerTextColor={colors.primary} backgroundColor={colors.white} backArrowColor={colors.primary} onBackArrowPress={() => this.props.navigation.goBack()} />
+                <HeaderWithBackArrow headerText={""} headerTextColor={colors.primary} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()} />
 
                 <View>
                     <Modal 

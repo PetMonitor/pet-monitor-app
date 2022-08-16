@@ -1,8 +1,8 @@
 import React from "react";
 
-import { Text, TextInput, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { Text, TextInput, Switch, StyleSheet, View, ImageBackground, SafeAreaView, ScrollView, Alert, Modal, TouchableOpacity } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Picker } from '@react-native-picker/picker';
+import SelectMultiple from 'react-native-select-multiple'
 import * as Location from 'expo-location';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,6 +17,17 @@ import colors from '../../../config/colors';
 import { AppButton } from "../../../utils/buttons";
 import { OptionTitle } from "../../../utils/editionHelper";
 
+
+const ALERTS_FOR_REPORT_TYPES = [
+      { label: 'MASCOTAS PERDIDAS', value: 'LOST' },
+      { label: 'MASCOTAS ROBADAS', value: 'STOLEN' },
+      { label: 'MASCOTAS ENCONTRADAS', value: 'FOUND' },
+      { label: 'MASCOTAS EN ADOPCIÓN', value: 'FOR_ADOPTION' }
+ ]
+const ERROR_MUST_SELECT_REPORT_TYPE = 'Debe seleccionar al menos un tipo de reporte!';
+const ERROR_MUST_SELECT_AREA_TYPE = 'Debe seleccionar una ubicación en el mapa!';
+const ERROR_MUST_GIVE_LOC_ACCESS = 'Debe permitir acceso para acceder a su ubicación!';
+
 export class EditUserDetailsScreen extends React.Component {
 
     constructor(props) {
@@ -26,6 +37,8 @@ export class EditUserDetailsScreen extends React.Component {
                 ...this.props.route.params.userData,
                 profilePicture: null,
                 userLocation: null,
+                modalVisible: false,
+                modalText: ''
             }
         );
     }
@@ -34,11 +47,15 @@ export class EditUserDetailsScreen extends React.Component {
         return this.state.alertRegion ? ` ${this.state.alertRegion},` : '';
     }
 
+    onSelectionsChange = (selectedReportTypes) => {
+        this.setState({ alertsForReportTypes: selectedReportTypes.map(item => item.value) })
+    }
+
     componentDidMount() {
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
-                alert('Permission to access location was denied');
+                this.setState({ modalVisible: true, modalText: ERROR_MUST_GIVE_LOC_ACCESS });
                 return;
             }
 
@@ -49,13 +66,14 @@ export class EditUserDetailsScreen extends React.Component {
         });
     }
 
+    setModalVisible = (visible) => {
+        this.setState({ modalVisible: visible });
+    }
+
     render() {
 
         const handleToggleAlerts = () => {
             this.setState(prevState => ({ alertsActivated: !prevState.alertsActivated }) )
-            if (!this.state.alertsActivated) {
-                this.setState({ alertRadius: -1 }) 
-            }
         }
 
         const handleEditProfile = () => {
@@ -63,11 +81,24 @@ export class EditUserDetailsScreen extends React.Component {
                 
             delete updatedUserData.userId;
             delete updatedUserData.userLocation;
+            delete updatedUserData.modalVisible;
+            delete updatedUserData.modalText;
+
             updatedUserData._ref = uuid.v4();
+
+
+            if (this.state.alertsActivated && this.state.alertsForReportTypes.length <= 0) {
+                this.setState({ modalVisible: true, modalText: ERROR_MUST_SELECT_REPORT_TYPE });
+                return;
+            }
+
+            if (this.state.alertsActivated && (!this.state.alertLocation.lat || !this.state.alertLocation.long)) {
+                this.setState({ modalVisible: true, modalText: ERROR_MUST_SELECT_AREA_TYPE });
+                return;               
+            }
 
             getSecureStoreValueFor('sessionToken').then((sessionToken) => {
                 console.log(`Updating user state to ${JSON.stringify(updatedUserData)}`)
-
 
                 putJsonData(global.noticeServiceBaseUrl + '/users/' + this.state.userId, updatedUserData, {
                     'Authorization': 'Basic ' + sessionToken 
@@ -89,7 +120,7 @@ export class EditUserDetailsScreen extends React.Component {
             const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         
             if (permissionResult.granted === false) {
-              alert("You've refused to allow this appp to access your photos!");
+              alert("You've refused to allow this app to access your photos!");
               return;
             }
         
@@ -141,7 +172,6 @@ export class EditUserDetailsScreen extends React.Component {
                         </ImageBackground>
                         {dividerLine}
                         <Text style={{color: colors.primary, fontWeight: 'bold', fontSize: 20, marginLeft: 30, marginTop: 10, marginBottom: 10, alignSelf: 'flex-start'}}>Información básica</Text>
-                        
                     </View>
 
                     <View style={{flex: 1,  marginHorizontal: 30 }}>
@@ -200,6 +230,29 @@ export class EditUserDetailsScreen extends React.Component {
                         </Text>
                     </View>
 
+                    <Modal 
+                        animationType="slide"
+                        transparent={true}
+                        visible={this.state.modalVisible}
+                        onRequestClose={() => {
+                        Alert.alert("Modal has been closed.");
+                        this.setModalVisible(!modalVisible);
+                        }}>
+                        <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
+                        <View style={styles.modalView}>
+                        <Text style={styles.titleError}>Error!</Text>
+                        <Text style={styles.modalText}>{this.state.modalText}</Text>
+                            <TouchableOpacity
+                            style={[styles.errorModalButton, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
+                                onPress={() => {
+                                this.setModalVisible(!this.state.modalVisible);
+                            }}>
+                            <Text>Ok</Text>
+                            </TouchableOpacity>
+                        </View>
+                        </View>
+                    </Modal>
+
                     <View style={{flexDirection:'row', marginLeft: 30}}>
                         <Text style={{fontWeight: 'bold', fontSize: 18, color: colors.pink, marginTop: 15, marginRight: 10}}>Alertas</Text>
                         <Switch 
@@ -215,25 +268,23 @@ export class EditUserDetailsScreen extends React.Component {
 
                     {this.state.alertsActivated ?
                     this.state.userLocation && <>
+
+                    <OptionTitle text={"Quiero que me notifiquen sobre:"} additionalStyle={{marginLeft: 30}}/>
+ 
+                    <View style={{paddingLeft:20, paddingTop: 20}}>
+                    <SelectMultiple
+                        items={ALERTS_FOR_REPORT_TYPES}
+                        selectedItems={this.state.alertsForReportTypes}
+                        rowStyle={{ borderBottomColor: '#ffffff' }}
+                        selectedLabelStyle={{ fontWeight: 'bold' }}
+                        selectedRowStyle={{}}
+                        onSelectionsChange={this.onSelectionsChange} />
+                    </View>
                     <OptionTitle text={"Seleccionar la ubicación aproximada"} additionalStyle={{marginLeft: 30}}/>
                     {this.showLocationMapSelector()}
                     {this.state.alertLocation.lat && this.state.alertLocation.long &&
                     <Text style={[styles.textLabel, {marginHorizontal: 30, fontSize: 14, marginTop: 10}]}>Alertas configuradas sobre<Text style={{fontWeight: 'bold'}}>{this.getRegion() + " Argentina"}</Text></Text>}
                     </> : null }
-                    {/* <View style={[styles.alignedContent, {marginLeft: 30}]}>
-                        <Text style={styles.textLabel}>Radio</Text>
-                        <Picker selectedValue={this.state.alertRadius}
-                            style={{ width: 150, marginLeft: 40, marginRight: 30 }}
-                            itemStyle={{height: 88, fontSize: 16}}
-                            onValueChange={(itemValue, itemIndex) => this.setState({ alertRadius: itemValue })}
-                            enabled={this.state.alertsActivated}
-                            >
-                            <Picker.Item label="1 km" value={1} />
-                            <Picker.Item label="3 km" value={3} />
-                            <Picker.Item label="5 km" value={5} />
-                            <Picker.Item label="10 km" value={10} />
-                        </Picker>
-                    </View> : null} */}
                         
                     <View style={{flex: 1, alignItems: 'center', marginTop: 10, marginBottom: 40}}>
                         <AppButton
@@ -344,4 +395,39 @@ const styles = StyleSheet.create({
         ...commonStyles.alignedContent,
         marginTop: 10
     },
+    modalView: {
+        margin: 20,
+        backgroundColor: colors.white,
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: colors.clearBlack,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+      },
+      modalText: {
+        marginBottom: 15,
+        textAlign: "center",
+      },
+      errorModalButton: {
+        backgroundColor: colors.pink,
+        margin: 0,
+        marginTop: 10,
+        padding: 18, 
+        borderRadius: 7, 
+        width: '55%', 
+        alignSelf: 'flex-start'
+      },
+      titleError: {
+          fontWeight: '500',
+          color: colors.pink,
+          fontSize: 20,
+          margin: 10,
+          alignSelf: 'center'
+      }
 });
