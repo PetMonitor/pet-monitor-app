@@ -91,7 +91,8 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 noticeId: this.state.searchedNoticeId,
                 userId: this.state.userId,
                 alertFrequency: this.state.alertFrequency,
-                alertLimitDate: this.state.alertLimitDate.toISOString().split('T')[0]
+                alertLimitDate: this.state.alertLimitDate.toISOString().split('T')[0],
+                location: this.state.searchedRegion ? this.state.searchedRegion : ''
             }).then(response => {
                 console.log(response);
                 setTimeout(() => alert("Alerta creada con éxito!", 3000));
