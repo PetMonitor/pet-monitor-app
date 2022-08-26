@@ -911,7 +911,7 @@ const FosteringInfo = ({historyData, onEditPress, isMyReport, onContactUserPress
             contactInfo={<ContactButton showContactInfo={() => onContactUserPress({ name: historyData[i].contactName, email: historyData[i].contactEmail, phoneNumber: historyData[i].contactPhone })} additionalStyle={{margin: 0, marginTop: 7, marginBottom: 5, padding: 5, width: '80%'}} additionalTextStyles={{fontSize: 14}} />} 
             dataToEdit={historyData[i]} 
             onEditPress={onEditPress}
-            isMyReporT={isMyReport} />)
+            isMyReport={isMyReport} />)
     }
     return row;
 }
