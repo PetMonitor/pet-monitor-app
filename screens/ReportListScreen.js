@@ -94,7 +94,13 @@ export class ReportListScreen extends React.Component {
     }
 
     loadMoreData = () => {
-        this.setState({ page: this.state.page + 1, moreDataLoading: true }, () => this.loadReports())        
+        this.setState({ page: this.state.page + 1, moreDataLoading: true }, () => {
+            let filters = ''
+            if (this.props.route.params) {
+                filters = this.props.route.params.filters ? this.props.route.params.filters : ''
+            }
+            this.loadReports(this.getQueryParamsBasedOnFilters(filters))
+        })        
     }
     
     fetchUserLocation() {
