@@ -189,7 +189,7 @@ export class LoginScreen extends React.Component {
                         onPress={() => {
                         this.setModalVisible(!this.state.modalVisible);
                       }}>
-                      <Text>Ok</Text>
+                      <Text style={{color: colors.white, fontWeight: '500'}}>Ok</Text>
                     </TouchableOpacity>
                   </View>
                 </View>

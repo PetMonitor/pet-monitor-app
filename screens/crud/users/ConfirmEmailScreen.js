@@ -107,34 +107,31 @@ export class ConfirmEmailScreen extends React.Component {
                                 onPress={() => {
                                     this.setModalVisible(!this.state.modalVisible);
                                 }}>
-                                <Text>Ok</Text>
+                                <Text style={{color: colors.white, fontWeight: '500'}}>Ok</Text>
                             </TouchableOpacity>
                             </View>
                         </View>
                     </Modal>
                 </View>
-
-                <View style={{flex:1, paddingTop:70}}>  
-                    <Text style={styles.title}>Chequeá tu casilla de mail!</Text>  
-                </View> 
-                <View style={{flex:3,marginLeft:'5%', flexDirection: 'row', flexWrap:'wrap',  textAlign: 'center'}}> 
-                    <Text style={styles.subtitle}>Te enviamos un mensaje para confirmar tu dirección de correo</Text>
-                </View> 
-
-                <Image key={'img_email'} resizeMode="cover" style={{resizeMode: 'contain', width: null,height: 80, }} source={require(MAIL_IMG_PATH)}/>
-                <View style={{flex:2,  paddingTop:30, paddingBottom:50, marginHorizontal: 20}}>
-                    <Text style={styles.text}>Confirmá tu email para continuar</Text>
-
-                    <AppButton
-                        buttonText={'Continuar'} 
-                        onPress={handleCheckEmailConfirmed} 
-                        additionalButtonStyles={[styles.button, { marginTop: 60 }]} />
-                </View>
-                <View style={{flex:1}}>
-                    <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', alignSelf: 'center', marginTop: 5}}>
-                        ¿No recibiste un email? 
-                    </Text>
-                    <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', textDecorationLine: 'underline', alignSelf: 'center'}} onPress={handleResendConfirmationEmail}>Reenviar</Text>
+                <View style={{flex: 1}}>
+                    <Text style={[{flex: 1, marginTop: 50}, styles.title]}>Chequeá tu casilla de mail!</Text>  
+                    <Text style={[styles.subtitle, {flex: 2}]}>Te enviamos un mensaje para confirmar tu dirección de correo</Text>
+                    <View style={{flex:3}}>
+                        <Image key={'img_email'} resizeMode="cover" style={{resizeMode: 'contain', width: null, height: 80}} source={require(MAIL_IMG_PATH)}/>
+                        <Text style={[styles.text, {marginTop: 60}]}>Confirmá tu email antes de continuar</Text>
+                    </View>
+                    <View style={{marginHorizontal: 20}}>
+                        <AppButton
+                            buttonText={'Continuar'} 
+                            onPress={handleCheckEmailConfirmed} 
+                            additionalButtonStyles={[styles.button, { marginTop: 10 }]} />
+                    </View>
+                    <View style={{flex:1}}>
+                        <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', alignSelf: 'center', marginTop: 5}}>
+                            ¿No recibiste un email? 
+                        </Text>
+                        <Text style={{color:colors.clearBlack, fontSize: 16, fontWeight: '500', textDecorationLine: 'underline', alignSelf: 'center', marginTop: 5}} onPress={handleResendConfirmationEmail}>Reenviar</Text>
+                    </View>
                 </View>
             </SafeAreaView>
             </>
@@ -147,7 +144,6 @@ const styles = StyleSheet.create({
       backgroundColor: colors.primary,
       alignSelf: 'center',
       width: '70%',
-      marginHorizontal: 0
     },
     modalButton: {
         backgroundColor: colors.secondary,
@@ -167,17 +163,12 @@ const styles = StyleSheet.create({
     subtitle: {
         textAlign: 'center', 
         color:colors.clearBlack, 
-        fontSize: 20,
-        paddingBottom: '5%',
-        marginBottom: '5%',
-        marginTop: '5%',
-        paddingLeft: '7%',
+        fontSize: 18,
     },
     text: {
         color:colors.darkGrey, 
         fontSize: 16,
-        padding: '5%',
-        marginLeft:'8%'
+        textAlign: 'center',
     },
     modalView: {
         margin: 20,

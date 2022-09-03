@@ -188,6 +188,16 @@ export class ReportViewScreen extends React.Component {
     }
 
     addNewHomeButton = () => {
+        this.setState({
+            homeSinceSelectedDate: new Date(),
+            homeUntilSelectedDate: new Date(),
+            manualVolunteerData: {
+                name: '',
+                email: '',
+                phoneNumber: '',
+                userId: ''
+            },
+        })
         this.setFosteringHomeModalVisible(true);
     }
 

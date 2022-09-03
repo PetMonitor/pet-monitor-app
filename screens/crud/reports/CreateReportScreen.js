@@ -245,7 +245,7 @@ export class CreateReportScreen extends React.Component {
                                 this.setModalVisible(!this.state.operationResultModalVisible);
                                 this.navigateToReport();
                             }}>
-                            <Text>Ok</Text>
+                            <Text style={{color: colors.white, fontWeight: '500'}}>Ok</Text>
                         </TouchableOpacity>
                         </View>
                     </View>

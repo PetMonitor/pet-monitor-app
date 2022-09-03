@@ -74,9 +74,9 @@ export class CancelPetTransferScreen extends React.Component {
             return null;
         }
 
-        let locText = userLocation.province;
-        locText += userLocation.province.length > 0 ? ', ' : '';
-        locText += userLocation.location;
+        let locText = userLocation.location;
+        locText += userLocation.location.length > 0 ? ', ' : '';
+        locText += userLocation.province;
 
         return <View
             style={{
@@ -86,7 +86,7 @@ export class CancelPetTransferScreen extends React.Component {
               textAlign: "center",
             }}
           >
-            <MaterialIcon name='location-on' size={30} style={{paddingLeft:20, paddingRight: 0, paddingTop:10}} color={colors.secondary}/><Text style={[styles.text, {fontWeight: 'bold'}]}>{ locText }</Text>
+            <MaterialIcon name='location-on' size={20} style={{paddingLeft: 40, paddingRight: 0}} color={colors.secondary}/><Text style={[styles.text, { paddingLeft: "1%", paddingTop: 0}]}>{ locText }</Text>
         </View>
     }
 
@@ -101,7 +101,8 @@ export class CancelPetTransferScreen extends React.Component {
           textAlign: "center",
         }}
       >
-        <Text style={[styles.text, { fontWeight: 'bold', marginTop: 15, marginLeft: 15 }]}>
+        <Text style={[styles.text, { fontWeight: '600', marginLeft: 15, paddingRight: 5  }]}>Usuario: </Text>
+        <Text style={[styles.text, { marginLeft: 0, paddingLeft: 0 }]}>
           {name.charAt(0).toUpperCase() + name.slice(1)}
         </Text>
       </View>
@@ -118,8 +119,8 @@ export class CancelPetTransferScreen extends React.Component {
           textAlign: "center",
         }}
       >
-        <Text style={[styles.text, { fontWeight: 'bold', marginLeft: 15 }]}>Tipo: </Text>
-        <Text style={[styles.text, { marginLeft:0, paddingLeft:0 }]}>
+        <Text style={[styles.text, { fontWeight: '600', marginLeft: 15, paddingRight: 5 }]}>Tipo: </Text>
+        <Text style={[styles.text, { marginLeft: 0, paddingLeft: 0 }]}>
           {petTypes}
         </Text>
       </View>
@@ -136,8 +137,8 @@ export class CancelPetTransferScreen extends React.Component {
           textAlign: "center",
         }}
       >
-        <Text style={[styles.text, {fontWeight: 'bold', marginLeft: 15}]}>Tamaño: </Text>
-        <Text style={[styles.text,{ marginLeft:0, paddingLeft:0 }]}>
+        <Text style={[styles.text, {fontWeight: '600', marginLeft: 15, paddingRight: 5, paddingTop: 0}]}>Tamaño: </Text>
+        <Text style={[styles.text,{ marginLeft: 0, paddingLeft: 0, paddingTop: 0}]}>
          {petSizes}
         </Text>
       </View>
@@ -154,54 +155,33 @@ export class CancelPetTransferScreen extends React.Component {
           style={commonStyles.container}
         >
           <HeaderWithBackArrow
-            headerText={"Transferencia de Mascota"}
-            headerTextColor={colors.primary}
+            headerText={"Estado de transferencia"}
+            headerTextColor={colors.secondary}
             backgroundColor={colors.white}
-            backArrowColor={colors.primary}
+            backArrowColor={colors.secondary}
             onBackArrowPress={() => this.props.navigation.goBack()}
           />
 
-          <View >
-            <Modal
+          <Modal 
               animationType="slide"
               transparent={true}
               visible={this.state.cancellationConfirmedModalVisible}
               onRequestClose={() => {
                 handleCancellationConfirmed();
-              }}
-            >
-              <View
-                style={{
-                  flex: 0.3,
-                  justifyContent: "center",
-                  alignItems: "stretch",
-                }}
-              >
-                <View style={styles.modalView}>
+              }}>
+              <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
+                  <View style={styles.modalView}>
                   <Text style={styles.modalText}>{this.state.modalText}</Text>
                   <TouchableOpacity
-                    style={[
-                      styles.modalButton,
-                      {
-                        width: "50%",
-                        alignSelf: "center",
-                        alignItems: "center",
-                      },
-                    ]}
-                    onPress={() => {
-                      handleCancellationConfirmed();
-                    }}
-                  >
-                    <Text>Ok</Text>
+                      style={[styles.modalButton, {width: '50%', alignSelf: 'center', alignItems: 'center'}]}
+                      onPress={() => {
+                          handleCancellationConfirmed();
+                      }}>
+                      <Text style={{color: colors.white, fontWeight: '500'}}>Ok</Text>
                   </TouchableOpacity>
-                </View>
+                  </View>
               </View>
-            </Modal>
-          </View>
-
-          <View style={{ flex: 0.5, paddingTop: 40 }}>
-            <Text style={styles.title}>Estado de Tansferencia</Text>
-          </View>
+          </Modal>
           
           <View
             style={{
@@ -212,7 +192,7 @@ export class CancelPetTransferScreen extends React.Component {
               textAlign: "center",
             }}
           >
-            <Text style={[styles.text, { fontWeight: "bold" }]}>Iniciada:</Text>
+            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10 }]}>Iniciada:</Text>
             <Text
               style={[styles.text, { marginLeft: "0%", paddingLeft: "0%" }]}
             >
@@ -229,7 +209,7 @@ export class CancelPetTransferScreen extends React.Component {
               textAlign: "center",
             }}
           >
-            <Text style={[styles.text, { fontWeight: "bold" }]}>
+            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10 }]}>
               Válida hasta:
             </Text>
             <Text
@@ -270,8 +250,6 @@ export class CancelPetTransferScreen extends React.Component {
               flexDirection: "row",
               flexWrap: "wrap",
               textAlign: "center",
-              paddingTop: 15,
-              paddingBottom: 15
             }}
           >
             <Text style={styles.subtitle}>
@@ -282,17 +260,27 @@ export class CancelPetTransferScreen extends React.Component {
           {formatPetTypeLabels(transferData.transferToUser.volunteerData)}
 
           {formatPetSizeLabels(transferData.transferToUser.volunteerData)}
+          <View
+            style={{
+              marginTop: 20,
+              marginLeft: "5%",
+              width: "90%",
+              borderBottomColor: colors.grey,
+              borderBottomWidth: 1,
+            }}
+          />
 
           <View
             style={{
               flex: 2,
-              paddingTop: 30,
+              paddingTop: 10,
               paddingBottom: 50,
               marginHorizontal: 20,
             }}
           >
+            
             <AppButton
-              buttonText={"Cancelar Transferencia"}
+              buttonText={"Cancelar transferencia"}
               onPress={handleCancelPetTransfer}
               additionalButtonStyles={[styles.button, { marginTop: 40 }]}
             />
@@ -314,30 +302,30 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     margin: 0,
     marginTop: 10,
-    padding: 18,
-    borderRadius: 7,
-    width: "55%",
-    height: "50%",
-    alignSelf: "flex-start",
+    padding: 18, 
+    borderRadius: 7, 
+    width: '55%', 
+    alignSelf: 'flex-start'
   },
   title: {
     textAlign: "center",
-    color: colors.yellow,
+    color: colors.primary,
     fontSize: 22,
     fontWeight: "bold",
   },
   subtitle: {
     fontWeight: "bold",
-    color: colors.grey,
+    color: colors.clearBlack,
     fontSize: 18,
     paddingBottom: "5%",
     marginBottom: "5%",
     marginTop: "5%",
-    paddingLeft: "7%",
+    paddingLeft: "5%",
   },
   text: {
-    color: colors.darkGrey,
+    color: colors.clearBlack,
     fontSize: 16,
+    paddingLeft: 30,
     padding: "5%",
   },
   modalView: {
@@ -353,7 +341,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation:3,
+    elevation: 5,
   },
   modalText: {
     marginBottom: 15,
