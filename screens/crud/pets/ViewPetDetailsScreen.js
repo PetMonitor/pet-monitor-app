@@ -400,9 +400,9 @@ export class ViewPetDetailsScreen extends React.Component {
                   this.setFosteringHomeModalVisible(true);
                 }}
                 additionalButtonStyles={{
-                  alignItems: "center",
+                  marginTop: 30,
+                  marginHorizontal: 0,
                   flex: 1,
-                  width: "90%",
                   backgroundColor: colors.primary,
                 }}
               />
@@ -410,15 +410,15 @@ export class ViewPetDetailsScreen extends React.Component {
 
             {this.state.isMyPet && this.state.transferInProgress && this.state.transferData != null ? (
               <AppButton
-                buttonText={"Estado de Transferencia"}
+                buttonText={"Estado de transferencia"}
                 onPress={() => {
                   this.props.navigation.push('CancelPetTransfer', { transferData: this.state.transferData, onTransferCancelled: this.onTransferCancelled });
                 }}
                 additionalButtonStyles={{
-                  alignItems: "center",
+                  marginTop: 30,
+                  marginHorizontal: 0,
                   flex: 1,
-                  width: "90%",
-                  backgroundColor: colors.yellow,
+                  backgroundColor: colors.secondary,
                 }}
               />
             ) : null}

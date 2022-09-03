@@ -142,7 +142,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
                         initialNumToRender={this.state.userNotices.length}
                         renderItem={this.renderPet}
                         style={{paddingLeft: 15, marginRight: 10, marginTop: 10}}
-                    />
+                    /> 
                     <CheckBoxItem
                         optionIsSelected={this.state.filterByRegion} 
                         checkBoxTitle={"Filtrar por región"} 

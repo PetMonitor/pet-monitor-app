@@ -19,10 +19,10 @@ import { OptionTitle } from "../../../utils/editionHelper";
 
 
 const ALERTS_FOR_REPORT_TYPES = [
-      { label: 'MASCOTAS PERDIDAS', value: 'LOST' },
-      { label: 'MASCOTAS ROBADAS', value: 'STOLEN' },
-      { label: 'MASCOTAS ENCONTRADAS', value: 'FOUND' },
-      { label: 'MASCOTAS EN ADOPCIÓN', value: 'FOR_ADOPTION' }
+      { label: 'Mascotas perdidas', value: 'LOST' },
+      { label: 'Mascotas robadas', value: 'STOLEN' },
+      { label: 'Mascotas encontradas', value: 'FOUND' },
+      { label: 'Mascotas en adopción', value: 'FOR_ADOPTION' }
  ]
 const ERROR_MUST_SELECT_REPORT_TYPE = 'Debe seleccionar al menos un tipo de reporte!';
 const ERROR_MUST_SELECT_AREA_TYPE = 'Debe seleccionar una ubicación en el mapa!';
@@ -247,7 +247,7 @@ export class EditUserDetailsScreen extends React.Component {
                                 onPress={() => {
                                 this.setModalVisible(!this.state.modalVisible);
                             }}>
-                            <Text>Ok</Text>
+                            <Text style={{color: colors.white, fontWeight: '500'}}>Ok</Text>
                             </TouchableOpacity>
                         </View>
                         </View>
@@ -271,13 +271,16 @@ export class EditUserDetailsScreen extends React.Component {
 
                     <OptionTitle text={"Quiero que me notifiquen sobre:"} additionalStyle={{marginLeft: 30}}/>
  
-                    <View style={{paddingLeft:20, paddingTop: 20}}>
+                    <View style={{paddingLeft:20, paddingTop: 5}}>
                     <SelectMultiple
                         items={ALERTS_FOR_REPORT_TYPES}
                         selectedItems={this.state.alertsForReportTypes}
-                        rowStyle={{ borderBottomColor: '#ffffff' }}
-                        selectedLabelStyle={{ fontWeight: 'bold' }}
+                        rowStyle={{ borderBottomColor: colors.transparent, padding: 10, borderBottomWidth: 0 }}
+                        selectedLabelStyle={{ fontWeight: '500' }}
                         selectedRowStyle={{}}
+                        labelStyle={{fontSize: 15}}
+                        checkboxStyle={{width: 23, height: 23, tintColor: colors.clearBlack}}
+                        selectedCheckboxStyle={{tintColor: colors.clearBlack}}
                         onSelectionsChange={this.onSelectionsChange} />
                     </View>
                     <OptionTitle text={"Seleccionar la ubicación aproximada"} additionalStyle={{marginLeft: 30}}/>

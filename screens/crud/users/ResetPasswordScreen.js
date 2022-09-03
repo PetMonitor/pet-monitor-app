@@ -94,17 +94,17 @@ export class ResetPasswordScreen extends React.Component {
                                         navigation.popToTop();
                                     }
                                 }}>
-                                <Text>Ok</Text>
+                                <Text style={{color: colors.white, fontWeight: '500'}}>Ok</Text>
                             </TouchableOpacity>
                             </View>
                         </View>
                     </Modal>
                 </View>
 
-                <View style={{flex:1, paddingTop:70}}>  
-                    <Text style={styles.title}>Olvidaste tu contraseña?</Text>  
+                <View style={{paddingTop: 40}}>  
+                    <Text style={styles.title}>¿Olvidaste tu contraseña?</Text>  
                 </View> 
-                <View style={{flex:3,marginLeft:'5%', flexDirection: 'row', flexWrap:'wrap',  textAlign: 'center'}}> 
+                <View style={{marginHorizontal:'5%', marginTop: 80, flexDirection: 'row', flexWrap: 'wrap',  textAlign: 'center'}}> 
                     <Text style={styles.subtitle}>Ingresá tu dirección de email y te asignaremos una nueva contraseña provisoria</Text>
                 </View> 
 
@@ -117,11 +117,11 @@ export class ResetPasswordScreen extends React.Component {
                     maxLength = { 30 }
                 />
 
-                <View style={{flex:2,  paddingTop:30, paddingBottom:50, marginHorizontal: 20}}>
+                <View style={{paddingTop: 30, paddingBottom: 50}}>
                     <AppButton
-                        buttonText={'Blanquear Contraseña'} 
+                        buttonText={'Blanquear contraseña'} 
                         onPress={handleResetPassword} 
-                        additionalButtonStyles={[styles.button, { marginTop: 60 }]} />
+                        additionalButtonStyles={[styles.button, { marginTop: 60, margin: 30 }]} />
                 </View>
             </SafeAreaView>
             </>
@@ -132,9 +132,7 @@ export class ResetPasswordScreen extends React.Component {
 const styles = StyleSheet.create({
     button: {
       backgroundColor: colors.primary,
-      alignSelf: 'center',
-      width: '70%',
-      marginHorizontal: 0
+      alignSelf: 'stretch',
     },
     modalButton: {
         margin: 0,
@@ -166,7 +164,7 @@ const styles = StyleSheet.create({
     subtitle: {
         textAlign: 'center', 
         color:colors.clearBlack, 
-        fontSize: 20,
+        fontSize: 16,
         paddingBottom: '5%',
         marginBottom: '5%',
         marginTop: '5%',
@@ -186,8 +184,7 @@ const styles = StyleSheet.create({
         borderColor: colors.inputGrey, 
         fontSize: 16, 
         fontWeight: '500',
-        width:'80%',
-        marginLeft: '10%'
+        marginHorizontal: 30
     },
     modalView: {
         margin: 20,
