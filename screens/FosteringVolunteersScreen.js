@@ -237,8 +237,7 @@ export class FosteringVolunteersScreen extends React.Component {
                         keyExtractor={(_, index) => index.toString()}
                         initialNumToRender={this.state.volunteers.length}
                         renderItem={this.showVolunteerData}
-                        style={{marginTop: 5}}
-
+                        style={{marginTop: 5, height: this.state.filterByRegion ? 450 : 530}}
                     />
                     </View>
                 }
