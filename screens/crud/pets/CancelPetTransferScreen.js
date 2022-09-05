@@ -101,8 +101,8 @@ export class CancelPetTransferScreen extends React.Component {
           textAlign: "center",
         }}
       >
-        <Text style={[styles.text, { fontWeight: '600', marginLeft: 15, paddingRight: 5  }]}>Usuario: </Text>
-        <Text style={[styles.text, { marginLeft: 0, paddingLeft: 0 }]}>
+        <Text style={[styles.text, { fontWeight: '600', marginLeft: 15, paddingRight: 5, paddingTop: 40 }]}>Usuario: </Text>
+        <Text style={[styles.text, { marginLeft: 0, paddingLeft: 0, paddingTop: 40 }]}>
           {name.charAt(0).toUpperCase() + name.slice(1)}
         </Text>
       </View>
@@ -192,9 +192,9 @@ export class CancelPetTransferScreen extends React.Component {
               textAlign: "center",
             }}
           >
-            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10 }]}>Iniciada:</Text>
+            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10, marginTop: 20 }]}>Iniciada:</Text>
             <Text
-              style={[styles.text, { marginLeft: "0%", paddingLeft: "0%" }]}
+              style={[styles.text, { marginLeft: "0%", paddingLeft: "0%", marginTop: 20 }]}
             >
               {formatDate(transferData.activeFrom)}
             </Text>
@@ -202,18 +202,18 @@ export class CancelPetTransferScreen extends React.Component {
 
           <View
             style={{
-              flex: 0.5,
+              flex: 1,
               marginLeft: "5%",
               flexDirection: "row",
               flexWrap: "wrap",
               textAlign: "center",
             }}
           >
-            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10 }]}>
+            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10, marginTop: 20 }]}>
               Válida hasta:
             </Text>
             <Text
-              style={[styles.text, { marginLeft: "0%", paddingLeft: "0%" }]}
+              style={[styles.text, { marginLeft: "0%", paddingLeft: "0%", marginTop: 20 }]}
             >
               {formatDate(transferData.activeUntil)}
             </Text>
@@ -221,7 +221,7 @@ export class CancelPetTransferScreen extends React.Component {
 
           <View
             style={{
-              marginTop: 20,
+              marginTop: 10,
               marginLeft: "5%",
               width: "90%",
               borderBottomColor: colors.grey,
@@ -237,7 +237,7 @@ export class CancelPetTransferScreen extends React.Component {
               textAlign: "center",
             }}
           >
-            <Text style={styles.subtitle}>Datos del destinatario</Text>
+            <Text style={[styles.subtitle, {paddingTop: 20}]}>Datos del destinatario</Text>
           </View>
 
           {formatUserName(transferData.transferToUser)}

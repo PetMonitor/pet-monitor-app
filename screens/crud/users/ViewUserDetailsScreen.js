@@ -33,7 +33,7 @@ export class ViewUserDetailsScreen extends Component {
     }
 
     updateUserData = (newUserData) => {
-        this.setState({ userData: newUserData })
+        this.setState({ userData: newUserData, userProfilePictureUrl: undefined}, () => this.fetchProfilePicture());     
     }
 
     fetchUserDetails = async (sessionToken, userId) => {
@@ -49,6 +49,22 @@ export class ViewUserDetailsScreen extends Component {
             this.props.navigation.popToTop();
         });
     };
+
+    fetchProfilePicture = () => {
+        FileSystem.downloadAsync(
+            global.noticeServiceBaseUrl + '/photos/profile/' + this.state.userData.userId, 
+            FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE
+        ).then(response => {
+            if (response.status == 200) {
+                this.setState({ userProfilePictureUrl: FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE });
+                console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
+            }
+        
+            this.setState({ mounted : true })
+        }).catch(error => {
+            console.log(`No profile picture found ${error}`)
+        })
+    }
 
     fetchUserReportsDetails = (sessionToken, userId) => {
         getJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/notices', 
@@ -103,21 +119,7 @@ export class ViewUserDetailsScreen extends Component {
                 ).then(response => {
                     this.setState({ userData : response });
                     this.fetchUserDetails(sessionToken, userId);
-
-                    FileSystem.downloadAsync(
-                        global.noticeServiceBaseUrl + '/photos/profile/' + this.state.userData.userId, 
-                        FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE
-                    ).then(response => {
-                        if (response.status == 200) {
-                            this.setState({ userProfilePictureUrl : FileSystem.documentDirectory + global.PROFILE_PIC_TMP_FILE });
-                            console.log(`SETTING USER PROFILE PICTURE URL TO ${this.state.userProfilePictureUrl}`)
-                        }
-                    
-                        this.setState({ mounted : true })
-                    }).catch(error => {
-                        console.log(`No profile picture found ${error}`)
-                    })
-
+                    this.fetchProfilePicture();
                 }).catch(err => {
                     console.log(err);
                     alert(err)
@@ -195,13 +197,13 @@ export class ViewUserDetailsScreen extends Component {
         };
         
         const handleEditProfile = () => {
-            navigation.push('EditUserScreen', { userData: this.state.userData , updateUser: this.updateUserData });
+            navigation.push('EditUserScreen', { userData: {...this.state.userData, userProfilePictureUrl: this.state.userProfilePictureUrl} , updateUser: this.updateUserData });
         }
 
-        let profilePicture = <Image source={require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')} style={{width:130, height:130, borderRadius:130/2}} />
+        let profilePictureSource = require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')
 
         if (this.state.userProfilePictureUrl) {
-            profilePicture = <Image source={{ uri: `${this.state.userProfilePictureUrl}` }} style={{width:130, height:130, borderRadius:130/2}}/>
+            profilePictureSource = { uri: `${this.state.userProfilePictureUrl}` }
         }
 
         const dividerLine = <View style={{
@@ -209,12 +211,12 @@ export class ViewUserDetailsScreen extends Component {
             borderBottomColor: colors.lightGrey,
             borderBottomWidth: 1,
         }} />;
-        
+
         return (
             <SafeAreaView style={commonStyles.container}>   
                 <View style={{flexDirection:'row', alignItems:'stretch', flex: 1, marginTop: 15}}>
                     <View style={{marginLeft: 30, flex: 2}}>
-                        {profilePicture}
+                        <Image source={profilePictureSource} style={{width:130, height:130, borderRadius:130/2}}/>
                     </View>
                     <View style={{flexDirection:'column-reverse', justifyContent:'left', flex: 3, marginLeft: 20}}>
                         { this.state.facebookLogin ? 

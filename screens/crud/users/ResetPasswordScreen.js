@@ -76,7 +76,6 @@ export class ResetPasswordScreen extends React.Component {
                         transparent={true}
                         visible={this.state.modalVisible}
                         onRequestClose={() => {
-                            Alert.alert("Modal has been closed.");
                             this.setModalVisible(!modalVisible);
                         }}>
                         <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
@@ -101,7 +100,7 @@ export class ResetPasswordScreen extends React.Component {
                     </Modal>
                 </View>
 
-                <View style={{paddingTop: 40}}>  
+                <View style={{paddingTop: 150}}>  
                     <Text style={styles.title}>¿Olvidaste tu contraseña?</Text>  
                 </View> 
                 <View style={{marginHorizontal:'5%', marginTop: 80, flexDirection: 'row', flexWrap: 'wrap',  textAlign: 'center'}}> 

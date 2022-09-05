@@ -63,7 +63,7 @@ export function getSexTypePickerItems() {
 
 export function getLifeStagePickerItems() {
     return [
-        <Picker.Item label="Bebé" value="BABY" key="baby" />,
+        <Picker.Item label="Cachorro" value="BABY" key="baby" />,
         <Picker.Item label="Adulto" value="ADULT" key="adult" />,
         <Picker.Item label="Mayor" value="SENIOR" key="senior" /> 
     ];

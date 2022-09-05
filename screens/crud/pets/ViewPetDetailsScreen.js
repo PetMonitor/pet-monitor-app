@@ -11,6 +11,7 @@ import {
   Dimensions,
   SafeAreaView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -174,7 +175,7 @@ export class ViewPetDetailsScreen extends React.Component {
 
     if (!this.state.dropdownValue) {
       console.error("Cannot transfer pet: must select a volunteer first");
-      alert("Debes seleccionar un voluntario!");
+      Alert.alert("", "Debes seleccionar un voluntario!");
       return;
     }
 
@@ -191,7 +192,7 @@ export class ViewPetDetailsScreen extends React.Component {
       .then((response) => {
         console.log(`Pet transfer successfully created!`);
         this.setState({ transferInProgress: true });
-        alert("Transferencia iniciada con éxito!");
+        Alert.alert("", "Transferencia iniciada con éxito!");
         this.getPetTransfers();
       })
       .catch((err) => {
@@ -249,7 +250,7 @@ export class ViewPetDetailsScreen extends React.Component {
 
     Location.requestForegroundPermissionsAsync().then((response) => {
       if (response.status !== "granted") {
-        alert("Permission to access location was denied");
+        Alert.alert('', 'Permiso para acceder a la ubicación del dispositivo denegado');
         return;
       }
 
@@ -391,7 +392,7 @@ export class ViewPetDetailsScreen extends React.Component {
             </View>
 
             <Text style={styles.optionTitle}>Descripción</Text>
-            <Text style={styles.textInput}>{this.state.petDescription}</Text>
+            <Text style={styles.textInput}>{this.state.petDescription == '' ? '-' : this.state.petDescription}</Text>
 
             {this.state.isMyPet && !this.state.transferInProgress ? (
               <AppButton
@@ -488,12 +489,12 @@ const FosterEntryForTransferInfo = ({
   return (
     <View style={styles.modalView}>
       <Text style={[styles.modalTitle, { marginBottom: 25 }]}>
-        {"Transferir Mascota"}
+        {"Transferir mascota"}
       </Text>
       <Text
         style={[
           styles.modalText,
-          { fontWeight: "bold", marginTop: 20, marginBottom: 5 },
+          { fontWeight: "bold", marginTop: 5, marginBottom: 5 },
         ]}
       >
         Voluntario para alojamiento transitorio
@@ -541,7 +542,7 @@ const FosterEntryForTransferInfo = ({
         }}
       />
 
-      <View style={[commonStyles.alignedContent, { marginTop: 20 }]}>
+      <View style={[commonStyles.alignedContent, { marginTop: 10 }]}>
         <AppButton
           buttonText={"Cancelar"}
           onPress={onCancelPress}

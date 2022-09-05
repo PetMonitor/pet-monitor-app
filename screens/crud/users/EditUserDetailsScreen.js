@@ -4,9 +4,10 @@ import { Text, TextInput, Switch, StyleSheet, View, ImageBackground, SafeAreaVie
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import SelectMultiple from 'react-native-select-multiple'
 import * as Location from 'expo-location';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import uuid from 'react-native-uuid';
+import * as FileSystem from 'expo-file-system';
 
 import { putJsonData, getLocationFromCoordinates } from '../../../utils/requests';
 import { getSecureStoreValueFor } from '../../../utils/store';
@@ -35,10 +36,11 @@ export class EditUserDetailsScreen extends React.Component {
         this.state = Object.assign({ }, 
             { 
                 ...this.props.route.params.userData,
-                profilePicture: null,
+                newProfilePicture: null,
                 userLocation: null,
                 modalVisible: false,
-                modalText: ''
+                modalText: '',
+                alertsForReportTypes: this.props.route.params.userData.alertsForReportTypes ? this.props.route.params.userData.alertsForReportTypes : []
             }
         );
     }
@@ -70,6 +72,16 @@ export class EditUserDetailsScreen extends React.Component {
         this.setState({ modalVisible: visible });
     }
 
+    getProfilePictureSource = () => {
+        if (this.state.userProfilePictureUrl != null && this.state.newProfilePicture == null) {
+            return { uri: `${this.state.userProfilePictureUrl}` }
+        }
+        if (this.state.newProfilePicture != null) {
+            return { uri: `data:image/png;base64,${this.state.newProfilePicture}` }
+        }
+        return require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg');
+    }
+
     render() {
 
         const handleToggleAlerts = () => {
@@ -83,6 +95,11 @@ export class EditUserDetailsScreen extends React.Component {
             delete updatedUserData.userLocation;
             delete updatedUserData.modalVisible;
             delete updatedUserData.modalText;
+            if (this.state.newProfilePicture != null) {
+                updatedUserData['profilePicture'] = updatedUserData.newProfilePicture
+            }
+            delete updatedUserData.newProfilePicture;
+            delete updatedUserData.userProfilePictureUrl;
 
             updatedUserData._ref = uuid.v4();
 
@@ -104,7 +121,7 @@ export class EditUserDetailsScreen extends React.Component {
                     'Authorization': 'Basic ' + sessionToken 
                 }).then(response => {
                     console.log(response);
-                    alert('Perfil actualizado correctamente!')
+                    Alert.alert('', 'Perfil actualizado correctamente!')
                     // go back and return user data to parent component
                     updatedUserData.userId = this.state.userId;
                     this.props.navigation.pop();
@@ -120,17 +137,16 @@ export class EditUserDetailsScreen extends React.Component {
             const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         
             if (permissionResult.granted === false) {
-              alert("You've refused to allow this app to access your photos!");
-              return;
+                Alert.alert('', 'Se necesitan permisos de acceso a las imágenes de la galería para poder continuar')
+                return;
             }
         
             const result = await ImagePicker.launchImageLibraryAsync();
         
-            // Explore the result
-            console.log(result);
-        
             if (!result.cancelled) {
-              console.log(result.uri);
+                this.setState({
+                    newProfilePicture: await FileSystem.readAsStringAsync(result.uri, { encoding: 'base64' })
+                });
             }
         }
 
@@ -157,17 +173,13 @@ export class EditUserDetailsScreen extends React.Component {
                 <HeaderWithBackArrow headerText={"Editar perfil"} headerTextColor={colors.white} backgroundColor={colors.primary} backArrowColor={colors.white} onBackArrowPress={() => this.props.navigation.goBack()}/> 
                 <ScrollView>
                     <View style={styles.topContainer}>
-                        {/* TODO: image source should be conditional to profilePicture value, this is just the default in case of null */}
-                        <ImageBackground source={require('../../../assets/adorable-jack-russell-retriever-puppy-portrait.jpg')}  
+                        <ImageBackground source={this.getProfilePictureSource()}  
                             style={{width: 130, height: 130, marginTop: 10, alignSelf: 'center'}} 
                             imageStyle={{borderRadius: 130/2}}>
-                                <View style={{position: 'absolute', top: 45, left: 45}}>
-                                    <Icon.Button
-                                        onPress={handlePickNewImage}
-                                        size={30}
-                                        name="edit"
-                                        backgroundColor='transparent'
-                                        color={colors.white}/>
+                                <View style={{position: 'absolute', top: 43, left: 43}}>
+                                <TouchableOpacity onPress={handlePickNewImage} style={{backgroundColor: colors.primary, borderColor: colors.grey, borderWidth: 1, borderRadius: 50, padding: 5}}>
+                                    <MaterialIcon name='edit' size={30} color={colors.white}  />
+                                </TouchableOpacity>
                                 </View>
                         </ImageBackground>
                         {dividerLine}
@@ -235,7 +247,6 @@ export class EditUserDetailsScreen extends React.Component {
                         transparent={true}
                         visible={this.state.modalVisible}
                         onRequestClose={() => {
-                        Alert.alert("Modal has been closed.");
                         this.setModalVisible(!modalVisible);
                         }}>
                         <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>
@@ -317,7 +328,7 @@ export class EditUserDetailsScreen extends React.Component {
         .then(response => {
             let eventLocation = this.selectedLocation(response.data)
             if (eventLocation.country != "Argentina") {
-                Alert.alert("Solamente podemos configurar alertas en Argentina");
+                Alert.alert('', "Solamente podemos configurar alertas en Argentina");
                 return
             }
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, FlatList, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { encode as btoa } from 'base-64'
 import * as Location from 'expo-location';
@@ -43,12 +43,12 @@ export class FaceRecognitionSearchScreen extends React.Component {
 
     navigateToSearchResults = () => {
         if (this.state.userNotices.length == 0) {
-            alert("Debes tener al menos un reporte abierto!")
+            Alert.alert("", "Debes tener al menos un reporte abierto!")
             return;
         }
 
         if (this.state.noticeId.length == 0) {
-            alert("Debes seleccionar un reporte!")
+            Alert.alert("", "Debes seleccionar un reporte!")
             return;
         }
         this.props.navigation.push('FaceRecognitionResults', { noticeId: this.state.noticeId, userId: this.state.userId, region: this.state.filterByRegion ? this.state.searchRegion : null }); 
@@ -117,7 +117,7 @@ export class FaceRecognitionSearchScreen extends React.Component {
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
-                alert('Permission to access location was denied');
+                Alert.alert('', 'Permiso para acceder a la ubicación del dispositivo denegado');
                 return;
             }
 

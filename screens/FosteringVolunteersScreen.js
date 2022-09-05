@@ -86,7 +86,7 @@ export class FosteringVolunteersScreen extends React.Component {
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
-                alert('Permission to access location was denied');
+                Alert.alert('', 'Permiso para acceder a la ubicación del dispositivo denegado');
                 return;
             }
 
@@ -130,7 +130,7 @@ export class FosteringVolunteersScreen extends React.Component {
 
     confirmFilterRemoval = () =>
         Alert.alert(
-        "Atención!",
+        "",
         "Si continúa con la acción, se mostrarán todos los perfiles sin filtrar por región",
         [
             {

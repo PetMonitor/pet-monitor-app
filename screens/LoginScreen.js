@@ -8,7 +8,7 @@ import * as config from '../config/config';
 
 import { getJsonData, postJsonData } from '../utils/requests.js';
 import { secureStoreSave } from '../utils/store.js';
-import { Modal, Image, TouchableOpacity, Text, TextInput, StyleSheet, View } from 'react-native';
+import { Modal, Image, TouchableOpacity, Text, TextInput, StyleSheet, View, Alert } from 'react-native';
 import { AppButton } from '../utils/buttons';
 
 const USER_CREATED_SUCCESS_TEXT = "Perfil creado con éxito!";
@@ -92,7 +92,7 @@ export class LoginScreen extends React.Component {
 
               await postJsonData(global.noticeServiceBaseUrl + '/users', userInfo).then(response => {
                 console.log(response);
-                alert('Successfully registered facebook user!')
+                Alert.alert('', 'Usuario de Facebook registrado!')
               }).catch(err => {
                 alert(err);
                 return;
@@ -174,7 +174,6 @@ export class LoginScreen extends React.Component {
                 transparent={true}
                 visible={this.state.modalVisible}
                 onRequestClose={() => {
-                  Alert.alert("Modal has been closed.");
                   this.setModalVisible(!modalVisible);
                 }}>
                 <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>

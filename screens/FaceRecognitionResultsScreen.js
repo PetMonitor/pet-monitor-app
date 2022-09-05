@@ -2,7 +2,7 @@ import React from 'react';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions, SafeAreaView, ActivityIndicator } from 'react-native';
+import { Text, Button, StyleSheet, View, FlatList, Switch, TouchableOpacity, Image, Dimensions, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Modal from "react-native-modal";
 import { Buffer } from 'buffer'
@@ -95,7 +95,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
                 location: this.state.searchedRegion ? this.state.searchedRegion : ''
             }).then(response => {
                 console.log(response);
-                setTimeout(() => alert("Alerta creada con éxito!", 3000));
+                setTimeout(() => Alert.alert("", "Alerta creada con éxito!", 3000));
               }).catch(err => {
                 alert(err);
                 return;
@@ -137,7 +137,7 @@ export class FaceRecognitionResultsScreen extends React.Component {
             )
             .then(response => {
                 console.log(response);
-                alert('Registramos tu respuesta! Sentimos no haber encontrado a tu mascota!')
+                Alert.alert('', 'Registramos tu respuesta! Sentimos no haber encontrado a tu mascota!')
                 this.setState({ feedbackDisabled: true });
                 this.props.navigation.goBack();
             }).catch(err => {

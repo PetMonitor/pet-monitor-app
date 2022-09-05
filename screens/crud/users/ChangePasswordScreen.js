@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, TextInput, StyleSheet, View } from 'react-native';
+import { Text, TextInput, StyleSheet, View, Alert } from 'react-native';
 
 import { putJsonData } from "../../../utils/requests";
 import { getSecureStoreValueFor } from '../../../utils/store';
@@ -20,11 +20,11 @@ const ChangePasswordScreen = ({ route, navigation }) => {
     const handleSetNewPassword = () => {
 
         if (!(newPassword && confirmedNewPassword && oldPassword)) {
-            alert('Debe ingresar un valor para cada campo!');
+            Alert.alert('', 'Debe ingresar un valor para cada campo!');
         }
 
         if (newPassword != confirmedNewPassword) {
-            alert('La constaseña nueva y la confirmación no son iguales! Intente nuevamente.');
+            Alert.alert('', 'La constaseña nueva y la confirmación no son iguales! Intente nuevamente.');
             return;
         }
 
@@ -39,7 +39,7 @@ const ChangePasswordScreen = ({ route, navigation }) => {
                 'Authorization': 'Basic ' + sessionToken 
             }).then(response => {
                 console.log(`User password successfully updated!`);
-                alert(`Contraseña actualizada!`);
+                Alert.alert('', `Contraseña actualizada!`);
                 navigation.pop();
             }).catch(err => {
                 console.log(err);

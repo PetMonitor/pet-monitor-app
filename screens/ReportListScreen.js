@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, SafeAreaView, View, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { Text, SafeAreaView, View, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -107,7 +107,7 @@ export class ReportListScreen extends React.Component {
         Location.requestForegroundPermissionsAsync()
             .then(response => {
                 if (response.status !== 'granted') {
-                    alert('Permission to access location was denied');
+                    Alert.alert('', 'Permiso para acceder a la ubicación del dispositivo denegado');
                     return;
                 }
 

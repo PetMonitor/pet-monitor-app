@@ -304,7 +304,7 @@ export class ReportViewScreen extends React.Component {
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
-                alert('Permission to access location was denied');
+                Alert.alert('', 'Permiso para acceder a la ubicación del dispositivo denegado');
                 return;
             }
 
@@ -513,7 +513,7 @@ export class ReportViewScreen extends React.Component {
             let email = this.state.manualVolunteerData.email
 
             if (!validateEmail(email)) {
-                alert('Ingrese un email válido por favor!');
+                Alert.alert('', 'Ingrese un email válido por favor!');
                 return;
             }
             newHome.contactName = this.state.manualVolunteerData.name
@@ -613,15 +613,15 @@ export class ReportViewScreen extends React.Component {
         const changeContactPhoneNumber = (value) => this.setState({ contactInfo: {...this.state.contactInfo, phoneNumber: value} });
         const onContactUserPress = () => {
             if (this.state.contactInfo.name == "" || this.state.contactInfo.email == "" || this.state.contactInfo.phoneNumber == "") {
-                alert('Ingrese la información de contacto por favor!');
+                Alert.alert('', 'Ingrese la información de contacto por favor!');
                 return;  
             }
             if (!validateEmail(this.state.contactInfo.email)) {
-                alert('Ingrese un email válido por favor!');
+                Alert.alert('', 'Ingrese un email válido por favor!');
                 return;  
             } 
             if (this.state.emailMessage == "") {
-                alert('No podemos mandar un email vacío!');
+                Alert.alert('', 'No podemos mandar un email vacío!');
                 return;  
             }
             // console.log(this.state.userToContactInfo)
@@ -910,15 +910,15 @@ const FosterEntryInfo = ({sinceDate, onSinceDateSelect, onAddHomePress, onCancel
 const FosteringInfo = ({historyData, onEditPress, isMyReport, onContactUserPress}) => {
     let row = []
     row.push(<FosterInfoRow key={"title"}
-        sinceDate={<OptionTitle text={"Desde"} additionalStyle={styles.optionTitle} />}
-        untilDate={<OptionTitle text={"Hasta"} additionalStyle={styles.optionTitle} />}
-        contactInfo={<OptionTitle text={"Contacto"} additionalStyle={styles.optionTitle} />} />
+        sinceDate={<OptionTitle text={"Desde"} additionalStyle={[styles.optionTitle, {marginLeft: 0, paddingLeft: 20}]} />}
+        untilDate={<OptionTitle text={"Hasta"} additionalStyle={[styles.optionTitle, {marginLeft: 0, paddingLeft: 20}]} />}
+        contactInfo={<OptionTitle text={"Contacto"} additionalStyle={[styles.optionTitle, {alignSelf: 'center', paddingLeft: 30}]} />} />
     )
     for (let i = 0; i < historyData.length; i++) {
         row.push(<FosterInfoRow key={"row" + i}
             sinceDate={<DateToDisplay date={historyData[i].sinceDate} />} 
             untilDate={historyData[i].untilDate ? <DateToDisplay date={historyData[i].untilDate} /> : <Text style={[styles.textInput, { fontSize: 13, alignSelf: 'center' }]}>-</Text>} 
-            contactInfo={<ContactButton showContactInfo={() => onContactUserPress({ name: historyData[i].contactName, email: historyData[i].contactEmail, phoneNumber: historyData[i].contactPhone })} additionalStyle={{margin: 0, marginTop: 7, marginBottom: 5, padding: 5, width: '80%'}} additionalTextStyles={{fontSize: 14}} />} 
+            contactInfo={<ContactButton showContactInfo={() => onContactUserPress({ name: historyData[i].contactName, email: historyData[i].contactEmail, phoneNumber: historyData[i].contactPhone })} additionalStyle={{margin: 0, marginTop: 7, marginBottom: 5, padding: 5, width: '80%', alignSelf: 'center', marginLeft: 15}} additionalTextStyles={{fontSize: 14}} />} 
             dataToEdit={historyData[i]} 
             onEditPress={onEditPress}
             isMyReport={isMyReport} />)
@@ -928,29 +928,31 @@ const FosteringInfo = ({historyData, onEditPress, isMyReport, onContactUserPress
 
 const DateToDisplay = ({date}) => {
     return (
-        <Text style={[styles.textInput, { fontSize: 13 }]}>{getDate(new Date(date))}</Text>
+        <Text style={[styles.textInput, { fontSize: 13, paddingTop: 0, alignSelf: 'center', marginLeft: 0, paddingLeft: 0}]}>{getDate(new Date(date))}</Text>
     );
 }
 
 const FosterInfoRow = ({sinceDate, untilDate, contactInfo, dataToEdit = null, onEditPress, isMyReport = false}) => {
     return (<>
-        <View style={[commonStyles.alignedContent, {marginHorizontal: -25}]}>
-            <View style={{ flexDirection: 'column', flex: 2, alignSelf: 'center' }}>
+        <View style={[commonStyles.alignedContent, {marginHorizontal: 0}]}>
+            <View style={{ flexDirection: 'column', flex: 2, padding: 0}}>
                 {sinceDate}
             </View>
-            <View style={{ flexDirection: 'column', flex: 2, alignSelf: 'center'}}>
+            <View style={{ flexDirection: 'column', flex: 2, padding: 0}}>
                 {untilDate}
             </View>
-            <View style={{ flexDirection: 'column', flex: 3, alignSelf: 'center'}}>
+            <View style={{ flexDirection: 'column', flex: 3, padding: 0}}>
+                <View style={commonStyles.alignedContent}>
                 {contactInfo}
-            </View>
-            {isMyReport &&
-                <View style={{ flexDirection: 'column', flex: 1/2, alignSelf: 'stretch', justifyContent: 'center'}}>
-                    <TouchableOpacity onPress={() => onEditPress(dataToEdit)}>
-                        <MaterialIcon name='pencil' size={20} color={colors.secondary} />
-                    </TouchableOpacity>
+                {isMyReport &&
+                    <View style={{ flexDirection: 'column', alignSelf: 'stretch', justifyContent: 'center', marginLeft: 10}}>
+                        <TouchableOpacity onPress={() => onEditPress(dataToEdit)}>
+                            <MaterialIcon name='pencil' size={20} color={colors.secondary} />
+                        </TouchableOpacity>
+                    </View>
+                }
                 </View>
-            }
+            </View>
         </View>
         <View style={{
             marginTop: 3,
