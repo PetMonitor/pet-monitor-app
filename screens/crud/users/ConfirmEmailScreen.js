@@ -114,7 +114,11 @@ export class ConfirmEmailScreen extends React.Component {
                 </View>
                 <View style={{flex: 1}}>
                     <Text style={[{flex: 1, marginTop: 50}, styles.title]}>Chequeá tu casilla de mail!</Text>  
+<<<<<<< HEAD
                     <Text style={[styles.subtitle, {flex: 2, marginHorizontal: 30}]}>Te enviamos un mensaje para confirmar tu dirección de correo</Text>
+=======
+                    <Text style={[styles.subtitle, {flex: 2}]}>Te enviamos un mensaje para confirmar tu dirección de correo</Text>
+>>>>>>> main
                     <View style={{flex:3}}>
                         <Image key={'img_email'} resizeMode="cover" style={{resizeMode: 'contain', width: null, height: 80}} source={require(MAIL_IMG_PATH)}/>
                         <Text style={[styles.text, {marginTop: 60}]}>Confirmá tu email antes de continuar</Text>
