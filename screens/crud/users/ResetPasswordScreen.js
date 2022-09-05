@@ -100,11 +100,7 @@ export class ResetPasswordScreen extends React.Component {
                     </Modal>
                 </View>
 
-<<<<<<< HEAD
                 <View style={{paddingTop: 150}}>  
-=======
-                <View style={{paddingTop: 40}}>  
->>>>>>> main
                     <Text style={styles.title}>¿Olvidaste tu contraseña?</Text>  
                 </View> 
                 <View style={{marginHorizontal:'5%', marginTop: 80, flexDirection: 'row', flexWrap: 'wrap',  textAlign: 'center'}}> 

@@ -101,13 +101,8 @@ export class CancelPetTransferScreen extends React.Component {
           textAlign: "center",
         }}
       >
-<<<<<<< HEAD
         <Text style={[styles.text, { fontWeight: '600', marginLeft: 15, paddingRight: 5, paddingTop: 40 }]}>Usuario: </Text>
         <Text style={[styles.text, { marginLeft: 0, paddingLeft: 0, paddingTop: 40 }]}>
-=======
-        <Text style={[styles.text, { fontWeight: '600', marginLeft: 15, paddingRight: 5  }]}>Usuario: </Text>
-        <Text style={[styles.text, { marginLeft: 0, paddingLeft: 0 }]}>
->>>>>>> main
           {name.charAt(0).toUpperCase() + name.slice(1)}
         </Text>
       </View>
@@ -197,11 +192,7 @@ export class CancelPetTransferScreen extends React.Component {
               textAlign: "center",
             }}
           >
-<<<<<<< HEAD
             <Text style={[styles.text, { fontWeight: "600", paddingRight: 10, marginTop: 20 }]}>Iniciada:</Text>
-=======
-            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10 }]}>Iniciada:</Text>
->>>>>>> main
             <Text
               style={[styles.text, { marginLeft: "0%", paddingLeft: "0%", marginTop: 20 }]}
             >
@@ -218,11 +209,7 @@ export class CancelPetTransferScreen extends React.Component {
               textAlign: "center",
             }}
           >
-<<<<<<< HEAD
             <Text style={[styles.text, { fontWeight: "600", paddingRight: 10, marginTop: 20 }]}>
-=======
-            <Text style={[styles.text, { fontWeight: "600", paddingRight: 10 }]}>
->>>>>>> main
               Válida hasta:
             </Text>
             <Text
