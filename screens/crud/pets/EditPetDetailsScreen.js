@@ -75,11 +75,13 @@ export class EditPetDetailsScreen extends React.Component {
             // check at least two photos remain
             const remainingPhotosCount = this.state.photos.length + this.state.newPhotos.length
             if (remainingPhotosCount < this.MIN_PROFILE_PHOTOGRAPHS) {
-                alert(`El perfil debe contener al menos ${this.MIN_PROFILE_PHOTOGRAPHS} fotografías!`);
+                Alert.alert('', `El perfil debe contener al menos ${this.MIN_PROFILE_PHOTOGRAPHS} fotografías!`);
                 return;
             }
 
-            this.setState({ isLoading: true })
+            if (this.state.newPhotos.length > 0) {
+                this.setState({ isLoading: true })
+            }
 
             const editedPet = Object.assign({}, { 
                 petData: {
@@ -107,6 +109,7 @@ export class EditPetDetailsScreen extends React.Component {
                 }).then(responsePet => {
                     console.log(`Edit pet endpoint returned ${responsePet}`);
                     this.setState({ isLoading: false })
+                    Alert.alert('', `Perfil de mascota actualizado!`);
                     this.props.navigation.pop();
                     this.props.route.params.onUpdate();
                 }).catch(err => {

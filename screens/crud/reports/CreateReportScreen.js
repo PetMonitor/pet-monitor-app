@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, View, Modal, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native';
+import { Text, View, Modal, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/Feather';
 import * as Location from 'expo-location';
@@ -126,12 +126,12 @@ export class CreateReportScreen extends React.Component {
     createReport = () => {
 
         if (this.state.petId.length == 0) {
-            alert("Debes seleccionar al menos una mascota!")
+            Alert.alert("Debes seleccionar al menos una mascota!")
             return;
         }
 
         if (this.state.eventMarker == null) {
-            alert("Debes marcar una ubicación aproximada en el mapa!")
+            Alert.alert("Debes marcar una ubicación aproximada en el mapa!")
             return;
         }
 
@@ -187,7 +187,7 @@ export class CreateReportScreen extends React.Component {
         Location.requestForegroundPermissionsAsync()
         .then( response => {
             if (response.status !== 'granted') {
-                alert('Permission to access location was denied');
+                Alert.alert('', 'Permiso para acceder a la ubicación del dispositivo denegado');
                 return;
             }
 
@@ -233,7 +233,6 @@ export class CreateReportScreen extends React.Component {
                     transparent={true}
                     visible={this.state.operationResultModalVisible}
                     onRequestClose={() => {
-                        Alert.alert("Modal has been closed.");
                         this.setModalVisible(!modalVisible);
                     }}>
                     <View style={{flex: 1, justifyContent: 'center', alignItems: 'stretch'}}>

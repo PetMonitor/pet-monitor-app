@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { EventRegister } from 'react-native-event-listeners';
-import { Text, TextInput, StyleSheet, ScrollView, View, Image, SafeAreaView } from 'react-native';
+import { Text, TextInput, StyleSheet, ScrollView, View, Image, SafeAreaView, Alert } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 
 import { postJsonData } from '../../../utils/requests.js';
@@ -56,7 +56,7 @@ export class CreatePetScreen extends React.Component {
             }
 
             if (this.state.photos.length == 0) {
-                alert('Se requiere al menos una foto de la mascota!');
+                Alert.alert('', 'Se requiere al menos una foto de la mascota!');
                 return;
             }
 
@@ -90,7 +90,7 @@ export class CreatePetScreen extends React.Component {
             }
 
             if (this.state.photos.length < this.MIN_PROFILE_PHOTOGRAPHS) {
-                alert(`Se requieren al menos ${this.MIN_PROFILE_PHOTOGRAPHS} fotos!`);
+                Alert.alert('', `Se requieren al menos ${this.MIN_PROFILE_PHOTOGRAPHS} fotos!`);
                 return;
             }
 
@@ -136,7 +136,7 @@ export class CreatePetScreen extends React.Component {
                 postJsonData(global.noticeServiceBaseUrl + '/users/' + userId + '/pets', petData)
                 .then(response => {
                     console.log(response);
-                    alert('Mascota creada!')
+                    Alert.alert('', 'Mascota creada!')
                     if (this.props.route.params.onGoBack) {
                         this.props.route.params.onGoBack();
                     }

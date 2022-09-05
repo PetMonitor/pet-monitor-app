@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect }  from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { AssetsSelector } from 'expo-images-picker';
 import { MediaType } from 'expo-media-library';
 import PageContainer from '../utils/PageContainer';
@@ -17,7 +17,7 @@ const ImageSelectorScreen = ({ route, navigation }) => {
     (async () => {
       const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if(status !== 'granted'){
-        alert('Sorry, we need camera roll permissions to make this work!')
+        Alert.alert('', 'Se necesitan permisos de acceso a las imágenes de la galería para poder continuar')
       }
     })();
   }, []);

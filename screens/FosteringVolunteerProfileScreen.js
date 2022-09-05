@@ -76,15 +76,15 @@ export class FosteringVolunteerProfileScreen extends React.Component {
         const changeContactPhoneNumber = (value) => this.setState({ contactInfo: {...this.state.contactInfo, phoneNumber: value} });
         const onContactUserPress = () => {
             if (this.state.contactInfo.name == "" || this.state.contactInfo.email == "" || this.state.contactInfo.phoneNumber == "") {
-                alert('Ingrese la información de contacto por favor!');
+                Alert.alert('', 'Ingrese la información de contacto por favor!');
                 return;  
             }
             if (!validateEmail(this.state.contactInfo.email)) {
-                alert('Ingrese un email válido por favor!');
+                Alert.alert('', 'Ingrese un email válido por favor!');
                 return;  
             } 
             if (this.state.emailMessage == "") {
-                alert('No podemos mandar un email vacío!');
+                Alert.alert('', 'No podemos mandar un email vacío!');
                 return;  
             }
             this.sendEmailToVolunteer(volunteer)

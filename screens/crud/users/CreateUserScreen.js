@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextInput, StyleSheet, SafeAreaView, View } from 'react-native';
+import { Text, TextInput, StyleSheet, SafeAreaView, View, Alert } from 'react-native';
 import { User, Envelope, Lock } from 'phosphor-react-native';
 
 import { HeaderWithBackArrow } from '../../../utils/headers';
@@ -31,12 +31,12 @@ export class CreateUserScreen extends React.Component {
         const handleRegisterPress = () => {
 
             if(!validateEmail(this.state.email)) {
-                alert('Please enter a valid email address!');
+                Alert.alert('', 'Por favor ingrese un email válido!');
                 return;
             }
 
             if (this.state.password != this.state.confirmPassword) {
-                alert('Password entries did not match!');
+                Alert.alert('', 'Las contraseñas no coinciden!');
                 return;
             }
 
